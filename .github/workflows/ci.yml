@@ -1,0 +1,42 @@
+name: CI - Testes e Qualidade
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Testar Back-end (Server)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'server/package-lock.json'
+
+      - name: Validar dependências do Back-end
+        run: |
+          cd server
+          npm ci
+
+      - name: Configurar Node.js v22 (Client)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
+
+      - name: Validar Build do Front-end
+        run: |
+          cd client
+          npm ci
+          npm run build
