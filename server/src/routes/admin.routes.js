@@ -3,8 +3,9 @@ import { requireAuth } from '../middlewares/auth.middleware.js';
 
 export const adminRouter = Router();
 
+// Lembrar ao GP
 // Rota temporária de demonstração do middleware JWT.
-// Pode ser removida quando as rotas administrativas reais estiverem prontas.
+// Remover quando as rotas administrativas reais estiverem prontas.
 adminRouter.get('/ping', requireAuth, (req, res) => {
   return res.status(200).json({
     message: 'Rota administrativa autenticada.',
