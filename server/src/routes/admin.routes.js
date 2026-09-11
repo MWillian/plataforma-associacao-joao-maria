@@ -1,14 +1,23 @@
 import { Router } from 'express';
-import { requireAuth } from '../middlewares/auth.middleware.js';
+
+import {
+  requireAdmin,
+  requireAuth,
+} from '../middlewares/auth.middleware.js';
 
 export const adminRouter = Router();
 
-// Lembrar ao GP
-// Rota temporária de demonstração do middleware JWT.
-// Remover quando as rotas administrativas reais estiverem prontas.
-adminRouter.get('/ping', requireAuth, (req, res) => {
+// Todas as rotas declaradas abaixo destes middlewares exigirão autenticação administrativa.
+adminRouter.use(requireAuth);
+adminRouter.use(requireAdmin);
+
+// Rota temporária para testar a autorização.
+// Remover quando as rotas administrativas reais estiverem implementadas.
+adminRouter.get('/ping', (req, res) => {
   return res.status(200).json({
-    message: 'Rota administrativa autenticada.',
+    message:
+      'Rota administrativa autenticada.',
     userId: req.auth.userId,
+    isAdmin: req.auth.isAdmin,
   });
 });
