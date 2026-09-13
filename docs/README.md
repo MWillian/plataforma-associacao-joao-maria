@@ -1,8 +1,9 @@
 # Contratos da API — Studio Adágio
 
+Versão proposta: **1.0.0**  
 Base URL local: `http://localhost:3001/api`
 
-Este diretório define o acordo entre Front-end e Back-end para os sete itens do backlog. Os arquivos em `contratos/` explicam cada fluxo de forma mais direta.
+Este diretório define o acordo entre Front-end e Back-end para os sete itens do backlog. O arquivo `openapi.yaml` é a referência técnica principal; os arquivos em `contratos/` explicam cada fluxo de forma mais direta.
 
 ## Contratos
 

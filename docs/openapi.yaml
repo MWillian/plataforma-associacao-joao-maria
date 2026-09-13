@@ -1,0 +1,613 @@
+openapi: 3.1.0
+info:
+  title: API Studio Adágio
+  version: 1.0.0
+  description: Contrato proposto para autenticação, Home, produtos, turmas e e-mails.
+servers:
+  - url: http://localhost:3001/api
+    description: Desenvolvimento local
+tags:
+  - name: Autenticação
+  - name: Home
+  - name: Produtos
+  - name: Turmas
+  - name: Administração
+  - name: E-mail
+paths:
+  /auth/login:
+    post:
+      tags: [Autenticação]
+      summary: Iniciar sessão
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LoginInput'}
+      responses:
+        '200':
+          description: Sessão iniciada; Refresh Token também é enviado em cookie HttpOnly.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LoginResponse'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+  /auth/refresh:
+    post:
+      tags: [Autenticação]
+      summary: Renovar Access Token e rotacionar Refresh Token
+      security: [{refreshCookie: []}]
+      responses:
+        '200':
+          description: Token renovado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [accessToken]
+                properties:
+                  accessToken: {type: string}
+        '401': {$ref: '#/components/responses/SessionExpired'}
+  /auth/logout:
+    post:
+      tags: [Autenticação]
+      summary: Encerrar sessão
+      security: [{refreshCookie: []}]
+      responses:
+        '204': {description: Sessão encerrada}
+  /auth/forgot-password:
+    post:
+      tags: [Autenticação]
+      summary: Solicitar recuperação de senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: {type: string, format: email}
+      responses:
+        '200': {$ref: '#/components/responses/GenericMessage'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+  /auth/reset-password:
+    post:
+      tags: [Autenticação]
+      summary: Redefinir senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token: {type: string}
+                password: {type: string, minLength: 8}
+      responses:
+        '200': {$ref: '#/components/responses/GenericMessage'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+  /home:
+    get:
+      tags: [Home]
+      summary: Listar produtos e turmas em destaque
+      parameters:
+        - {in: query, name: productLimit, schema: {type: integer, minimum: 1, maximum: 12, default: 6}}
+        - {in: query, name: classLimit, schema: {type: integer, minimum: 1, maximum: 12, default: 6}}
+      responses:
+        '200':
+          description: Conteúdo da Home
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [products, classes]
+                properties:
+                  products:
+                    type: array
+                    items: {$ref: '#/components/schemas/ProductPublic'}
+                  classes:
+                    type: array
+                    items: {$ref: '#/components/schemas/ClassPublic'}
+  /produtos:
+    get:
+      tags: [Produtos]
+      summary: Listar produtos ativos
+      parameters:
+        - {$ref: '#/components/parameters/ProductCategory'}
+        - {$ref: '#/components/parameters/Page'}
+        - {$ref: '#/components/parameters/Limit'}
+        - {in: query, name: search, schema: {type: string, maxLength: 120}}
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - {$ref: '#/components/schemas/PaginationEnvelope'}
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: {$ref: '#/components/schemas/ProductPublic'}
+  /produtos/{id}:
+    get:
+      tags: [Produtos]
+      summary: Consultar produto ativo
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '200':
+          description: Produto
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ProductPublic'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /turmas:
+    get:
+      tags: [Turmas]
+      summary: Listar turmas ativas
+      parameters:
+        - {$ref: '#/components/parameters/Modality'}
+        - {$ref: '#/components/parameters/Page'}
+        - {$ref: '#/components/parameters/Limit'}
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - {$ref: '#/components/schemas/PaginationEnvelope'}
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: {$ref: '#/components/schemas/ClassPublic'}
+  /turmas/{id}:
+    get:
+      tags: [Turmas]
+      summary: Consultar turma ativa
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '200':
+          description: Turma
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ClassPublic'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /admin/turmas:
+    get:
+      tags: [Administração]
+      summary: Listar todas as turmas
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: Lista administrativa de turmas}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      tags: [Administração]
+      summary: Criar turma
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ClassInput'}
+      responses:
+        '201':
+          description: Turma criada
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ClassAdmin'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /admin/turmas/{id}:
+    put:
+      tags: [Administração]
+      summary: Atualizar turma
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ClassInput'}
+      responses:
+        '200': {description: Turma atualizada}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [Administração]
+      summary: Remover turma sem vínculos
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '204': {description: Turma removida}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /admin/turmas/{id}/status:
+    patch:
+      tags: [Administração]
+      summary: Ativar ou desativar turma
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active: {type: boolean}
+      responses:
+        '200': {description: Status alterado}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /admin/produtos:
+    get:
+      tags: [Administração]
+      summary: Listar todas as publicações
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: Lista administrativa de produtos}
+    post:
+      tags: [Administração]
+      summary: Criar publicação de produto
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: {$ref: '#/components/schemas/ProductFormCreate'}
+      responses:
+        '201':
+          description: Publicação criada
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ProductAdmin'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '413': {description: Imagem acima de 5 MB}
+        '415': {description: Formato de imagem não aceito}
+  /admin/produtos/{id}:
+    put:
+      tags: [Administração]
+      summary: Atualizar publicação
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: {$ref: '#/components/schemas/ProductForm'}
+      responses:
+        '200': {description: Publicação atualizada}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [Administração]
+      summary: Remover publicação
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '204': {description: Publicação removida}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /admin/produtos/{id}/status:
+    patch:
+      tags: [Administração]
+      summary: Publicar ou ocultar produto
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active: {type: boolean}
+      responses:
+        '200': {description: Status alterado}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /contato:
+    post:
+      tags: [E-mail]
+      summary: Enviar formulário público de contato
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContactInput'}
+      responses:
+        '202': {$ref: '#/components/responses/GenericMessage'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+  /admin/comunicados:
+    post:
+      tags: [E-mail, Administração]
+      summary: Enviar comunicado para responsáveis de turmas
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CommunicationInput'}
+      responses:
+        '202':
+          description: Comunicado aceito para envio
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message, communicationId, recipientCount]
+                properties:
+                  message: {type: string}
+                  communicationId: {type: integer}
+                  recipientCount: {type: integer}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /admin/comunicados/{id}:
+    get:
+      tags: [E-mail, Administração]
+      summary: Consultar resultado de comunicado
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '200':
+          description: Estado do envio
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CommunicationStatus'}
+        '404': {$ref: '#/components/responses/NotFound'}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema: {type: integer, minimum: 1}
+    Page:
+      in: query
+      name: page
+      schema: {type: integer, minimum: 1, default: 1}
+    Limit:
+      in: query
+      name: limit
+      schema: {type: integer, minimum: 1, maximum: 100, default: 12}
+    ProductCategory:
+      in: query
+      name: category
+      schema: {$ref: '#/components/schemas/ProductCategory'}
+    Modality:
+      in: query
+      name: modality
+      schema: {$ref: '#/components/schemas/Modality'}
+  responses:
+    GenericMessage:
+      description: Operação aceita
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [message]
+            properties:
+              message: {type: string}
+    ValidationError:
+      description: Dados inválidos
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    Unauthorized:
+      description: Autenticação necessária
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    SessionExpired:
+      description: Sessão expirada
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    Forbidden:
+      description: Sem autorização administrativa
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    Conflict:
+      description: Conflito com recurso existente
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    RateLimited:
+      description: Muitas solicitações
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error: {type: string}
+        message: {type: string}
+        fields:
+          type: object
+          additionalProperties: {type: string}
+    LoginInput:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: {type: string, format: email}
+        password: {type: string, minLength: 1}
+    LoginResponse:
+      type: object
+      required: [user, accessToken]
+      properties:
+        user: {$ref: '#/components/schemas/UserPublic'}
+        accessToken: {type: string}
+    UserPublic:
+      type: object
+      required: [id, email]
+      properties:
+        id: {type: integer}
+        name: {type: [string, 'null']}
+        email: {type: string, format: email}
+    ProductCategory:
+      type: string
+      enum: [AGRICULTURE, HANDICRAFT]
+    Modality:
+      type: string
+      enum: [BALLET, JAZZ, TAP_DANCE, OTHER]
+    WeekDay:
+      type: string
+      enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+    ProductPublic:
+      type: object
+      required: [id, title, category, description, imageUrl, whatsappUrl, featured]
+      properties:
+        id: {type: integer}
+        title: {type: string}
+        category: {$ref: '#/components/schemas/ProductCategory'}
+        description: {type: string}
+        imageUrl: {type: string, format: uri}
+        priceInCents: {type: [integer, 'null'], minimum: 0}
+        producerName: {type: [string, 'null']}
+        whatsappUrl: {type: string, format: uri}
+        featured: {type: boolean}
+        createdAt: {type: string, format: date-time}
+    ProductAdmin:
+      allOf:
+        - {$ref: '#/components/schemas/ProductPublic'}
+        - type: object
+          required: [active, updatedAt]
+          properties:
+            active: {type: boolean}
+            updatedAt: {type: string, format: date-time}
+    ProductForm:
+      type: object
+      required: [title, category, description]
+      properties:
+        title: {type: string, minLength: 3, maxLength: 120}
+        category: {$ref: '#/components/schemas/ProductCategory'}
+        description: {type: string, minLength: 10, maxLength: 2000}
+        producerName: {type: string, maxLength: 120}
+        priceInCents: {type: integer, minimum: 0}
+        whatsappNumber: {type: string, pattern: '^[0-9]{10,15}$'}
+        featured: {type: boolean, default: false}
+        active: {type: boolean, default: true}
+        image: {type: string, format: binary}
+    ProductFormCreate:
+      allOf:
+        - {$ref: '#/components/schemas/ProductForm'}
+        - type: object
+          required: [image]
+    ClassPublic:
+      type: object
+      required: [id, name, modality, weekDays, startTime, endTime]
+      properties:
+        id: {type: integer}
+        name: {type: string}
+        modality: {$ref: '#/components/schemas/Modality'}
+        description: {type: [string, 'null']}
+        ageRange: {type: [string, 'null']}
+        weekDays:
+          type: array
+          items: {$ref: '#/components/schemas/WeekDay'}
+        startTime: {type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'}
+        endTime: {type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'}
+        capacity: {type: [integer, 'null'], minimum: 1}
+        imageUrl: {type: [string, 'null'], format: uri}
+    ClassInput:
+      type: object
+      additionalProperties: false
+      required: [name, modality, weekDays, startTime, endTime, capacity, active]
+      properties:
+        name: {type: string, minLength: 3, maxLength: 120}
+        modality: {$ref: '#/components/schemas/Modality'}
+        description: {type: [string, 'null'], maxLength: 1000}
+        ageRange: {type: [string, 'null'], maxLength: 80}
+        weekDays:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: {$ref: '#/components/schemas/WeekDay'}
+        startTime: {type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'}
+        endTime: {type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'}
+        capacity: {type: integer, minimum: 1, maximum: 500}
+        imageUrl: {type: [string, 'null'], format: uri}
+        active: {type: boolean, default: true}
+    ClassAdmin:
+      allOf:
+        - {$ref: '#/components/schemas/ClassPublic'}
+        - type: object
+          required: [active, createdAt, updatedAt]
+          properties:
+            active: {type: boolean}
+            createdAt: {type: string, format: date-time}
+            updatedAt: {type: string, format: date-time}
+    ContactInput:
+      type: object
+      additionalProperties: false
+      required: [name, email, subject, message]
+      properties:
+        name: {type: string, minLength: 2, maxLength: 120}
+        email: {type: string, format: email, maxLength: 254}
+        subject: {type: string, minLength: 3, maxLength: 150}
+        message: {type: string, minLength: 10, maxLength: 3000}
+    CommunicationInput:
+      type: object
+      additionalProperties: false
+      required: [classIds, subject, message]
+      properties:
+        classIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: {type: integer, minimum: 1}
+        subject: {type: string, minLength: 3, maxLength: 150}
+        message: {type: string, minLength: 10, maxLength: 5000}
+        replyTo: {type: string, format: email}
+    CommunicationStatus:
+      type: object
+      required: [id, status, recipientCount, sentCount, failedCount, createdAt]
+      properties:
+        id: {type: integer}
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, SENT, PARTIAL_FAILURE, FAILED]
+        recipientCount: {type: integer, minimum: 0}
+        sentCount: {type: integer, minimum: 0}
+        failedCount: {type: integer, minimum: 0}
+        createdAt: {type: string, format: date-time}
+        finishedAt: {type: [string, 'null'], format: date-time}
+    PaginationEnvelope:
+      type: object
+      required: [items, pagination]
+      properties:
+        items: {type: array, items: {}}
+        pagination:
+          type: object
+          required: [page, limit, totalItems, totalPages]
+          properties:
+            page: {type: integer, minimum: 1}
+            limit: {type: integer, minimum: 1}
+            totalItems: {type: integer, minimum: 0}
+            totalPages: {type: integer, minimum: 0}
