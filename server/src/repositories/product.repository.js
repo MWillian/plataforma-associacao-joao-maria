@@ -12,4 +12,27 @@ export class ProductRepository {
       data,
     });
   }
+
+  async findById(id) {
+    return prisma.product.findUnique({
+      where: { id },
+    });
+  }
+
+  async inactivate(id) {
+    try {
+      return await prisma.product.update({
+        where: { id },
+        data: {
+          active: false,
+        },
+      });
+    } catch (error) {
+      if (error?.code === 'P2025') {
+        return null;
+      }
+
+      throw error;
+    }
+  }
 }

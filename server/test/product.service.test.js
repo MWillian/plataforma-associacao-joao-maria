@@ -10,6 +10,14 @@ function createRepository(overrides = {}) {
   return {
     findByTitle: async () => null,
     create: async (data) => ({ id: PRODUCT_ID, ...data }),
+    findById: async () => ({
+      id: PRODUCT_ID,
+      active: true,
+    }),
+    inactivate: async () => ({
+      id: PRODUCT_ID,
+      active: false,
+    }),
     ...overrides,
   };
 }
@@ -104,6 +112,96 @@ describe('ProductService.create', () => {
       {
         statusCode: 409,
         code: 'PRODUCT_ALREADY_EXISTS',
+      },
+    );
+  });
+});
+
+describe('ProductService.inactivate', () => {
+  it('inativa um produto ativo', async () => {
+    let receivedId;
+    const service = new ProductService(
+      createRepository({
+        inactivate: async (id) => {
+          receivedId = id;
+          return {
+            id,
+            active: false,
+          };
+        },
+      }),
+    );
+
+    const result = await service.inactivate(PRODUCT_ID);
+
+    assert.equal(receivedId, PRODUCT_ID);
+    assert.equal(result.active, false);
+  });
+
+  it('rejeita identificador fora do formato UUID', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () => service.inactivate('id-inválido'),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+
+  it('retorna 404 quando o produto não existe', async () => {
+    const service = new ProductService(
+      createRepository({
+        findById: async () => null,
+      }),
+    );
+
+    await assert.rejects(
+      () => service.inactivate(PRODUCT_ID),
+      {
+        statusCode: 404,
+        code: 'PRODUCT_NOT_FOUND',
+      },
+    );
+  });
+
+  it('não atualiza novamente um produto inativo', async () => {
+    let updateCalled = false;
+    const inactiveProduct = {
+      id: PRODUCT_ID,
+      active: false,
+    };
+    const service = new ProductService(
+      createRepository({
+        findById: async () => inactiveProduct,
+        inactivate: async () => {
+          updateCalled = true;
+          return inactiveProduct;
+        },
+      }),
+    );
+
+    const result = await service.inactivate(PRODUCT_ID);
+
+    assert.equal(updateCalled, false);
+    assert.deepEqual(result, inactiveProduct);
+  });
+
+  it('retorna 404 se o produto desaparecer durante a operação', async () => {
+    const service = new ProductService(
+      createRepository({
+        inactivate: async () => null,
+      }),
+    );
+
+    await assert.rejects(
+      () => service.inactivate(PRODUCT_ID),
+      {
+        statusCode: 404,
+        code: 'PRODUCT_NOT_FOUND',
       },
     );
   });

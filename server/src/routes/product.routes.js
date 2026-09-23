@@ -14,3 +14,10 @@ productRouter.post(
   requireAdmin,
   productController.create,
 );
+
+productRouter.put(
+  '/:id',
+  requireAuth,
+  requireAdmin,
+  productController.inactivate,
+);

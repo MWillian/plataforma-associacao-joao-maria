@@ -5,6 +5,9 @@ const PRODUCT_CATEGORIES = [
   'artesanato',
 ];
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export class ProductService {
   constructor(productRepository) {
     this.productRepository = productRepository;
@@ -86,5 +89,44 @@ export class ProductService {
           : null,
       active: active ?? true,
     });
+  }
+
+  async inactivate(id) {
+    if (!UUID_PATTERN.test(id ?? '')) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'O identificador do produto é inválido.',
+      );
+    }
+
+    const product = await this.productRepository.findById(
+      id,
+    );
+
+    if (!product) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
+
+    if (!product.active) {
+      return product;
+    }
+
+    const inactiveProduct =
+      await this.productRepository.inactivate(id);
+
+    if (!inactiveProduct) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
+
+    return inactiveProduct;
   }
 }
