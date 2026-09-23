@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 
 import { env } from './config/env.js';
 import {
@@ -12,7 +13,7 @@ import { authRouter } from './routes/auth.routes.js';
 export const app = express();
 
 app.disable('x-powered-by');
-
+app.use(cookieParser());
 app.use(
   cors({
     origin: env.frontendUrl,
