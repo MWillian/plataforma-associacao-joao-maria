@@ -1,6 +1,16 @@
 import { Router } from 'express';
-import { createProductController } from '../controllers/product.controller.js';
+
+import { productController } from '../container.js';
+import {
+  requireAdmin,
+  requireAuth,
+} from '../middlewares/auth.middleware.js';
 
 export const productRouter = Router();
 
-productRouter.post('/', createProductController);
+productRouter.post(
+  '/',
+  requireAuth,
+  requireAdmin,
+  productController.create,
+);
