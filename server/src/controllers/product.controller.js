@@ -1,11 +1,18 @@
-import { createProductService } from '../services/product.service.js';
+export class ProductController {
+  constructor(productService) {
+    this.productService = productService;
+    this.create = this.create.bind(this);
+  }
 
-export async function createProductController(req, res, next) {
-  try {
-    const product = await createProductService(req.body ?? {});
+  async create(req, res, next) {
+    try {
+      const product = await this.productService.create(
+        req.body ?? {},
+      );
 
-    return res.status(201).json(product);
-  } catch (error) {
-    return next(error);
+      return res.status(201).json(product);
+    } catch (error) {
+      return next(error);
+    }
   }
 }

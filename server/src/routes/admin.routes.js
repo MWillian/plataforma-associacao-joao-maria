@@ -4,7 +4,6 @@ import {
   requireAdmin,
   requireAuth,
 } from '../middlewares/auth.middleware.js';
-import { productRouter } from './product.routes.js';
 
 export const adminRouter = Router();
 
@@ -12,7 +11,6 @@ export const adminRouter = Router();
 adminRouter.use(requireAuth);
 adminRouter.use(requireAdmin);
 
-adminRouter.use('/products', productRouter)
 // Rota temporária para testar a autorização.
 // Remover quando as rotas administrativas reais estiverem implementadas.
 adminRouter.get('/ping', (req, res) => {
