@@ -63,11 +63,9 @@ export async function login({ email, password }) {
     where: { email: normalizedEmail },
   });
 
-  // A API não diferencia "usuário inexistente" de "senha incorreta".
-  const validPassword =
-    user?.passwordHash
-      ? await bcrypt.compare(password, user.passwordHash)
-      : false;
+  const dummyHash = '$2a$12$R9h/cIPz0gi.URNNX3ch2OS0Fs0vnjO9D.N5Z.K9X.A5h.A.A.A.A';
+
+  const validPassword = await bcrypt.compare(password, user?.passwordHash || dummyHash);
 
   if (!user || !validPassword) {
     throw new AppError(

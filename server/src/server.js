@@ -13,11 +13,22 @@ async function shutdown(signal) {
     `\n${signal} recebido. Encerrando aplicação...`,
   );
 
+  const forceExitTimeout = setTimeout(() => {
+    console.error('Encerramento forçado por tempo limite excedido.');
+    process.exit(1);
+  }, 10000);
+
+  forceExitTimeout.unref();
+
   server.close(async () => {
     await prisma.$disconnect();
     process.exit(0);
   });
 }
+
+process.on('uncaughtException', (error) => {
+  console.error('Exceção não capturada:', error);
+});
 
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));

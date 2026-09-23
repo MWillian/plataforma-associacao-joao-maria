@@ -33,18 +33,18 @@ function getRefreshToken(req) {
   return parseCookies(req.headers.cookie)[REFRESH_COOKIE];
 }
 
-function refreshCookieOptions() {
+function getRefreshCookieOptions() {
   return {
     httpOnly: true,
     secure: env.cookieSecure,
-    sameSite: env.cookieSameSite,
+    sameSite: env.cookieSameSite, 
     path: '/api/auth',
   };
 }
 
 function setRefreshCookie(res, token, sessionExpiresAt) {
   res.cookie(REFRESH_COOKIE, token, {
-    ...refreshCookieOptions(),
+    ...getRefreshCookieOptions(),
     expires: new Date(sessionExpiresAt),
   });
 }
@@ -92,7 +92,7 @@ export async function logoutController(req, res, next) {
 
     res.clearCookie(
       REFRESH_COOKIE,
-      refreshCookieOptions(),
+      getRefreshCookieOptions(),
     );
 
     return res.status(204).send();
