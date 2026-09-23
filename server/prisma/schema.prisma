@@ -21,4 +21,107 @@ model User {
   passwordResetExpiresAt DateTime?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @default(now()) @updatedAt
+
+  emailsSent             EmailNotification[]
+
+  @@map("user")
+}
+
+model Guardian {
+  id        String            @id @default(uuid())
+  name      String
+  cpf       String            @unique
+  phone     String
+  email     String            @unique
+  students  StudentGuardian[]
+
+  @@map("guardian")
+}
+
+model Student {
+  id          String            @id @default(uuid())
+  name        String
+  birthDate   DateTime          @map("birth_date") @db.Date
+  medicalInfo String?           @map("medical_info") @db.Text
+  active      Boolean           @default(true)
+  guardians   StudentGuardian[]
+  enrollments Enrollment[]
+
+  @@map("student")
+}
+
+model StudentGuardian {
+  id           String   @id @default(uuid())
+  studentId    String   @map("student_id")
+  guardianId   String   @map("guardian_id")
+  relationship String
+
+  student      Student  @relation(fields: [studentId], references: [id])
+  guardian     Guardian @relation(fields: [guardianId], references: [id])
+
+  @@map("student_guardian")
+}
+
+model Class {
+  id            String              @id @default(uuid())
+  name          String
+  modality      String              
+  schedule      String
+  capacity      Int
+  active        Boolean             @default(true)
+  enrollments   Enrollment[]
+  notifications EmailNotification[]
+
+  @@map("class")
+}
+
+model Enrollment {
+  id         String   @id @default(uuid())
+  studentId  String   @map("student_id")
+  classId    String   @map("class_id")
+  status     String
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+
+  student    Student  @relation(fields: [studentId], references: [id])
+  class      Class    @relation(fields: [classId], references: [id])
+
+  @@map("enrollment")
+}
+
+model EmailNotification {
+  id       String   @id @default(uuid())
+  classId  String?  @map("class_id")
+  
+  senderId Int      @map("sender_id") 
+  
+  subject  String
+  content  String   @db.Text
+  sentAt   DateTime @default(now()) @map("sent_at")
+
+  class    Class?   @relation(fields: [classId], references: [id])
+  sender   User     @relation(fields: [senderId], references: [id])
+
+  @@map("email_notification")
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  title       String
+  description String? @db.Text
+  category    String
+  imageUrl    String? @map("image_url")
+  active      Boolean @default(true)
+
+  @@map("product")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  eventDate   DateTime @map("event_date")
+  imageUrl    String?  @map("image_url")
+  active      Boolean  @default(true)
+
+  @@map("event")
 }
