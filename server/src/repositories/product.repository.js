@@ -35,4 +35,21 @@ export class ProductRepository {
       throw error;
     }
   }
+
+  async activate(id) {
+    try {
+      return await prisma.product.update({
+        where: { id },
+        data: {
+          active: true,
+        },
+      });
+    } catch (error) {
+      if (error?.code === 'P2025') {
+        return null;
+      }
+
+      throw error;
+    }
+  }
 }

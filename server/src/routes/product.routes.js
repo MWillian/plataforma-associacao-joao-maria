@@ -15,9 +15,16 @@ productRouter.post(
   productController.create,
 );
 
-productRouter.put(
-  '/:id',
+productRouter.patch(
+  '/:id/inactivate',
   requireAuth,
   requireAdmin,
   productController.inactivate,
+);
+
+productRouter.patch(
+  '/:id/activate',
+  requireAuth,
+  requireAdmin,
+  productController.activate,
 );

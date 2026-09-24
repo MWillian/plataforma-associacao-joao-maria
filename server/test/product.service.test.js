@@ -18,6 +18,10 @@ function createRepository(overrides = {}) {
       id: PRODUCT_ID,
       active: false,
     }),
+    activate: async () => ({
+      id: PRODUCT_ID,
+      active: true,
+    }),
     ...overrides,
   };
 }
@@ -224,6 +228,104 @@ describe('ProductService.inactivate', () => {
 
     await assert.rejects(
       () => service.inactivate(PRODUCT_ID),
+      {
+        statusCode: 404,
+        code: 'PRODUCT_NOT_FOUND',
+      },
+    );
+  });
+});
+
+describe('ProductService.activate', () => {
+  it('ativa um produto inativo', async () => {
+    let receivedId;
+    const service = new ProductService(
+      createRepository({
+        findById: async () => ({
+          id: PRODUCT_ID,
+          active: false,
+        }),
+        activate: async (id) => {
+          receivedId = id;
+          return {
+            id,
+            active: true,
+          };
+        },
+      }),
+    );
+
+    const result = await service.activate(PRODUCT_ID);
+
+    assert.equal(receivedId, PRODUCT_ID);
+    assert.equal(result.active, true);
+  });
+
+  it('rejeita identificador inválido na ativação', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () => service.activate('id-inválido'),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+
+  it('retorna 404 ao ativar produto inexistente', async () => {
+    const service = new ProductService(
+      createRepository({
+        findById: async () => null,
+      }),
+    );
+
+    await assert.rejects(
+      () => service.activate(PRODUCT_ID),
+      {
+        statusCode: 404,
+        code: 'PRODUCT_NOT_FOUND',
+      },
+    );
+  });
+
+  it('não atualiza novamente um produto ativo', async () => {
+    let updateCalled = false;
+    const activeProduct = {
+      id: PRODUCT_ID,
+      active: true,
+    };
+    const service = new ProductService(
+      createRepository({
+        findById: async () => activeProduct,
+        activate: async () => {
+          updateCalled = true;
+          return activeProduct;
+        },
+      }),
+    );
+
+    const result = await service.activate(PRODUCT_ID);
+
+    assert.equal(updateCalled, false);
+    assert.deepEqual(result, activeProduct);
+  });
+
+  it('retorna 404 se o produto desaparecer durante a ativação', async () => {
+    const service = new ProductService(
+      createRepository({
+        findById: async () => ({
+          id: PRODUCT_ID,
+          active: false,
+        }),
+        activate: async () => null,
+      }),
+    );
+
+    await assert.rejects(
+      () => service.activate(PRODUCT_ID),
       {
         statusCode: 404,
         code: 'PRODUCT_NOT_FOUND',

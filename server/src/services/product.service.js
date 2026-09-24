@@ -141,4 +141,43 @@ export class ProductService {
 
     return inactiveProduct;
   }
+
+  async activate(id) {
+    if (!UUID_PATTERN.test(id ?? '')) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'O identificador do produto é inválido.',
+      );
+    }
+
+    const product = await this.productRepository.findById(
+      id,
+    );
+
+    if (!product) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
+
+    if (product.active) {
+      return product;
+    }
+
+    const activeProduct =
+      await this.productRepository.activate(id);
+
+    if (!activeProduct) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
+
+    return activeProduct;
+  }
 }
