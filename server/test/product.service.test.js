@@ -115,6 +115,31 @@ describe('ProductService.create', () => {
       },
     );
   });
+
+  it('converte conflito de unicidade do Prisma em 409', async () => {
+    const prismaConflict = new Error('Unique constraint');
+    prismaConflict.code = 'P2002';
+
+    const service = new ProductService(
+      createRepository({
+        create: async () => {
+          throw prismaConflict;
+        },
+      }),
+    );
+
+    await assert.rejects(
+      () =>
+        service.create({
+          title: 'Cesta de palha',
+          category: 'artesanato',
+        }),
+      {
+        statusCode: 409,
+        code: 'PRODUCT_ALREADY_EXISTS',
+      },
+    );
+  });
 });
 
 describe('ProductService.inactivate', () => {
