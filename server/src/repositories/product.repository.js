@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma.js';
 
 export class ProductRepository {
   async findByTitle(title) {
-    return prisma.product.findFirst({
+    return prisma.product.findUnique({
       where: { title },
     });
   }

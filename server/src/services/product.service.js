@@ -73,18 +73,30 @@ export class ProductService {
       );
     }
 
-    return this.productRepository.create({
-      title: normalizedTitle,
-      description:
-        typeof description === 'string'
-          ? description.trim() || null
-          : null,
-      category: normalizedCategory,
-      imageUrl:
-        typeof imageUrl === 'string'
-          ? imageUrl.trim() || null
-          : null,
-      active: active ?? true,
-    });
+    try {
+      return await this.productRepository.create({
+        title: normalizedTitle,
+        description:
+          typeof description === 'string'
+            ? description.trim() || null
+            : null,
+        category: normalizedCategory,
+        imageUrl:
+          typeof imageUrl === 'string'
+            ? imageUrl.trim() || null
+            : null,
+        active: active ?? true,
+      });
+    } catch (error) {
+      if (error?.code === 'P2002') {
+        throw new AppError(
+          409,
+          'PRODUCT_ALREADY_EXISTS',
+          'Já existe um produto com este título.',
+        );
+      }
+
+      throw error;
+    }
   }
 }
