@@ -5,8 +5,23 @@ import {
   requireAdmin,
   requireAuth,
 } from '../middlewares/auth.middleware.js';
+import {
+  productListRateLimit,
+} from '../middlewares/rate-limit.middleware.js';
 
 export const productRouter = Router();
+
+productRouter.get(
+  '/highlights',
+  productListRateLimit,
+  productController.listHighlights,
+);
+
+productRouter.get(
+  '/',
+  productListRateLimit,
+  productController.list,
+);
 
 productRouter.post(
   '/',

@@ -1,10 +1,38 @@
 export class ProductController {
   constructor(productService) {
     this.productService = productService;
+    this.listHighlights =
+      this.listHighlights.bind(this);
+    this.list = this.list.bind(this);
     this.create = this.create.bind(this);
     this.inactivate = this.inactivate.bind(this);
     this.activate = this.activate.bind(this);
     this.update = this.update.bind(this);
+  }
+
+  async listHighlights(req, res, next) {
+    try {
+      const result =
+        await this.productService.listHighlights(
+          req.query ?? {},
+        );
+
+      return res.status(200).json(result);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async list(req, res, next) {
+    try {
+      const result = await this.productService.list(
+        req.query ?? {},
+      );
+
+      return res.status(200).json(result);
+    } catch (error) {
+      return next(error);
+    }
   }
 
   async create(req, res, next) {

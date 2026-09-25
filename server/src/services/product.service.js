@@ -8,9 +8,105 @@ const PRODUCT_CATEGORIES = [
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const PRODUCT_PAGE_SIZE = 10;
+
 export class ProductService {
   constructor(productRepository) {
     this.productRepository = productRepository;
+  }
+
+  async listHighlights({ category } = {}) {
+    if (
+      typeof category !== 'string' ||
+      category.trim() === ''
+    ) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A categoria é obrigatória.',
+        { category: PRODUCT_CATEGORIES },
+      );
+    }
+
+    const normalizedCategory = category
+      .trim()
+      .toLowerCase();
+
+    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A categoria deve ser agricultura ou artesanato.',
+        { category: PRODUCT_CATEGORIES },
+      );
+    }
+
+    const items =
+      await this.productRepository.listActiveHighlights(
+        normalizedCategory,
+      );
+
+    return {
+      items,
+      category: normalizedCategory,
+      limit: 3,
+    };
+  }
+
+  async list({ page: rawPage } = {}) {
+    const pageValue =
+      rawPage === undefined
+        ? '1'
+        : String(rawPage).trim();
+
+    if (
+      Array.isArray(rawPage) ||
+      !/^[1-9]\d*$/.test(pageValue)
+    ) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A página deve ser um número inteiro maior que zero.',
+      );
+    }
+
+    const page = Number(pageValue);
+
+    if (!Number.isSafeInteger(page)) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A página informada é inválida.',
+      );
+    }
+
+    const skip = (page - 1) * PRODUCT_PAGE_SIZE;
+
+    if (!Number.isSafeInteger(skip)) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A página informada é inválida.',
+      );
+    }
+
+    const { items, totalItems } =
+      await this.productRepository.listActive({
+        skip,
+        take: PRODUCT_PAGE_SIZE,
+      });
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit: PRODUCT_PAGE_SIZE,
+        totalItems,
+        totalPages: Math.ceil(
+          totalItems / PRODUCT_PAGE_SIZE,
+        ),
+      },
+    };
   }
 
   async create(data = {}) {
