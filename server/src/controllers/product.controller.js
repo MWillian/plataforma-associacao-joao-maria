@@ -4,6 +4,7 @@ export class ProductController {
     this.create = this.create.bind(this);
     this.inactivate = this.inactivate.bind(this);
     this.activate = this.activate.bind(this);
+    this.update = this.update.bind(this);
   }
 
   async create(req, res, next) {
@@ -35,6 +36,19 @@ export class ProductController {
     try {
       const product = await this.productService.activate(
         req.params.id,
+      );
+
+      return res.status(200).json(product);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async update(req, res, next) {
+    try {
+      const product = await this.productService.update(
+        req.params.id,
+        req.body ?? {},
       );
 
       return res.status(200).json(product);

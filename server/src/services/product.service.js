@@ -180,4 +180,127 @@ export class ProductService {
 
     return activeProduct;
   }
+
+  async update(id, data = {}) {
+    if (!UUID_PATTERN.test(id ?? '')) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'O identificador do produto é inválido.',
+      );
+    }
+
+    const product = await this.productRepository.findById(
+      id,
+    );
+
+    if (!product) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
+
+    const {
+      title,
+      description,
+      category,
+      imageUrl,
+      active,
+    } = data;
+
+    if (typeof title !== 'string' || title.trim() === '') {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'O título do produto é obrigatório.',
+      );
+    }
+
+    if (
+      typeof category !== 'string' ||
+      category.trim() === ''
+    ) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A categoria do produto é obrigatória.',
+      );
+    }
+
+    if (active !== undefined) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'O campo active não pode ser alterado neste endpoint.',
+      );
+    }
+
+    const normalizedTitle = title.trim().toLowerCase();
+    const normalizedCategory = category
+      .trim()
+      .toLowerCase();
+
+    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A categoria deve ser agricultura ou artesanato.',
+        { category: PRODUCT_CATEGORIES },
+      );
+    }
+
+    const productWithSameTitle =
+      await this.productRepository.findByTitle(
+        normalizedTitle,
+      );
+
+    if (
+      productWithSameTitle &&
+      productWithSameTitle.id !== id
+    ) {
+      throw new AppError(
+        409,
+        'PRODUCT_ALREADY_EXISTS',
+        'Já existe um produto com este título.',
+      );
+    }
+
+    try {
+      const updatedProduct =
+        await this.productRepository.update(id, {
+          title: normalizedTitle,
+          description:
+            typeof description === 'string'
+              ? description.trim() || null
+              : null,
+          category: normalizedCategory,
+          imageUrl:
+            typeof imageUrl === 'string'
+              ? imageUrl.trim() || null
+              : null,
+        });
+
+      if (!updatedProduct) {
+        throw new AppError(
+          404,
+          'PRODUCT_NOT_FOUND',
+          'Produto não encontrado.',
+        );
+      }
+
+      return updatedProduct;
+    } catch (error) {
+      if (error?.code === 'P2002') {
+        throw new AppError(
+          409,
+          'PRODUCT_ALREADY_EXISTS',
+          'Já existe um produto com este título.',
+        );
+      }
+
+      throw error;
+    }
+  }
 }

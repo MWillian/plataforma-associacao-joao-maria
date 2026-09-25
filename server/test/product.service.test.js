@@ -22,6 +22,11 @@ function createRepository(overrides = {}) {
       id: PRODUCT_ID,
       active: true,
     }),
+    update: async (id, data) => ({
+      id,
+      active: true,
+      ...data,
+    }),
     ...overrides,
   };
 }
@@ -141,6 +146,211 @@ describe('ProductService.create', () => {
       {
         statusCode: 409,
         code: 'PRODUCT_ALREADY_EXISTS',
+      },
+    );
+  });
+});
+
+describe('ProductService.update', () => {
+  it('normaliza e atualiza um produto', async () => {
+    let receivedId;
+    let receivedData;
+    const service = new ProductService(
+      createRepository({
+        update: async (id, data) => {
+          receivedId = id;
+          receivedData = data;
+          return { id, active: true, ...data };
+        },
+      }),
+    );
+
+    const result = await service.update(PRODUCT_ID, {
+      title: '  MEL ORGÂNICO  ',
+      category: ' AGRICULTURA ',
+      description: '  Produção local.  ',
+      imageUrl: ' https://example.com/mel.jpg ',
+    });
+
+    assert.equal(receivedId, PRODUCT_ID);
+    assert.deepEqual(receivedData, {
+      title: 'mel orgânico',
+      category: 'agricultura',
+      description: 'Produção local.',
+      imageUrl: 'https://example.com/mel.jpg',
+    });
+    assert.equal(result.title, 'mel orgânico');
+  });
+
+  it('rejeita identificador inválido na atualização', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update('id-inválido', {
+          title: 'Mel',
+          category: 'agricultura',
+        }),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+
+  it('retorna 404 ao atualizar produto inexistente', async () => {
+    const service = new ProductService(
+      createRepository({
+        findById: async () => null,
+      }),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update(PRODUCT_ID, {
+          title: 'Mel',
+          category: 'agricultura',
+        }),
+      {
+        statusCode: 404,
+        code: 'PRODUCT_NOT_FOUND',
+      },
+    );
+  });
+
+  it('rejeita atualização sem título', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update(PRODUCT_ID, {
+          category: 'agricultura',
+        }),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+
+  it('rejeita categoria inválida na atualização', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update(PRODUCT_ID, {
+          title: 'Mel',
+          category: 'outros',
+        }),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+
+  it('não permite alterar active pela atualização', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update(PRODUCT_ID, {
+          title: 'Mel',
+          category: 'agricultura',
+          active: false,
+        }),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+
+  it('permite manter o título do próprio produto', async () => {
+    const service = new ProductService(
+      createRepository({
+        findByTitle: async () => ({ id: PRODUCT_ID }),
+      }),
+    );
+
+    const result = await service.update(PRODUCT_ID, {
+      title: 'Mel',
+      category: 'agricultura',
+    });
+
+    assert.equal(result.title, 'mel');
+  });
+
+  it('rejeita título usado por outro produto', async () => {
+    const service = new ProductService(
+      createRepository({
+        findByTitle: async () => ({
+          id: 'd77d62d9-fade-486f-b2b0-b66540bd7723',
+        }),
+      }),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update(PRODUCT_ID, {
+          title: 'Mel',
+          category: 'agricultura',
+        }),
+      {
+        statusCode: 409,
+        code: 'PRODUCT_ALREADY_EXISTS',
+      },
+    );
+  });
+
+  it('converte conflito de unicidade na atualização em 409', async () => {
+    const prismaConflict = new Error('Unique constraint');
+    prismaConflict.code = 'P2002';
+    const service = new ProductService(
+      createRepository({
+        update: async () => {
+          throw prismaConflict;
+        },
+      }),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update(PRODUCT_ID, {
+          title: 'Mel',
+          category: 'agricultura',
+        }),
+      {
+        statusCode: 409,
+        code: 'PRODUCT_ALREADY_EXISTS',
+      },
+    );
+  });
+
+  it('retorna 404 se o produto desaparecer durante a atualização', async () => {
+    const service = new ProductService(
+      createRepository({
+        update: async () => null,
+      }),
+    );
+
+    await assert.rejects(
+      () =>
+        service.update(PRODUCT_ID, {
+          title: 'Mel',
+          category: 'agricultura',
+        }),
+      {
+        statusCode: 404,
+        code: 'PRODUCT_NOT_FOUND',
       },
     );
   });

@@ -52,4 +52,19 @@ export class ProductRepository {
       throw error;
     }
   }
+
+  async update(id, data) {
+    try {
+      return await prisma.product.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      if (error?.code === 'P2025') {
+        return null;
+      }
+
+      throw error;
+    }
+  }
 }
