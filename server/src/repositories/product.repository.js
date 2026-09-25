@@ -1,6 +1,33 @@
 import { prisma } from '../lib/prisma.js';
 
 export class ProductRepository {
+  async listActive({ skip, take }) {
+    const where = {
+      active: true,
+    };
+
+    const [items, totalItems] =
+      await prisma.$transaction([
+        prisma.product.findMany({
+          where,
+          skip,
+          take,
+          orderBy: [
+            { title: 'asc' },
+            { id: 'asc' },
+          ],
+        }),
+        prisma.product.count({
+          where,
+        }),
+      ]);
+
+    return {
+      items,
+      totalItems,
+    };
+  }
+
   async findByTitle(title) {
     return prisma.product.findUnique({
       where: { title },
