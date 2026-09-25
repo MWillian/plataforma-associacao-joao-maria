@@ -15,6 +15,44 @@ export class ProductService {
     this.productRepository = productRepository;
   }
 
+  async listHighlights({ category } = {}) {
+    if (
+      typeof category !== 'string' ||
+      category.trim() === ''
+    ) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A categoria é obrigatória.',
+        { category: PRODUCT_CATEGORIES },
+      );
+    }
+
+    const normalizedCategory = category
+      .trim()
+      .toLowerCase();
+
+    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'A categoria deve ser agricultura ou artesanato.',
+        { category: PRODUCT_CATEGORIES },
+      );
+    }
+
+    const items =
+      await this.productRepository.listActiveHighlights(
+        normalizedCategory,
+      );
+
+    return {
+      items,
+      category: normalizedCategory,
+      limit: 3,
+    };
+  }
+
   async list({ page: rawPage } = {}) {
     const pageValue =
       rawPage === undefined

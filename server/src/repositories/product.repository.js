@@ -1,6 +1,20 @@
 import { prisma } from '../lib/prisma.js';
 
 export class ProductRepository {
+  async listActiveHighlights(category) {
+    return prisma.product.findMany({
+      where: {
+        active: true,
+        category,
+      },
+      take: 3,
+      orderBy: [
+        { title: 'asc' },
+        { id: 'asc' },
+      ],
+    });
+  }
+
   async listActive({ skip, take }) {
     const where = {
       active: true,

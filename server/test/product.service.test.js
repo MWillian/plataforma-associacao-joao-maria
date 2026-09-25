@@ -8,6 +8,7 @@ const PRODUCT_ID =
 
 function createRepository(overrides = {}) {
   return {
+    listActiveHighlights: async () => [],
     listActive: async () => ({
       items: [],
       totalItems: 0,
@@ -34,6 +35,90 @@ function createRepository(overrides = {}) {
     ...overrides,
   };
 }
+
+describe('ProductService.listHighlights', () => {
+  it('lista até 3 produtos ativos da agricultura', async () => {
+    let receivedCategory;
+    const items = [
+      {
+        id: PRODUCT_ID,
+        title: 'mel',
+        category: 'agricultura',
+        active: true,
+      },
+    ];
+    const service = new ProductService(
+      createRepository({
+        listActiveHighlights: async (category) => {
+          receivedCategory = category;
+          return items;
+        },
+      }),
+    );
+
+    const result = await service.listHighlights({
+      category: ' AGRICULTURA ',
+    });
+
+    assert.equal(receivedCategory, 'agricultura');
+    assert.deepEqual(result, {
+      items,
+      category: 'agricultura',
+      limit: 3,
+    });
+  });
+
+  it('lista até 3 produtos ativos do artesanato', async () => {
+    let receivedCategory;
+    const service = new ProductService(
+      createRepository({
+        listActiveHighlights: async (category) => {
+          receivedCategory = category;
+          return [];
+        },
+      }),
+    );
+
+    const result = await service.listHighlights({
+      category: 'artesanato',
+    });
+
+    assert.equal(receivedCategory, 'artesanato');
+    assert.equal(result.category, 'artesanato');
+    assert.equal(result.limit, 3);
+  });
+
+  it('rejeita listagem sem categoria', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () => service.listHighlights(),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+
+  it('rejeita categoria diferente das permitidas', async () => {
+    const service = new ProductService(
+      createRepository(),
+    );
+
+    await assert.rejects(
+      () =>
+        service.listHighlights({
+          category: 'outros',
+        }),
+      {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      },
+    );
+  });
+});
 
 describe('ProductService.list', () => {
   it('lista a primeira página com 10 produtos por padrão', async () => {

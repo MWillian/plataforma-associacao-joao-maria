@@ -12,6 +12,12 @@ import {
 export const productRouter = Router();
 
 productRouter.get(
+  '/highlights',
+  productListRateLimit,
+  productController.listHighlights,
+);
+
+productRouter.get(
   '/',
   productListRateLimit,
   productController.list,
