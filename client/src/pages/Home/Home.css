@@ -1,0 +1,14 @@
+.placeholder-section {
+  min-height: 400px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+}
+
+.placeholder-section h2 {
+  font-size: 36px;
+  color: #193564;
+}
