@@ -1,0 +1,44 @@
+.topbar {
+  height: 38px;
+  background: #182d50;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.topbar-content {
+  width: min(1055px, calc(100% - 60px));
+  height: 100%;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.social-links a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.phone {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #ffffff;
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.phone span {
+  font-size: 17px;
+}
