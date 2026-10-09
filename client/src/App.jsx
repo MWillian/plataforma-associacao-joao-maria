@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import './App.css';
+import { Navbar } from './components/Navbar.jsx';
 import { HeroSection } from './components/HeroSection.jsx';
 import { AboutSection } from './components/AboutSection.jsx';
 import { StudioSection } from './components/StudioSection.jsx';
@@ -7,17 +9,29 @@ import { AgricultureSection } from './components/AgricultureSection.jsx';
 import { FoundersSection } from './components/FounderSection.jsx';
 import { DonationSection } from './components/DonationSection.jsx';
 import { FooterSection } from './components/FooterSection.jsx';
+import { StudioPage } from './components/StudioPage.jsx';
 
 export default function App() {
+  const [activePage, setActivePage] = useState('home');
+
   return (
-    <div className="min-h-screen bg-slate-950">
-      <HeroSection />
-      <AboutSection />
-      <StudioSection />
-      <CraftsSection />
-      <AgricultureSection />
-      <FoundersSection />
-      <DonationSection />
+    <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
+      <div>
+        <Navbar activePage={activePage} setActivePage={setActivePage} />
+        {activePage === 'home' ? (
+          <main>
+            <HeroSection />
+            <AboutSection />
+            <StudioSection />
+            <CraftsSection />
+            <AgricultureSection />
+            <FoundersSection />
+            <DonationSection />
+          </main>
+        ) : (
+          <StudioPage />
+        )}
+      </div>
       <FooterSection />
     </div>
   );
