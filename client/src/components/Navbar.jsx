@@ -147,12 +147,14 @@ export function Navbar({ activePage, setActivePage }) {
             <span className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${activePage === 'studio' ? 'w-full' : 'w-0 group-hover:w-full'}`} />
           </button>
 
-          <button
-            onClick={() => handleNavClick('home', '#artesanato')}
-            className="relative group bg-transparent border-none cursor-pointer text-white hover:text-blue-300 transition-colors duration-300 whitespace-nowrap"
+         <button
+            onClick={() => handleNavClick('crafts', '')}
+            className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
+              activePage === 'crafts' ? 'text-blue-300 font-bold' : 'text-white'
+            } hover:text-blue-300`}
           >
             ARTESANATO
-            <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-blue-300 transition-all duration-300 group-hover:w-full" />
+            <span className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${activePage === 'crafts' ? 'w-full' : 'w-0 group-hover:w-full'}`} />
           </button>
 
           <button

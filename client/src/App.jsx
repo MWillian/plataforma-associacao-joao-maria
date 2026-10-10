@@ -6,10 +6,11 @@ import { AboutSection } from './components/AboutSection.jsx';
 import { StudioSection } from './components/StudioSection.jsx';
 import { CraftsSection } from './components/CraftsSection.jsx';
 import { AgricultureSection } from './components/AgricultureSection.jsx';
-import { FoundersSection } from './components/FounderSection.jsx';
+import { FoundersSection } from './components/FoundersSection.jsx';
 import { DonationSection } from './components/DonationSection.jsx';
 import { FooterSection } from './components/FooterSection.jsx';
 import { StudioPage } from './components/StudioPage.jsx';
+import { CraftsPage } from './components/CraftsPage.jsx';
 
 export default function App() {
   const [activePage, setActivePage] = useState('home');
@@ -18,7 +19,7 @@ export default function App() {
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
       <div>
         <Navbar activePage={activePage} setActivePage={setActivePage} />
-        {activePage === 'home' ? (
+        {activePage === 'home' && (
           <main>
             <HeroSection />
             <AboutSection />
@@ -28,9 +29,9 @@ export default function App() {
             <FoundersSection />
             <DonationSection />
           </main>
-        ) : (
-          <StudioPage />
         )}
+        {activePage === 'studio' && <StudioPage />}
+        {activePage === 'crafts' && <CraftsPage />}
       </div>
       <FooterSection />
     </div>
