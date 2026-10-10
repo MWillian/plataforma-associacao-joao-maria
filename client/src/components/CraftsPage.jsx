@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
 
-export function CraftsPage() {
+export function CraftsPage({ onSelectProduct }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,7 +11,7 @@ export function CraftsPage() {
     {
       id: 1,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 35,00',
       title: 'Kit 3 pulseiras de macramê',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Produtos',
@@ -19,15 +19,15 @@ export function CraftsPage() {
     {
       id: 2,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 35,00',
       title: 'Sousplat de crochê',
-      description: 'Breve descrição da notícia convidando o leitor.',
+      description: 'Sousplat artesanal feito inteiramente à mão em crochê com fios selecionados de 100% algodão natural.',
       category: 'Produtos',
     },
     {
       id: 3,
       tag: 'Evento',
-      price: 'R$ 00,00',
+      price: 'Gratuito',
       title: '4ª Feira de Artesanato da Associação',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Eventos',
@@ -35,7 +35,7 @@ export function CraftsPage() {
     {
       id: 4,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 15,00',
       title: 'Chaveiros em crochê',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Produtos',
@@ -43,7 +43,7 @@ export function CraftsPage() {
     {
       id: 5,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 45,00',
       title: 'Caminho de mesa em fuxico',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Produtos',
@@ -51,7 +51,7 @@ export function CraftsPage() {
     {
       id: 6,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 60,00',
       title: 'Pano com bordado de filé',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Produtos',
@@ -59,7 +59,7 @@ export function CraftsPage() {
     {
       id: 7,
       tag: 'Notícia',
-      price: 'R$ 00,00',
+      price: 'Inscrições Abertas',
       title: 'Oficina de costura para iniciantes',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Notícias',
@@ -67,7 +67,7 @@ export function CraftsPage() {
     {
       id: 8,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 25,00',
       title: 'Colar em macramê',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Produtos',
@@ -75,7 +75,7 @@ export function CraftsPage() {
     {
       id: 9,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 80,00',
       title: 'Bolsa em crochê',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Produtos',
@@ -83,7 +83,7 @@ export function CraftsPage() {
     {
       id: 10,
       tag: 'Produto',
-      price: 'R$ 00,00',
+      price: 'R$ 50,00',
       title: 'Tapete redondo em barbante',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Produtos',
@@ -91,7 +91,7 @@ export function CraftsPage() {
     {
       id: 11,
       tag: 'Evento',
-      price: 'R$ 00,00',
+      price: 'Gratuito',
       title: 'Exposição de Bordados Tradicionais',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Eventos',
@@ -99,7 +99,7 @@ export function CraftsPage() {
     {
       id: 12,
       tag: 'Notícia',
-      price: 'R$ 00,00',
+      price: 'Informativo',
       title: 'Novas vagas para oficinas comunitárias',
       description: 'Breve descrição da notícia convidando o leitor.',
       category: 'Notícias',
@@ -219,7 +219,7 @@ export function CraftsPage() {
               className="w-full bg-white border border-slate-300 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#3570FC] shadow-sm"
             />
           </div>
-        </div>
+        </div>  
 
         {/* Grid de Cards (3x3) */}
         {currentCrafts.length > 0 ? (
@@ -227,11 +227,12 @@ export function CraftsPage() {
             {currentCrafts.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group"
+                onClick={() => onSelectProduct && onSelectProduct(item)}
+                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
               >
                 {/* Imagem / Placeholder Superior */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
-                  <span className="text-slate-400 text-xs font-roboto">Placeholder Imagem</span>
+                  <span className="text-slate-400 text-xs font-roboto">Placeholder Imagem ({item.title})</span>
                 </div>
 
                 {/* Conteúdo do Card */}

@@ -12,14 +12,28 @@ import { FooterSection } from './components/FooterSection.jsx';
 import { StudioPage } from './components/StudioPage.jsx';
 import { CraftsPage } from './components/CraftsPage.jsx';
 import { AgriculturePage } from './components/AgriculturePage.jsx';
+import { CraftDetailPage } from './components/CraftDetailPage.jsx';
 
 export default function App() {
   const [activePage, setActivePage] = useState('home');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const handleSelectProduct = (product) => {
+    setSelectedProduct(product);
+    setActivePage('craft-detail');
+  };
 
   return (
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
       <div>
-        <Navbar activePage={activePage} setActivePage={setActivePage} />
+        <Navbar 
+          activePage={activePage} 
+          setActivePage={(page) => {
+            setActivePage(page);
+            setSelectedProduct(null);
+          }} 
+        />
+
         {activePage === 'home' && (
           <main>
             <HeroSection />
@@ -31,9 +45,22 @@ export default function App() {
             <DonationSection />
           </main>
         )}
+
         {activePage === 'studio' && <StudioPage />}
-        {activePage === 'crafts' && <CraftsPage />}
+
+        {activePage === 'crafts' && (
+          <CraftsPage onSelectProduct={handleSelectProduct} />
+        )}
+
         {activePage === 'agriculture' && <AgriculturePage />}
+
+        {activePage === 'craft-detail' && (
+          <CraftDetailPage 
+            product={selectedProduct} 
+            onBack={() => setActivePage('crafts')} 
+            onGoHome={() => setActivePage('home')} 
+          />
+        )}
       </div>
       <FooterSection />
     </div>
