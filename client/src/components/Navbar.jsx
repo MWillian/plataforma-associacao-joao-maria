@@ -158,11 +158,13 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
 
           <button
-            onClick={() => handleNavClick('home', '#agricultura')}
-            className="relative group bg-transparent border-none cursor-pointer text-white hover:text-blue-300 transition-colors duration-300 whitespace-nowrap"
+            onClick={() => handleNavClick('agriculture', '')}
+            className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
+              activePage === 'agriculture' ? 'text-blue-300 font-bold' : 'text-white'
+            } hover:text-blue-300`}
           >
             AGRICULTURA FAMILIAR
-            <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-blue-300 transition-all duration-300 group-hover:w-full" />
+            <span className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${activePage === 'agriculture' ? 'w-full' : 'w-0 group-hover:w-full'}`} />
           </button>
         </nav>
 
