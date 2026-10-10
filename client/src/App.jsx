@@ -11,6 +11,7 @@ import { DonationSection } from './components/DonationSection.jsx';
 import { FooterSection } from './components/FooterSection.jsx';
 import { StudioPage } from './components/StudioPage.jsx';
 import { CraftsPage } from './components/CraftsPage.jsx';
+import { AgriculturePage } from './components/AgriculturePage.jsx';
 
 export default function App() {
   const [activePage, setActivePage] = useState('home');
@@ -32,6 +33,7 @@ export default function App() {
         )}
         {activePage === 'studio' && <StudioPage />}
         {activePage === 'crafts' && <CraftsPage />}
+        {activePage === 'agriculture' && <AgriculturePage />}
       </div>
       <FooterSection />
     </div>
