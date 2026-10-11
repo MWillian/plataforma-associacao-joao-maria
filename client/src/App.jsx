@@ -13,14 +13,20 @@ import { StudioPage } from './components/StudioPage.jsx';
 import { CraftsPage } from './components/CraftsPage.jsx';
 import { AgriculturePage } from './components/AgriculturePage.jsx';
 import { CraftDetailPage } from './components/CraftDetailPage.jsx';
+import { AgricultureDetailPage } from './components/AgricultureDetailPage.jsx';
 
 export default function App() {
   const [activePage, setActivePage] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const handleSelectProduct = (product) => {
+  const handleSelectCraftProduct = (product) => {
     setSelectedProduct(product);
     setActivePage('craft-detail');
+  };
+
+  const handleSelectAgricultureProduct = (product) => {
+    setSelectedProduct(product);
+    setActivePage('agriculture-detail');
   };
 
   return (
@@ -49,16 +55,28 @@ export default function App() {
         {activePage === 'studio' && <StudioPage />}
 
         {activePage === 'crafts' && (
-          <CraftsPage onSelectProduct={handleSelectProduct} />
+          <CraftsPage onSelectProduct={handleSelectCraftProduct} />
         )}
 
-        {activePage === 'agriculture' && <AgriculturePage />}
+        {activePage === 'agriculture' && (
+          <AgriculturePage onSelectProduct={handleSelectAgricultureProduct} />
+        )}
 
         {activePage === 'craft-detail' && (
           <CraftDetailPage 
             product={selectedProduct} 
             onBack={() => setActivePage('crafts')} 
-            onGoHome={() => setActivePage('home')} 
+            onGoHome={() => setActivePage('home')}
+            onSelectProduct={handleSelectCraftProduct}
+          />
+        )}
+
+        {activePage === 'agriculture-detail' && (
+          <AgricultureDetailPage 
+            product={selectedProduct} 
+            onBack={() => setActivePage('agriculture')} 
+            onGoHome={() => setActivePage('home')}
+            onSelectProduct={handleSelectAgricultureProduct}
           />
         )}
       </div>

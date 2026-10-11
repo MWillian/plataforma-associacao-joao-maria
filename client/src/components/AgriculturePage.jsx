@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
 
-export function AgriculturePage() {
+export function AgriculturePage({ onSelectProduct }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Lista expositiva de produtos e notícias da Agricultura Familiar conforme o Figma
+  // Lista expositiva de produtos e notícias da Agricultura Familiar
   const allAgricultureItems = [
     {
       id: 1,
       tag: 'Produto',
+      priceText: 'INSERIR O PREÇO',
       title: 'Tomates',
       description: 'Cultivados de forma sustentável pelos produtores da associação.',
       category: 'Produtos',
@@ -18,6 +19,7 @@ export function AgriculturePage() {
     {
       id: 2,
       tag: 'Produto',
+      priceText: 'INSERIR O PREÇO',
       title: 'Cebola',
       description: 'Cultivados de forma sustentável pelos produtores da associação.',
       category: 'Produtos',
@@ -25,6 +27,7 @@ export function AgriculturePage() {
     {
       id: 3,
       tag: 'Produto',
+      priceText: 'INSERIR O PREÇO',
       title: 'Macaxeira',
       description: 'Cultivados de forma sustentável pelos produtores da associação.',
       category: 'Produtos',
@@ -32,6 +35,7 @@ export function AgriculturePage() {
     {
       id: 4,
       tag: 'Produto',
+      priceText: 'INSERIR O PREÇO',
       title: 'Batata inglesa',
       description: 'Cultivados de forma sustentável pelos produtores da associação.',
       category: 'Produtos',
@@ -39,6 +43,7 @@ export function AgriculturePage() {
     {
       id: 5,
       tag: 'Produto',
+      priceText: 'INSERIR O PREÇO',
       title: 'Batata doce',
       description: 'Cultivados de forma sustentável pelos produtores da associação.',
       category: 'Produtos',
@@ -46,6 +51,7 @@ export function AgriculturePage() {
     {
       id: 6,
       tag: 'Produto',
+      priceText: 'INSERIR O PREÇO',
       title: 'Pimentão',
       description: 'Cultivados de forma sustentável pelos produtores da associação.',
       category: 'Produtos',
@@ -53,6 +59,7 @@ export function AgriculturePage() {
     {
       id: 7,
       tag: 'Evento',
+      priceText: 'Saiba Mais',
       title: 'Edição Especial da Feira Comunitária',
       description: 'Confira as datas e os locais das próximas feiras da agricultura familiar.',
       category: 'Eventos',
@@ -60,6 +67,7 @@ export function AgriculturePage() {
     {
       id: 8,
       tag: 'Notícia',
+      priceText: 'Saiba Mais',
       title: 'Incentivo à produção orgânica local',
       description: 'Novas parcerias garantem sementes e insumos para as famílias associadas.',
       category: 'Notícias',
@@ -67,6 +75,7 @@ export function AgriculturePage() {
     {
       id: 9,
       tag: 'Produto',
+      priceText: 'INSERIR O PREÇO',
       title: 'Cenoura fresca',
       description: 'Cultivados de forma sustentável pelos produtores da associação.',
       category: 'Produtos',
@@ -75,9 +84,11 @@ export function AgriculturePage() {
 
   // Filtro por termo de busca e categoria
   const filteredItems = allAgricultureItems.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todas' || item.category === selectedCategory;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'Todas' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -89,11 +100,10 @@ export function AgriculturePage() {
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen">
       {/* Hero Banner Edge-to-Edge */}
-      <div 
+      <div
         style={{ minHeight: '464px' }}
         className="w-full bg-[#0b1b3d] relative flex items-center overflow-hidden px-6 md:px-16 py-16"
       >
-        {/* Imagem de Fundo de Plantio/Agricultura */}
         <div className="absolute inset-0 bg-emerald-950/80 z-0 flex items-center justify-center">
           <div className="w-full h-full bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-transparent flex items-center justify-center text-emerald-300/30 font-roboto text-sm">
             [Background Image: Campo/Agricultura Familiar]
@@ -114,9 +124,8 @@ export function AgriculturePage() {
       {/* Seção do Evento em Destaque */}
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Lado Esquerdo: Banner do Evento (664px max width x 320px height) */}
           <div className="lg:col-span-7 flex justify-center">
-            <div 
+            <div
               style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
               className="w-full h-80 sm:h-96 lg:h-[320px] bg-amber-200/90 rounded-2xl shadow-xl flex items-center justify-center p-6 relative overflow-hidden text-center border border-amber-300"
             >
@@ -131,19 +140,18 @@ export function AgriculturePage() {
             </div>
           </div>
 
-          {/* Lado Direito: Detalhes do Evento */}
           <div className="lg:col-span-5 space-y-6">
             <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
               Evento: Feira da Agricultura Familiar.
             </h3>
-            
+
             <p className="text-slate-600 font-roboto text-base leading-relaxed">
               Participe da nova edição da nossa feira livre.
             </p>
 
             <div className="pt-2">
-              <a 
-                href="#saiba-mais" 
+              <a
+                href="#saiba-mais"
                 className="inline-flex items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
               >
                 Saiba Mais <span>→</span>
@@ -157,6 +165,23 @@ export function AgriculturePage() {
       <section className="pb-24 px-6 max-w-7xl mx-auto">
         {/* Controles de Filtro e Busca */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-12">
+          {/* Seletor de Categorias */}
+          <div className="w-full sm:w-64">
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium focus:outline-none focus:border-[#3570FC] shadow-sm cursor-pointer"
+            >
+              <option value="Todas">Categorias (Todas)</option>
+              <option value="Produtos">Produtos</option>
+              <option value="Eventos">Eventos</option>
+              <option value="Notícias">Notícias</option>
+            </select>
+          </div>
+
           {/* Campo de Busca */}
           <div className="w-full sm:w-96 relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
@@ -181,11 +206,14 @@ export function AgriculturePage() {
             {currentItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group"
+                onClick={() => onSelectProduct && onSelectProduct(item)}
+                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
               >
                 {/* Imagem / Placeholder Superior */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
-                  <span className="text-slate-400 text-xs font-roboto">Placeholder Imagem ({item.title})</span>
+                  <span className="text-slate-400 text-xs font-roboto">
+                    Placeholder Imagem ({item.title})
+                  </span>
                 </div>
 
                 {/* Conteúdo do Card */}
@@ -193,6 +221,9 @@ export function AgriculturePage() {
                   <div className="flex justify-between items-center">
                     <span className="inline-block bg-[#0b1b3d] text-white text-xs font-medium px-3 py-1 rounded shadow-sm">
                       {item.tag}
+                    </span>
+                    <span className="text-slate-400 font-roboto text-xs uppercase tracking-wider font-medium">
+                      {item.priceText || 'INSERIR O PREÇO'}
                     </span>
                   </div>
 
