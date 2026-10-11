@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Search, ChevronRight, Users, Clock, Calendar } from 'lucide-react';
+import { Search, ChevronRight, Users, Clock } from 'lucide-react';
 
-export function StudioPage() {
+export function StudioPage({onSelectNews}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [currentPage, setCurrentPage] = useState(1);
@@ -304,7 +304,16 @@ export function StudioPage() {
             {currentNews.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group"
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelectNews?.(item)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectNews?.(item);
+                  }
+                }}
+                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 {/* Imagem / Placeholder Superior */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">

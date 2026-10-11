@@ -14,10 +14,12 @@ import { CraftsPage } from './components/CraftsPage.jsx';
 import { AgriculturePage } from './components/AgriculturePage.jsx';
 import { CraftDetailPage } from './components/CraftDetailPage.jsx';
 import { AgricultureDetailPage } from './components/AgricultureDetailPage.jsx';
+import { NewsDetailPage } from './components/NewsDetailPage.jsx';
 
 export default function App() {
   const [activePage, setActivePage] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedNews, setSelectedNews] = useState(null);
 
   const handleSelectCraftProduct = (product) => {
     setSelectedProduct(product);
@@ -29,15 +31,20 @@ export default function App() {
     setActivePage('agriculture-detail');
   };
 
+  const handleSelectNews = (newsItem) => {
+    setSelectedNews(newsItem);
+    setActivePage('news-detail');
+  };
+
   return (
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
       <div>
-        <Navbar 
-          activePage={activePage} 
+        <Navbar
+          activePage={activePage}
           setActivePage={(page) => {
             setActivePage(page);
             setSelectedProduct(null);
-          }} 
+          }}
         />
 
         {activePage === 'home' && (
@@ -52,8 +59,6 @@ export default function App() {
           </main>
         )}
 
-        {activePage === 'studio' && <StudioPage />}
-
         {activePage === 'crafts' && (
           <CraftsPage onSelectProduct={handleSelectCraftProduct} />
         )}
@@ -62,23 +67,34 @@ export default function App() {
           <AgriculturePage onSelectProduct={handleSelectAgricultureProduct} />
         )}
 
+        {activePage === 'studio' && <StudioPage onSelectNews={handleSelectNews} />}
+
         {activePage === 'craft-detail' && (
-          <CraftDetailPage 
-            product={selectedProduct} 
-            onBack={() => setActivePage('crafts')} 
+          <CraftDetailPage
+            product={selectedProduct}
+            onBack={() => setActivePage('crafts')}
             onGoHome={() => setActivePage('home')}
             onSelectProduct={handleSelectCraftProduct}
           />
         )}
 
         {activePage === 'agriculture-detail' && (
-          <AgricultureDetailPage 
-            product={selectedProduct} 
-            onBack={() => setActivePage('agriculture')} 
+          <AgricultureDetailPage
+            product={selectedProduct}
+            onBack={() => setActivePage('agriculture')}
             onGoHome={() => setActivePage('home')}
             onSelectProduct={handleSelectAgricultureProduct}
           />
         )}
+
+        {activePage === 'news-detail' && (
+          <NewsDetailPage
+            news={selectedNews}
+            onBack={() => setActivePage('studio')}
+            onGoHome={() => setActivePage('home')}
+          />
+        )}
+
       </div>
       <FooterSection />
     </div>
