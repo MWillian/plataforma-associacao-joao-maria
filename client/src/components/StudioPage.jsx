@@ -1,108 +1,125 @@
 import { useState } from 'react';
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, Users, Clock, Calendar } from 'lucide-react';
 
 export function StudioPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Mock de notícias e eventos do estúdio
+  // Grade de Turmas do Estúdio
+  const danceClasses = [
+    {
+      id: 'c1',
+      title: 'Ballet Baby & Infantil',
+      age: '3 a 8 anos',
+      schedule: 'Terças e Quintas - 14h às 15h',
+      description: 'Introdução à dança, expressão corporal, postura e coordenação motora de forma lúdica.',
+      tag: 'Turma',
+    },
+    {
+      id: 'c2',
+      title: 'Ballet Juvenil',
+      age: '9 a 15 anos',
+      schedule: 'Segundas e Quartas - 15h às 16h30',
+      description: 'Técnica clássica de ballet, sapatilhas de ponta e preparação para apresentações.',
+      tag: 'Turma',
+    },
+    {
+      id: 'c3',
+      title: 'Jazz Dance',
+      age: '7 a 16 anos',
+      schedule: 'Terças e Quintas - 15h30 às 16h30',
+      description: 'Dança vibrante com ritmos modernos, foco em ritmo, flexibilidade e energia.',
+      tag: 'Turma',
+    },
+    {
+      id: 'c4',
+      title: 'Sapateado',
+      age: '8 a 16 anos',
+      schedule: 'Sábados - 09h às 10h30',
+      description: 'Desenvolvimento de musicalidade, percussão com os pés e coordenação corporal.',
+      tag: 'Turma',
+    },
+  ];
+
+  // Feed de Notícias, Notícias de Turmas e Eventos
   const allNews = [
     {
       id: 1,
       tag: 'Evento',
-      title: 'Notícia 1',
-      description: 'Breve descrição da notícia convidando o leitor.',
+      title: '1º Festival de Dança da Economia Solidária',
+      description: 'Apresentação especial natalina "Um Conto de Natal" com nossos alunos.',
       category: 'Eventos',
     },
     {
       id: 2,
-      tag: 'Evento',
-      title: 'Notícia 2',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Eventos',
+      tag: 'Notícia',
+      title: 'Novas Vagas Abertas para Ballet Infantil',
+      description: 'Garanta a vaga do seu filho para o novo semestre letivo no Estúdio Adágio.',
+      category: 'Notícias',
     },
     {
       id: 3,
-      tag: 'Evento',
-      title: 'Notícia 3',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Eventos',
+      tag: 'Notícia',
+      title: 'Novos Figurinos do Grupo Principal',
+      description: 'Confira a confecção das roupas sustentáveis feitas pela nossa comunidade.',
+      category: 'Notícias',
     },
     {
       id: 4,
-      tag: 'Notícia',
-      title: 'Notícia 4',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Notícias',
+      tag: 'Turma',
+      title: 'Aulão Aberto de Jazz para Iniciantes',
+      description: 'Venha experimentar uma aula gratuita de Jazz Dance neste sábado.',
+      category: 'Turmas',
     },
     {
       id: 5,
       tag: 'Evento',
-      title: 'Notícia 5',
-      description: 'Breve descrição da notícia convidando o leitor.',
+      title: 'Espetáculo de Fim de Ano no Teatro',
+      description: 'Nossos alunos sobem ao palco principal para a grande apresentação anual.',
       category: 'Eventos',
     },
     {
       id: 6,
       tag: 'Notícia',
-      title: 'Notícia 6',
-      description: 'Breve descrição da notícia convidando o leitor.',
+      title: 'Aluna do Estúdio Aprovada em Audição',
+      description: 'Orgulho para Coruripe! Nossa bailarina ganha destaque em seleção estadual.',
       category: 'Notícias',
     },
     {
       id: 7,
-      tag: 'Notícia',
-      title: 'Notícia 7',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Notícias',
+      tag: 'Turma',
+      title: 'Inscrições Prorrogadas para Sapateado',
+      description: 'Aproveite a oportunidade para ingressar na nova turma de sapateado.',
+      category: 'Turmas',
     },
     {
       id: 8,
-      tag: 'Notícia',
-      title: 'Notícia 8',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Notícias',
+      tag: 'Evento',
+      title: 'Ensaio Geral Aberto aos Pais e Familiares',
+      description: 'Um momento de integração e prévia das coreografias do semestre.',
+      category: 'Eventos',
     },
     {
       id: 9,
       tag: 'Notícia',
-      title: 'Notícia 9',
-      description: 'Breve descrição da notícia convidando o leitor.',
+      title: 'Oficina de Expressão Corporal com Convidado',
+      description: 'Workshop especial ministrado para a aperfeiçoar a interpretação artística.',
       category: 'Notícias',
-    },
-    {
-      id: 10,
-      tag: 'Evento',
-      title: 'Notícia 10',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Eventos',
-    },
-    {
-      id: 11,
-      tag: 'Notícia',
-      title: 'Notícia 11',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Notícias',
-    },
-    {
-      id: 12,
-      tag: 'Evento',
-      title: 'Notícia 12',
-      description: 'Breve descrição da notícia convidando o leitor.',
-      category: 'Eventos',
     },
   ];
 
   // Filtro por termo de busca e categoria
   const filteredNews = allNews.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todas' || item.category === selectedCategory;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'Todas' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const itemsPerPage = 9;
+  const itemsPerPage = 6;
   const totalPages = Math.ceil(filteredNews.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentNews = filteredNews.slice(startIndex, startIndex + itemsPerPage);
@@ -110,7 +127,7 @@ export function StudioPage() {
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen">
       {/* Hero Banner Edge-to-Edge */}
-      <div 
+      <div
         style={{ minHeight: '464px' }}
         className="w-full bg-[#0b1b3d] relative flex items-center overflow-hidden px-6 md:px-16 py-16"
       >
@@ -125,16 +142,16 @@ export function StudioPage() {
             Estúdio Adágio
           </h1>
           <p className="text-lg md:text-xl text-blue-100 font-roboto font-light max-w-xl leading-relaxed">
-            Turmas de ballet, jazz e sapateado para crianças e jovens.
+            Turmas de ballet, jazz e sapateado para crianças e jovens da nossa comunidade.
           </p>
         </div>
       </div>
 
-      {/* Seção da Notícia Mais Recente */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
+      {/* Destaque do Evento Recente */}
+      <section className="py-16 px-6 max-w-7xl mx-auto border-b border-slate-100">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 flex justify-center">
-            <div 
+            <div
               style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
               className="w-full h-80 sm:h-96 lg:h-[320px] bg-red-900/90 rounded-2xl shadow-xl flex items-center justify-center p-6 relative overflow-hidden text-center border border-red-800"
             >
@@ -156,27 +173,96 @@ export function StudioPage() {
             <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
               Evento: Apresentação da turma de ballet
             </h3>
-            
+
             <p className="text-slate-600 font-roboto text-base leading-relaxed">
-              Venha assistir nossas crianças em uma apresentação temática natalina.
+              Venha assistir nossas crianças em uma apresentação temática natalina inesquecível.
             </p>
 
             <div className="pt-2">
-              <a 
-                href="#saiba-mais" 
+              <a
+                href="https://wa.me/5582998989898"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
               >
-                Saiba Mais <span>→</span>
+                Saiba Mais / Ingressos <span>→</span>
               </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Seção do Grid de Notícias */}
-      <section className="pb-24 px-6 max-w-7xl mx-auto">
+      {/* SEÇÃO 1: Turmas Abertas e Atividades */}
+      <section className="py-16 px-6 max-w-7xl mx-auto">
+        <div className="mb-12 space-y-2">
+          <span className="text-xs uppercase tracking-widest text-[#3570FC] font-bold">
+            Formação Artística
+          </span>
+          <h2 className="text-3xl font-extrabold text-[#0b1b3d] tracking-tight">
+            Nossas Turmas de Dança
+          </h2>
+          <p className="text-slate-600 font-roboto text-sm sm:text-base max-w-2xl">
+            Oferecemos aulas de ballet, jazz e sapateado focadas no desenvolvimento artístico, disciplina e autoestima de crianças e jovens.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {danceClasses.map((item) => (
+            <div
+              key={item.id}
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:shadow-lg transition-all"
+            >
+              <div className="space-y-4">
+                <span className="inline-block bg-[#0b1b3d] text-white text-[10px] font-bold px-3 py-1 rounded shadow-sm uppercase tracking-wider">
+                  {item.tag}
+                </span>
+
+                <h3 className="text-xl font-bold text-[#142D59] leading-snug">
+                  {item.title}
+                </h3>
+
+                <p className="text-slate-600 font-roboto text-xs leading-relaxed">
+                  {item.description}
+                </p>
+
+                <div className="space-y-2 pt-2 border-t border-slate-200/60 font-roboto text-xs text-slate-700">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Users size={14} className="text-[#3570FC]" />
+                    <span><strong>Idade:</strong> {item.age}</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-slate-600">
+                    <Clock size={14} className="text-[#3570FC] mt-0.5 shrink-0" />
+                    <span><strong>Horário:</strong> {item.schedule}</span>
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href="https://wa.me/5582998989898"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-2.5 px-4 rounded-xl text-xs font-bold text-center block transition-colors shadow-sm"
+              >
+                Inscrever pelo WhatsApp
+              </a>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SEÇÃO 2: Notícias e Publicações da Proprietária */}
+      <section className="pb-24 pt-10 px-6 max-w-7xl mx-auto border-t border-slate-100">
+        <div className="mb-10 space-y-2">
+          <span className="text-xs uppercase tracking-widest text-[#3570FC] font-bold">
+            Mural do Estúdio
+          </span>
+          <h2 className="text-3xl font-extrabold text-[#0b1b3d] tracking-tight">
+            Notícias e Avisos
+          </h2>
+        </div>
+
         {/* Controles de Filtro e Busca */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-12">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10">
           {/* Seletor de Categorias */}
           <div className="w-full sm:w-64">
             <select
@@ -187,9 +273,10 @@ export function StudioPage() {
               }}
               className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium focus:outline-none focus:border-[#3570FC] shadow-sm cursor-pointer"
             >
-              <option value="Todas">Categorias (Todas)</option>
-              <option value="Eventos">Eventos</option>
+              <option value="Todas">Todas as Categorias</option>
+              <option value="Turmas">Avisos de Turmas</option>
               <option value="Notícias">Notícias</option>
+              <option value="Eventos">Eventos e Apresentações</option>
             </select>
           </div>
 
@@ -200,7 +287,7 @@ export function StudioPage() {
             </span>
             <input
               type="text"
-              placeholder="Buscar notícia"
+              placeholder="Buscar no mural de notícias..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -211,7 +298,7 @@ export function StudioPage() {
           </div>
         </div>
 
-        {/* Grid de Cards de Notícias (3x3) */}
+        {/* Grid de Cards de Notícias */}
         {currentNews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {currentNews.map((item) => (
@@ -221,7 +308,9 @@ export function StudioPage() {
               >
                 {/* Imagem / Placeholder Superior */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
-                  <span className="text-slate-400 text-xs font-roboto">Placeholder Imagem</span>
+                  <span className="text-slate-400 text-xs font-roboto">
+                    Placeholder Imagem ({item.title})
+                  </span>
                 </div>
 
                 {/* Conteúdo do Card */}
@@ -244,7 +333,7 @@ export function StudioPage() {
           </div>
         ) : (
           <div className="text-center py-16 text-slate-500 font-roboto">
-            Nenhuma notícia encontrada para a sua busca.
+            Nenhuma publicação encontrada para a sua busca.
           </div>
         )}
 
