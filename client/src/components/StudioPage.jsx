@@ -1,10 +1,21 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Search, ChevronRight, Users, Clock } from 'lucide-react';
 
-export function StudioPage({onSelectNews}) {
+export function StudioPage({ onSelectNews }) {
+  // Referência para controlar a rolagem da seção do mural
+  const newsSectionRef = useRef(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Função para mudar de página com rolagem suave até o início do mural
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    if (newsSectionRef.current) {
+      newsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Grade de Turmas do Estúdio
   const danceClasses = [
@@ -231,7 +242,7 @@ export function StudioPage({onSelectNews}) {
                     <span><strong>Idade:</strong> {item.age}</span>
                   </div>
                   <div className="flex items-start gap-2 text-slate-600">
-                    <Clock size={14} className="text-[#3570FC] mt-0.5 shrink-0" />
+                    <Clock size={14} className="text-[#3570FC]" />
                     <span><strong>Horário:</strong> {item.schedule}</span>
                   </div>
                 </div>
@@ -251,7 +262,7 @@ export function StudioPage({onSelectNews}) {
       </section>
 
       {/* SEÇÃO 2: Notícias e Publicações da Proprietária */}
-      <section className="pb-24 pt-10 px-6 max-w-7xl mx-auto border-t border-slate-100">
+      <section ref={newsSectionRef} className="pb-24 pt-10 px-6 max-w-7xl mx-auto border-t border-slate-100 scroll-mt-24">
         <div className="mb-10 space-y-2">
           <span className="text-xs uppercase tracking-widest text-[#3570FC] font-bold">
             Mural do Estúdio
@@ -346,32 +357,34 @@ export function StudioPage({onSelectNews}) {
           </div>
         )}
 
-        {/* Paginação */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-16 pt-8 border-t border-slate-200 gap-4">
-          <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${
-                  currentPage === page
-                    ? 'bg-[#0b1b3d] text-white'
-                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
+        {/* Paginação com Rolagem Automática */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-16 pt-8 border-t border-slate-200 gap-4">
+            <div className="flex items-center gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${
+                    currentPage === page
+                      ? 'bg-[#0b1b3d] text-white'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
 
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="flex items-center gap-2 text-[#0b1b3d] font-semibold text-sm hover:text-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Próxima <ChevronRight size={16} />
-          </button>
-        </div>
+            <button
+              onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-2 text-[#0b1b3d] font-semibold text-sm hover:text-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Próxima <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );
