@@ -81,7 +81,7 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
   ];
 
   return (
-    <div className="bg-white text-slate-800 font-poppins min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
+    <div className="bg-white text-slate-800 font-poppins min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8 page-reveal-fade">
       <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12">
         
         {/* Breadcrumb de Navegação Responsivo */}
@@ -109,7 +109,7 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Coluna da Esquerda: Galeria de Imagens (7 colunas no Desktop) */}
-          <div className="lg:col-span-7 space-y-3 sm:space-y-4">
+          <div className="lg:col-span-7 space-y-3 sm:space-y-4 page-reveal-fade">
             {/* Imagem Principal */}
             <div className="w-full h-64 sm:h-96 md:h-[420px] bg-amber-50/60 rounded-2xl sm:rounded-3xl border border-amber-200/50 flex items-center justify-center overflow-hidden shadow-sm relative">
               <span className="text-amber-800/60 font-roboto text-xs sm:text-base font-medium px-4 text-center">
@@ -138,7 +138,7 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
           </div>
 
           {/* Coluna da Direita: Informações e Encomenda (5 colunas no Desktop) */}
-          <div className="lg:col-span-5 space-y-5 sm:space-y-6">
+          <div className="lg:col-span-5 space-y-5 sm:space-y-6 page-reveal-up" style={{ animationDelay: '120ms' }}>
             {/* Tag de Destaque */}
             <div>
               <span className="inline-block bg-amber-100/80 text-amber-900 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-md tracking-wider">

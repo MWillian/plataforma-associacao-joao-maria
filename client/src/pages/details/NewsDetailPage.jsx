@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Calendar, ArrowLeft } from 'lucide-react';
 
-export function NewsDetailPage({ news, onBack, onGoHome }) {
+export function NewsDetailPage({ news, onBack, onGoHome, backLabel }) {
   // Rola automaticamente para o topo ao carregar a página
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -26,7 +26,7 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
   const currentNews = news || defaultNews;
 
   return (
-    <div className="bg-white text-slate-800 font-poppins min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
+    <div className="bg-white text-slate-800 font-poppins min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8 page-reveal-fade">
       <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Breadcrumb e Botão Voltar Responsivo */}
@@ -43,7 +43,7 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
               onClick={onBack} 
               className="hover:text-[#142D59] transition-colors cursor-pointer py-1 whitespace-nowrap"
             >
-              Mural / Estúdio Adágio
+              {backLabel || 'Mural / Estúdio Adágio'}
             </button>
             <span>&gt;</span>
             <span className="text-[#3570FC] font-medium max-w-[140px] sm:max-w-xs truncate block">
@@ -55,12 +55,12 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
             onClick={onBack}
             className="inline-flex items-center gap-2 text-xs font-semibold text-[#0b1b3d] hover:text-[#3570FC] transition-colors cursor-pointer py-1.5 px-3 bg-slate-50 sm:bg-transparent rounded-lg border sm:border-none border-slate-200"
           >
-            <ArrowLeft size={16} /> Voltar para o mural
+            <ArrowLeft size={16} /> Voltar para {backLabel?.toLowerCase() || 'o mural'}
           </button>
         </div>
 
         {/* Cabeçalho da Notícia */}
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-3 sm:space-y-4 page-reveal-up">
           <div className="flex items-center gap-2.5 sm:gap-3 font-roboto text-xs flex-wrap">
             <span className="bg-[#0b1b3d] text-white font-medium px-2.5 py-1 rounded shadow-sm text-[11px] sm:text-xs">
               {currentNews.tag || 'Notícia'}
@@ -82,14 +82,14 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
         </div>
 
         {/* Imagem Principal da Notícia (Proporções Otimizadas para Mobile) */}
-        <div className="w-full h-52 sm:h-80 md:h-[450px] bg-slate-100 rounded-2xl sm:rounded-3xl border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm relative">
+        <div className="w-full h-52 sm:h-80 md:h-[450px] bg-slate-100 rounded-2xl sm:rounded-3xl border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm relative page-reveal-fade" style={{ animationDelay: '120ms' }}>
           <span className="text-slate-400 font-roboto text-xs sm:text-base text-center px-4">
             {currentNews.imagePlaceholder || `Imagem Ilustrativa: ${currentNews.title}`}
           </span>
         </div>
 
         {/* Corpo do Texto da Notícia */}
-        <article className="prose prose-slate max-w-none font-roboto text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 sm:space-y-6 pt-2 sm:pt-4">
+        <article className="prose prose-slate max-w-none font-roboto text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 sm:space-y-6 pt-2 sm:pt-4 page-reveal-up" style={{ animationDelay: '220ms' }}>
           {Array.isArray(currentNews.content) ? (
             currentNews.content.map((paragraph, index) => (
               <p key={index} className="m-0 leading-relaxed">{paragraph}</p>
@@ -102,7 +102,7 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
         <hr className="border-slate-200 my-6 sm:my-8" />
 
         {/* Chamada para Ação / Inscrições */}
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-8 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6 text-center sm:text-left">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-8 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6 text-center sm:text-left page-reveal-up" style={{ animationDelay: '300ms' }}>
           <div className="space-y-1">
             <h3 className="text-base sm:text-lg font-bold text-[#0b1b3d]">
               Ficou com alguma dúvida ou deseja participar?
