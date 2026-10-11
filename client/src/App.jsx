@@ -1,20 +1,14 @@
 import { useState } from 'react';
 import './App.css';
-import { Navbar } from './components/Navbar.jsx';
-import { HeroSection } from './components/HeroSection.jsx';
-import { AboutSection } from './components/AboutSection.jsx';
-import { StudioSection } from './components/StudioSection.jsx';
-import { CraftsSection } from './components/CraftsSection.jsx';
-import { AgricultureSection } from './components/AgricultureSection.jsx';
-import { FoundersSection } from './components/FoundersSection.jsx';
-import { DonationSection } from './components/DonationSection.jsx';
-import { FooterSection } from './components/FooterSection.jsx';
-import { StudioPage } from './components/StudioPage.jsx';
-import { CraftsPage } from './components/CraftsPage.jsx';
-import { AgriculturePage } from './components/AgriculturePage.jsx';
-import { CraftDetailPage } from './components/CraftDetailPage.jsx';
-import { AgricultureDetailPage } from './components/AgricultureDetailPage.jsx';
-import { NewsDetailPage } from './components/NewsDetailPage.jsx';
+import { Navbar } from './components/layout/Navbar.jsx';
+import { FooterSection } from './components/layout/FooterSection.jsx';
+import HomePage from './pages/HomePage.jsx';
+import { StudioPage } from './pages/StudioPage.jsx';
+import { CraftsPage } from './pages/CraftsPage.jsx';
+import { AgriculturePage } from './pages/AgriculturePage.jsx';
+import { CraftDetailPage } from './pages/details/CraftDetailPage.jsx';
+import { AgricultureDetailPage } from './pages/details/AgricultureDetailPage.jsx';
+import { NewsDetailPage } from './pages/details/NewsDetailPage.jsx';
 
 export default function App() {
   const [activePage, setActivePage] = useState('home');
@@ -48,15 +42,7 @@ export default function App() {
         />
 
         {activePage === 'home' && (
-          <main>
-            <HeroSection />
-            <AboutSection />
-            <StudioSection />
-            <CraftsSection />
-            <AgricultureSection />
-            <FoundersSection />
-            <DonationSection />
-          </main>
+          <HomePage />
         )}
 
         {activePage === 'crafts' && (

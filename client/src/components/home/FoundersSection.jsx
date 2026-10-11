@@ -1,5 +1,3 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 export function FoundersSection() {
   const founders = [
     {

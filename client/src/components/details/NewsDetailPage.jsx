@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Calendar, ArrowLeft } from 'lucide-react';
 
 export function NewsDetailPage({ news, onBack, onGoHome }) {
