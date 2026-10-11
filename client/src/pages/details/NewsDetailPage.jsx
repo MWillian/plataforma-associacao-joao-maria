@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Calendar, ArrowLeft } from 'lucide-react';
 
-export function NewsDetailPage({ news, onBack, onGoHome }) {
+export function NewsDetailPage({ news, onBack, onGoHome, backLabel }) {
   // Rola automaticamente para o topo ao carregar a página
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -43,7 +43,7 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
               onClick={onBack} 
               className="hover:text-[#142D59] transition-colors cursor-pointer py-1 whitespace-nowrap"
             >
-              Mural / Estúdio Adágio
+              {backLabel || 'Mural / Estúdio Adágio'}
             </button>
             <span>&gt;</span>
             <span className="text-[#3570FC] font-medium max-w-[140px] sm:max-w-xs truncate block">
@@ -55,7 +55,7 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
             onClick={onBack}
             className="inline-flex items-center gap-2 text-xs font-semibold text-[#0b1b3d] hover:text-[#3570FC] transition-colors cursor-pointer py-1.5 px-3 bg-slate-50 sm:bg-transparent rounded-lg border sm:border-none border-slate-200"
           >
-            <ArrowLeft size={16} /> Voltar para o mural
+            <ArrowLeft size={16} /> Voltar para {backLabel?.toLowerCase() || 'o mural'}
           </button>
         </div>
 

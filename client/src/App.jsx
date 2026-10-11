@@ -14,6 +14,7 @@ export default function App() {
   const [activePage, setActivePage] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedNews, setSelectedNews] = useState(null);
+  const [newsSourcePage, setNewsSourcePage] = useState('studio');
 
   const handleSelectCraftProduct = (product) => {
     setSelectedProduct(product);
@@ -25,8 +26,9 @@ export default function App() {
     setActivePage('agriculture-detail');
   };
 
-  const handleSelectNews = (newsItem) => {
+  const handleSelectNews = (newsItem, sourcePage) => {
     setSelectedNews(newsItem);
+    setNewsSourcePage(sourcePage);
     setActivePage('news-detail');
   };
 
@@ -46,14 +48,24 @@ export default function App() {
         )}
 
         {activePage === 'crafts' && (
-          <CraftsPage onSelectProduct={handleSelectCraftProduct} />
+          <CraftsPage
+            onSelectProduct={handleSelectCraftProduct}
+            onSelectNews={(newsItem) => handleSelectNews(newsItem, 'crafts')}
+          />
         )}
 
         {activePage === 'agriculture' && (
-          <AgriculturePage onSelectProduct={handleSelectAgricultureProduct} />
+          <AgriculturePage
+            onSelectProduct={handleSelectAgricultureProduct}
+            onSelectNews={(newsItem) => handleSelectNews(newsItem, 'agriculture')}
+          />
         )}
 
-        {activePage === 'studio' && <StudioPage onSelectNews={handleSelectNews} />}
+        {activePage === 'studio' && (
+          <StudioPage
+            onSelectNews={(newsItem) => handleSelectNews(newsItem, 'studio')}
+          />
+        )}
 
         {activePage === 'craft-detail' && (
           <CraftDetailPage
@@ -76,8 +88,15 @@ export default function App() {
         {activePage === 'news-detail' && (
           <NewsDetailPage
             news={selectedNews}
-            onBack={() => setActivePage('studio')}
+            onBack={() => setActivePage(newsSourcePage)}
             onGoHome={() => setActivePage('home')}
+            backLabel={
+              newsSourcePage === 'crafts'
+                ? 'Mural / Artesanato'
+                : newsSourcePage === 'agriculture'
+                  ? 'Mural / Agricultura Familiar'
+                  : 'Mural / Estúdio Adágio'
+            }
           />
         )}
 
