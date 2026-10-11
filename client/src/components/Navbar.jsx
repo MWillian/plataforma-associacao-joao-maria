@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Phone } from 'lucide-react';
+import { Phone, Menu, X } from 'lucide-react';
 
 export function Navbar({ activePage, setActivePage }) {
   const [scrolled, setScrolled] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +25,8 @@ export function Navbar({ activePage, setActivePage }) {
 
   const handleNavClick = (page, hash) => {
     setActivePage(page);
+    setMobileMenuOpen(false); // Fecha o menu hambúrguer ao clicar
+
     if (page === 'home' && hash) {
       setTimeout(() => {
         const element = document.querySelector(hash);
@@ -37,7 +40,7 @@ export function Navbar({ activePage, setActivePage }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0b1b3d] text-white font-poppins overflow-hidden">
+    <header className="sticky top-0 z-50 bg-[#0b1b3d] text-white font-poppins shadow-md">
       {/* TOP BAR */}
       <div
         className={`
@@ -96,7 +99,7 @@ export function Navbar({ activePage, setActivePage }) {
         </div>
       </div>
 
-      {/* NAVBAR INNER */}
+      {/* NAVBAR MAIN INNER */}
       <div
         className={`
           max-w-7xl mx-auto
@@ -106,6 +109,7 @@ export function Navbar({ activePage, setActivePage }) {
           ${scrolled ? 'py-2 bg-[#0b1b3d]/95 backdrop-blur-md' : 'py-3 sm:py-4'}
         `}
       >
+        {/* LOGO */}
         <div className="flex items-center">
           <button
             onClick={() => handleNavClick('home', '#')}
@@ -128,6 +132,7 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
         </div>
 
+        {/* NAVEGAÇÃO DESKTOP (Escondida no mobile com md:flex) */}
         <nav className="hidden md:flex items-center gap-5 lg:gap-8 text-xs lg:text-sm font-medium tracking-wide">
           <button
             onClick={() => handleNavClick('home', '#quem-somos')}
@@ -147,7 +152,7 @@ export function Navbar({ activePage, setActivePage }) {
             <span className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${activePage === 'studio' ? 'w-full' : 'w-0 group-hover:w-full'}`} />
           </button>
 
-         <button
+          <button
             onClick={() => handleNavClick('crafts', '')}
             className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
               activePage === 'crafts' ? 'text-blue-300 font-bold' : 'text-white'
@@ -168,23 +173,92 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
         </nav>
 
+        {/* BOTÃO DOAR DESKTOP */}
+        <div className="hidden md:block">
+          <button
+            onClick={() => handleNavClick('home', '#doacao')}
+            className="
+              bg-white text-[#0b1b3d]
+              px-5 lg:px-7 py-2.5
+              rounded-full
+              font-semibold text-xs lg:text-sm
+              hover:bg-gray-100
+              hover:-translate-y-1
+              hover:shadow-xl
+              transition-all duration-300
+              shadow-md cursor-pointer whitespace-nowrap
+            "
+          >
+            COMO DOAR?
+          </button>
+        </div>
+
+        {/* BOTÃO HAMBÚRGUER MOBILE (Visível apenas em md:hidden) */}
         <button
-          onClick={() => handleNavClick('home', '#doacao')}
-          className="
-            bg-white text-[#0b1b3d]
-            px-5 lg:px-7 py-2.5
-            rounded-full
-            font-semibold text-xs lg:text-sm
-            hover:bg-gray-100
-            hover:-translate-y-1
-            hover:shadow-xl
-            transition-all duration-300
-            shadow-md cursor-pointer whitespace-nowrap
-          "
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-2 rounded-lg text-white hover:text-blue-300 bg-white/5 border border-white/10 transition-colors cursor-pointer"
+          aria-label="Abrir Menu de Navegação"
         >
-          COMO DOAR?
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
+
+      {/* PAINEL MOBILE RECOLHÍVEL */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-[#07132c] border-b border-blue-950 px-6 py-6 space-y-5 animate-fadeIn">
+          <nav className="flex flex-col gap-4 text-sm font-medium tracking-wide">
+            <button
+              onClick={() => handleNavClick('home', '#quem-somos')}
+              className="text-left py-2 border-b border-blue-900/40 text-slate-200 hover:text-blue-300 transition-colors"
+            >
+              QUEM SOMOS
+            </button>
+
+            <button
+              onClick={() => handleNavClick('studio', '')}
+              className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
+                activePage === 'studio' ? 'text-blue-300 font-bold' : 'text-slate-200'
+              }`}
+            >
+              ESTÚDIO ADÁGIO
+            </button>
+
+            <button
+              onClick={() => handleNavClick('crafts', '')}
+              className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
+                activePage === 'crafts' ? 'text-blue-300 font-bold' : 'text-slate-200'
+              }`}
+            >
+              ARTESANATO
+            </button>
+
+            <button
+              onClick={() => handleNavClick('agriculture', '')}
+              className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
+                activePage === 'agriculture' ? 'text-blue-300 font-bold' : 'text-slate-200'
+              }`}
+            >
+              AGRICULTURA FAMILIAR
+            </button>
+          </nav>
+
+          {/* BOTÃO DE DOAÇÃO NO MOBILE */}
+          <div className="pt-2">
+            <button
+              onClick={() => handleNavClick('home', '#doacao')}
+              className="
+                w-full bg-white text-[#0b1b3d]
+                py-3 rounded-xl
+                font-bold text-sm text-center
+                shadow-md hover:bg-slate-100
+                transition-all cursor-pointer
+              "
+            >
+              COMO DOAR?
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
