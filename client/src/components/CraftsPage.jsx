@@ -171,11 +171,13 @@ export function CraftsPage({ onSelectProduct }) {
             </p>
 
             <div className="pt-2">
-              <a 
-                href="#saiba-mais" 
+              <a
+                href="https://wa.me/5582998989898"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
               >
-                Saiba Mais <span>→</span>
+                Saiba Mais<span>→</span>
               </a>
             </div>
           </div>

@@ -7,7 +7,7 @@ export function Navbar({ activePage, setActivePage }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = () => {  
       setScrolled(window.scrollY > 30);
     };
 
@@ -132,8 +132,22 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
         </div>
 
-        {/* NAVEGAÇÃO DESKTOP (Escondida no mobile com md:flex) */}
+        {/* NAVEGAÇÃO DESKTOP */}
         <nav className="hidden md:flex items-center gap-5 lg:gap-8 text-xs lg:text-sm font-medium tracking-wide">
+          <button
+            onClick={() => handleNavClick('home', '#')}
+            className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
+              activePage === 'home' ? 'text-blue-300 font-bold' : 'text-white'
+            } hover:text-blue-300`}
+          >
+            INÍCIO
+            <span
+              className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${
+                activePage === 'home' ? 'w-full' : 'w-0 group-hover:w-full'
+              }`}
+            />
+          </button>
+
           <button
             onClick={() => handleNavClick('home', '#quem-somos')}
             className="relative group bg-transparent border-none cursor-pointer text-white hover:text-blue-300 transition-colors duration-300 whitespace-nowrap"
@@ -149,7 +163,11 @@ export function Navbar({ activePage, setActivePage }) {
             } hover:text-blue-300`}
           >
             ESTÚDIO ADÁGIO
-            <span className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${activePage === 'studio' ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+            <span
+              className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${
+                activePage === 'studio' ? 'w-full' : 'w-0 group-hover:w-full'
+              }`}
+            />
           </button>
 
           <button
@@ -159,7 +177,11 @@ export function Navbar({ activePage, setActivePage }) {
             } hover:text-blue-300`}
           >
             ARTESANATO
-            <span className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${activePage === 'crafts' ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+            <span
+              className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${
+                activePage === 'crafts' ? 'w-full' : 'w-0 group-hover:w-full'
+              }`}
+            />
           </button>
 
           <button
@@ -169,7 +191,11 @@ export function Navbar({ activePage, setActivePage }) {
             } hover:text-blue-300`}
           >
             AGRICULTURA FAMILIAR
-            <span className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${activePage === 'agriculture' ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+            <span
+              className={`absolute left-0 -bottom-1 h-[2px] bg-blue-300 transition-all duration-300 ${
+                activePage === 'agriculture' ? 'w-full' : 'w-0 group-hover:w-full'
+              }`}
+            />
           </button>
         </nav>
 
@@ -193,7 +219,7 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
         </div>
 
-        {/* BOTÃO HAMBÚRGUER MOBILE (Visível apenas em md:hidden) */}
+        {/* BOTÃO HAMBÚRGUER MOBILE */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="md:hidden p-2 rounded-lg text-white hover:text-blue-300 bg-white/5 border border-white/10 transition-colors cursor-pointer"
@@ -207,6 +233,15 @@ export function Navbar({ activePage, setActivePage }) {
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#07132c] border-b border-blue-950 px-6 py-6 space-y-5 animate-fadeIn">
           <nav className="flex flex-col gap-4 text-sm font-medium tracking-wide">
+            <button
+              onClick={() => handleNavClick('home', '#')}
+              className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
+                activePage === 'home' ? 'text-blue-300 font-bold' : 'text-slate-200'
+              }`}
+            >
+              INÍCIO
+            </button>
+
             <button
               onClick={() => handleNavClick('home', '#quem-somos')}
               className="text-left py-2 border-b border-blue-900/40 text-slate-200 hover:text-blue-300 transition-colors"
