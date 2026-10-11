@@ -5,6 +5,38 @@
   --font-roboto: 'Roboto', sans-serif;
 }
 
+@keyframes page-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.page-reveal-up {
+  animation: page-fade-up 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-reveal-fade {
+  animation: page-fade-in 600ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-reveal-up,
+  .page-reveal-fade {
+    animation: none;
+  }
+}
+
 /* =========================================
    ANIMAÇÕES - QUEM SOMOS
 ========================================= */

@@ -157,7 +157,7 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
   );
 
   return (
-    <div className="bg-white text-slate-800 font-poppins min-h-screen">
+    <div className="bg-white text-slate-800 font-poppins min-h-screen page-reveal-fade">
       {/* Hero Banner Edge-to-Edge */}
       <div
         style={{ minHeight: '464px' }}
@@ -224,7 +224,7 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
 
       {/* SEÇÃO 1: CATÁLOGO DE CULTIVOS E ALIMENTOS */}
       <section ref={productsSectionRef} className="py-16 px-6 max-w-7xl mx-auto scroll-mt-24">
-        <div className="mb-10 space-y-2">
+        <div className="mb-10 space-y-2 page-reveal-up">
           <span className="text-xs uppercase tracking-widest text-emerald-700 font-bold">
             Direto do Campo
           </span>
@@ -237,7 +237,7 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
         </div>
 
         {/* Busca no Catálogo */}
-        <div className="flex justify-end mb-8">
+        <div className="flex justify-end mb-8 page-reveal-up" style={{ animationDelay: '100ms' }}>
           <div className="w-full sm:w-96 relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
               <Search size={18} />
@@ -258,11 +258,12 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
         {/* Grid de Cultivos */}
         {currentProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentProducts.map((item) => (
+            {currentProducts.map((item, index) => (
               <div
                 key={item.id}
                 onClick={() => onSelectProduct && onSelectProduct(item)}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                style={{ animationDelay: `${150 + index * 90}ms` }}
+                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
               >
                 {/* Imagem Placeholder */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
@@ -338,7 +339,7 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
 
       {/* SEÇÃO 2: MURAL DA AGRICULTURA FAMILIAR */}
       <section ref={newsSectionRef} className="pb-24 pt-12 px-6 max-w-7xl mx-auto border-t border-slate-100 scroll-mt-24">
-        <div className="mb-10 space-y-2">
+        <div className="mb-10 space-y-2 page-reveal-up">
           <span className="text-xs uppercase tracking-widest text-[#3570FC] font-bold">
             Mural Agroecológico
           </span>
@@ -348,7 +349,7 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
         </div>
 
         {/* Controles de Filtro e Busca de Notícias */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10 page-reveal-up" style={{ animationDelay: '100ms' }}>
           <div className="w-full sm:w-64">
             <select
               value={selectedCategory}
@@ -384,11 +385,12 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
         {/* Grid de Notícias */}
         {currentNews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {currentNews.map((item) => (
+            {currentNews.map((item, index) => (
               <div
                 key={item.id}
                 onClick={() => onSelectNews && onSelectNews(item)}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                style={{ animationDelay: `${150 + index * 90}ms` }}
+                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
               >
                 <div className="w-full h-44 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
                   <span className="text-slate-400 text-xs font-roboto">

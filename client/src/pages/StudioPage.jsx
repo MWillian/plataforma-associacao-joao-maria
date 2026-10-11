@@ -136,7 +136,7 @@ export function StudioPage({ onSelectNews }) {
   const currentNews = filteredNews.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="bg-white text-slate-800 font-poppins min-h-screen">
+    <div className="bg-white text-slate-800 font-poppins min-h-screen page-reveal-fade">
       {/* Hero Banner Edge-to-Edge */}
       <div
         style={{ minHeight: '464px' }}
@@ -263,7 +263,7 @@ export function StudioPage({ onSelectNews }) {
 
       {/* SEÇÃO 2: Notícias e Publicações da Proprietária */}
       <section ref={newsSectionRef} className="pb-24 pt-10 px-6 max-w-7xl mx-auto border-t border-slate-100 scroll-mt-24">
-        <div className="mb-10 space-y-2">
+        <div className="mb-10 space-y-2 page-reveal-up">
           <span className="text-xs uppercase tracking-widest text-[#3570FC] font-bold">
             Mural do Estúdio
           </span>
@@ -273,7 +273,7 @@ export function StudioPage({ onSelectNews }) {
         </div>
 
         {/* Controles de Filtro e Busca */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10 page-reveal-up" style={{ animationDelay: '100ms' }}>
           {/* Seletor de Categorias */}
           <div className="w-full sm:w-64">
             <select
@@ -312,7 +312,7 @@ export function StudioPage({ onSelectNews }) {
         {/* Grid de Cards de Notícias */}
         {currentNews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentNews.map((item) => (
+            {currentNews.map((item, index) => (
               <div
                 key={item.id}
                 role="button"
@@ -324,7 +324,8 @@ export function StudioPage({ onSelectNews }) {
                     onSelectNews?.(item);
                   }
                 }}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
+                style={{ animationDelay: `${150 + index * 90}ms` }}
+                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 {/* Imagem / Placeholder Superior */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
