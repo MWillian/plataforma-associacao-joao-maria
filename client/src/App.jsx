@@ -9,9 +9,14 @@ import { AgriculturePage } from './pages/AgriculturePage.jsx';
 import { CraftDetailPage } from './pages/details/CraftDetailPage.jsx';
 import { AgricultureDetailPage } from './pages/details/AgricultureDetailPage.jsx';
 import { NewsDetailPage } from './pages/details/NewsDetailPage.jsx';
+import  AdmLoginPage  from './pages/AdmLoginPage.jsx';
 
 export default function App() {
-  const [activePage, setActivePage] = useState('home');
+  const [activePage, setActivePage] = useState(() => {
+    return window.location.pathname === '/admin/login'
+      ? 'adm-login'
+      : 'home';
+  })
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedNews, setSelectedNews] = useState(null);
   const [newsSourcePage, setNewsSourcePage] = useState('studio');
@@ -30,7 +35,11 @@ export default function App() {
     setSelectedNews(newsItem);
     setNewsSourcePage(sourcePage);
     setActivePage('news-detail');
-  };
+  }; 
+
+  if (activePage === 'adm-login') {
+    return <AdmLoginPage />;
+  }
 
   return (
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
@@ -99,7 +108,6 @@ export default function App() {
             }
           />
         )}
-
       </div>
       <FooterSection />
     </div>
