@@ -9,14 +9,20 @@ import { AgriculturePage } from './pages/AgriculturePage.jsx';
 import { CraftDetailPage } from './pages/details/CraftDetailPage.jsx';
 import { AgricultureDetailPage } from './pages/details/AgricultureDetailPage.jsx';
 import { NewsDetailPage } from './pages/details/NewsDetailPage.jsx';
-import  AdmLoginPage  from './pages/AdmLoginPage.jsx';
+import   { AdmLoginPage }   from './pages/AdmLoginPage.jsx';
+import  { AdmDashboardPage }  from './pages/AdmDashboardPage.jsx';
 
 export default function App() {
+  const routes = {
+    '/': 'home',
+    '/admin/login': 'adm-login',
+    '/admin/painel': 'adm-dashboard',
+  };
+
   const [activePage, setActivePage] = useState(() => {
-    return window.location.pathname === '/admin/login'
-      ? 'adm-login'
-      : 'home';
-  })
+    return routes[window.location.pathname] || 'home';
+})
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedNews, setSelectedNews] = useState(null);
   const [newsSourcePage, setNewsSourcePage] = useState('studio');
@@ -39,6 +45,10 @@ export default function App() {
 
   if (activePage === 'adm-login') {
     return <AdmLoginPage />;
+  }
+
+  if (activePage === 'adm-dashboard') {
+    return <AdmDashboardPage />;
   }
 
   return (

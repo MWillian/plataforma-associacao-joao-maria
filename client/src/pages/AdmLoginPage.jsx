@@ -1,7 +1,7 @@
 
 import InputField from "../components/details/InputFieldLogin.jsx";
 
-function AdmLoginPage() {
+export function AdmLoginPage() {
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -153,5 +153,3 @@ function AdmLoginPage() {
     </main>
   );
 }
-
-export default AdmLoginPage;
