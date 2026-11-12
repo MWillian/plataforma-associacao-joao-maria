@@ -121,7 +121,7 @@ export function AdmDashboardPage({ onNavigate }) {
             </div>
 
             <div className="flex gap-3">
-              <ActionButton page="alunos">
+              <ActionButton page="adm-students">
                 Ver alunos
               </ActionButton>
 

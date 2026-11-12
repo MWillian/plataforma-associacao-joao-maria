@@ -11,12 +11,14 @@ import { AgricultureDetailPage } from './pages/details/AgricultureDetailPage.jsx
 import { NewsDetailPage } from './pages/details/NewsDetailPage.jsx';
 import   { AdmLoginPage }   from './pages/AdmLoginPage.jsx';
 import  { AdmDashboardPage }  from './pages/AdmDashboardPage.jsx';
+import { AdmStudentsPage } from './pages/AdmStudentsPage.jsx';
 
 export default function App() {
   const routes = {
     '/': 'home',
     '/admin/login': 'adm-login',
     '/admin/painel': 'adm-dashboard',
+    '/admin/alunos': 'adm-students',
   };
 
   const [activePage, setActivePage] = useState(() => {
@@ -43,12 +45,37 @@ export default function App() {
     setActivePage('news-detail');
   }; 
 
+  const navigate = (page) => {
+    const route = Object.entries(routes).find(
+      ([path, pageName]) => pageName === page
+    )?.[0];
+
+    if (route && window.location.pathname !== route) {
+      window.history.pushState({}, '', route);
+    }
+
+    setActivePage(page);
+  };
+
+
   if (activePage === 'adm-login') {
     return <AdmLoginPage />;
   }
 
   if (activePage === 'adm-dashboard') {
-    return <AdmDashboardPage />;
+    return (
+      <AdmDashboardPage 
+      onNavigate={navigate}
+      />
+    );
+  } 
+
+  if (activePage === 'adm-students') {
+    return (
+      <AdmStudentsPage 
+      onBack={() => navigate('adm-dashboard')}
+      />
+    );
   }
 
   return (
