@@ -1,10 +1,5 @@
-export function AdmDashboardPage({ onNavigate }) {
-  const turmas = [
-    { nome: 'Turma A', alunos: 1 },
-    { nome: 'Turma B', alunos: 1 },
-    { nome: 'Turma C', alunos: 0 },
-    { nome: 'Turma D', alunos: 0 },
-  ];
+export function AdmDashboardPage({ onNavigate, turmas }) {
+  
 
   const produtos = [
     {
@@ -125,7 +120,7 @@ export function AdmDashboardPage({ onNavigate }) {
                 Ver alunos
               </ActionButton>
 
-              <ActionButton page="turmas">
+              <ActionButton page="adm-classes">
                 Ver turmas
               </ActionButton>
             </div>

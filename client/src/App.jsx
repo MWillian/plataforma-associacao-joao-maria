@@ -12,6 +12,7 @@ import { NewsDetailPage } from './pages/details/NewsDetailPage.jsx';
 import   { AdmLoginPage }   from './pages/AdmLoginPage.jsx';
 import  { AdmDashboardPage }  from './pages/AdmDashboardPage.jsx';
 import { AdmStudentsPage } from './pages/AdmStudentsPage.jsx';
+import { AdmClassesPage } from './pages/AdmClassesPage.jsx';
 
 export default function App() {
   const routes = {
@@ -19,6 +20,7 @@ export default function App() {
     '/admin/login': 'adm-login',
     '/admin/painel': 'adm-dashboard',
     '/admin/alunos': 'adm-students',
+    '/admin/turmas': 'adm-classes',
   };
 
   const [activePage, setActivePage] = useState(() => {
@@ -57,6 +59,45 @@ export default function App() {
     setActivePage(page);
   };
 
+  const [turmas, setTurmas] = useState([
+    {
+      id: 1,
+      nome: 'Ballet Infantil A',
+      turno: 'Tarde',
+      dias: ['Terça-feira', 'Quinta-feira'],
+    },
+    {
+      id: 2,
+      nome: 'Ballet Infantil B',
+      turno: 'Manhã',
+      dias: ['Segunda-feira', 'Quarta-feira'],
+    },
+    {
+      id: 3,
+      nome: 'Jazz Adolescente',
+      turno: 'Tarde',
+      dias: ['Quinta-feira'],
+    },
+    {
+      id: 4,
+      nome: 'Ballet Adulto',
+      turno: 'Manhã',
+      dias: ['Sexta-feira'],
+    }
+  ]);
+
+  const handleCreateClass = (novaTurma) => {
+    setTurmas((listaAnterior) => [
+      ...listaAnterior,
+      novaTurma,
+    ]);
+  };
+
+  const handleRemoveClass = (id) => {
+    setTurmas((listaAnterior) =>
+      listaAnterior.filter((turma) => turma.id !== id)
+    );
+  };
 
   if (activePage === 'adm-login') {
     return <AdmLoginPage />;
@@ -66,6 +107,7 @@ export default function App() {
     return (
       <AdmDashboardPage 
       onNavigate={navigate}
+      turmas={turmas}
       />
     );
   } 
@@ -74,6 +116,17 @@ export default function App() {
     return (
       <AdmStudentsPage 
       onBack={() => navigate('adm-dashboard')}
+      />
+    );
+  }
+
+  if (activePage === 'adm-classes') {
+    return (
+      <AdmClassesPage
+        turmas={turmas}
+        onCreate={handleCreateClass}
+        onRemove={handleRemoveClass}
+        onBack={() => navigate('adm-dashboard')}
       />
     );
   }
