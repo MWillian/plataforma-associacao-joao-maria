@@ -1,4 +1,4 @@
-export function AdmDashboardPage({ onNavigate, turmas }) {
+export function AdmDashboardPage({ onNavigate, turmas, alunos }) {
   
 
   const produtos = [
@@ -19,14 +19,18 @@ export function AdmDashboardPage({ onNavigate, turmas }) {
     },
   ];
 
-  const totalAlunos = turmas.reduce(
-    (total, turma) => total + turma.alunos,
-    0
-  );
+const turmasComQuantidade = turmas.map((turma) => ({
+  ...turma,
+  alunos: alunos.filter(
+    (aluno) => Number(aluno.turmaId) === Number(turma.id)
+  ).length,
+}));
 
-  const turmasComAlunos = turmas.filter(
-    (turma) => turma.alunos > 0
-  ).length;
+const totalAlunos = alunos.length;
+
+const turmasComAlunos = turmasComQuantidade.filter(
+  (turma) => turma.alunos > 0
+).length;
 
   const ActionButton = ({ children, page, className = '' }) => (
     <button
@@ -131,9 +135,9 @@ export function AdmDashboardPage({ onNavigate, turmas }) {
             <span>ALUNOS MATRICULADOS</span>
           </div>
 
-          {turmas.map((turma) => (
+          {turmasComQuantidade.map((turma) => (
             <div
-              key={turma.nome}
+              key={turma.id}
               className="flex justify-between border-t border-[#E5EAF2] px-6 py-4 text-sm"
             >
               <span className="font-semibold text-[#172957]">
@@ -158,7 +162,8 @@ export function AdmDashboardPage({ onNavigate, turmas }) {
         </section>
 
         <p className="mb-6 text-xs text-[#7183A3]">
-          Dados demonstrativos de turmas e distribuição. Total de {totalAlunos} alunos conforme o cadastro.
+          Distribuição atual de alunos entre as turmas cadastradas.
+          Total de {totalAlunos} alunos conforme o cadastro.
         </p>
 
         {/* Última notícia */}
@@ -245,7 +250,6 @@ export function AdmDashboardPage({ onNavigate, turmas }) {
               >
                 <div className="flex h-24 items-center justify-center bg-[#EDF4FD]">
                   <span className="text-5xl" role="img" aria-label={produto.nome}>
-                    {produto.emoji}
                   </span>
                 </div>
 
