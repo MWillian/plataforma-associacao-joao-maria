@@ -59,6 +59,27 @@ export default function App() {
     setActivePage(page);
   };
 
+  const [alunos, setAlunos] = useState([
+    {
+      id: 1,
+      nome: 'Lucas Ferreira',
+      email: 'lucas@email.com',
+      telefone: '(11) 99234-5678',
+      turmaId: 1,
+      menor: true,
+      responsavel: 'Maria Ferreira (Mãe)',
+    },
+    {
+      id: 2,
+      nome: 'Carolina Mendes',
+      email: 'carol@email.com',
+      telefone: '(21) 97654-3210',
+      turmaId: 2,
+      menor: false,
+      responsavel: '',
+    },
+  ]);
+
   const [turmas, setTurmas] = useState([
     {
       id: 1,
@@ -68,7 +89,7 @@ export default function App() {
     },
     {
       id: 2,
-      nome: 'Ballet Infantil B',
+      nome: 'Ballet Adolescente',
       turno: 'Manhã',
       dias: ['Segunda-feira', 'Quarta-feira'],
     },
@@ -108,6 +129,7 @@ export default function App() {
       <AdmDashboardPage 
       onNavigate={navigate}
       turmas={turmas}
+      alunos={alunos}
       />
     );
   } 
@@ -115,6 +137,9 @@ export default function App() {
   if (activePage === 'adm-students') {
     return (
       <AdmStudentsPage 
+      turmas={turmas}
+      alunos={alunos}
+      setAlunos={setAlunos}
       onBack={() => navigate('adm-dashboard')}
       />
     );

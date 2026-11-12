@@ -1,31 +1,13 @@
 import { useState } from 'react';
 
-export function AdmStudentsPage({ onBack }) {
-  const [alunos, setAlunos] = useState([
-    {
-      id: 1,
-      nome: 'Lucas Ferreira',
-      email: 'lucas@email.com',
-      telefone: '(11) 99234-5678',
-      menor: true,
-      responsavel: 'Maria Ferreira (Mãe)',
-    },
-    {
-      id: 2,
-      nome: 'Carolina Mendes',
-      email: 'carol@email.com',
-      telefone: '(21) 97654-3210',
-      menor: false,
-      responsavel: '',
-    },
-  ]);
-
+export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   const [formulario, setFormulario] = useState({
     nome: '',
     email: '',
     telefone: '',
+    turmaId: '',
     menor: false,
     responsavel: '',
   });
