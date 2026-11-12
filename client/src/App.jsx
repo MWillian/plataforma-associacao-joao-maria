@@ -14,6 +14,7 @@ import  { AdmDashboardPage }  from './pages/AdmDashboardPage.jsx';
 import { AdmStudentsPage } from './pages/AdmStudentsPage.jsx';
 import { AdmClassesPage } from './pages/AdmClassesPage.jsx';
 import { AdmClassNoticesPage } from './pages/AdmClassNoticesPage.jsx';
+import { AdmNewsPage } from './pages/AdmNewsPage.jsx';
 
 export default function App() {
   const routes = {
@@ -23,6 +24,7 @@ export default function App() {
     '/admin/alunos': 'adm-students',
     '/admin/turmas': 'adm-classes',
     '/admin/avisos': 'adm-classNotices',
+    '/admin/noticias': 'adm-news',
   };
 
   const [activePage, setActivePage] = useState(() => {
@@ -130,6 +132,25 @@ export default function App() {
     },
   ]);
 
+  const [noticias, setNoticias] = useState([
+    {
+      id: 1,
+      titulo: 'Festival de Dança 2026',
+      descricao:
+        'Nossa instituição realizará o Grande Festival de Dança no próximo mês. Inscrições abertas para todas as turmas!',
+      data: '14/09/2026',
+      fotos: ['🎭', '📸'],
+    },
+    {
+      id: 2,
+      titulo: 'Encerramento do 2º Semestre',
+      descricao:
+        'Convocamos alunos e responsáveis para a festa de encerramento do semestre com apresentações especiais.',
+      data: '09/09/2026',
+      fotos: ['🎉'],
+    },
+  ]);
+
   const handleCreateClass = (novaTurma) => {
     setTurmas((listaAnterior) => [
       ...listaAnterior,
@@ -153,6 +174,19 @@ export default function App() {
   const handleRemoveNotice = (id) => {
     setAvisos((listaAnterior) =>
       listaAnterior.filter((aviso) => aviso.id !== id)
+    );
+  };
+
+  const handleCreateNews = (novaNoticia) => {
+    setNoticias((listaAnterior) => [
+      novaNoticia,
+      ...listaAnterior,
+    ]);
+  };
+
+  const handleRemoveNews = (id) => {
+    setNoticias((listaAnterior) =>
+      listaAnterior.filter((noticia) => noticia.id !== id)
     );
   };
 
@@ -203,6 +237,17 @@ export default function App() {
       />
     );
   } 
+
+  if (activePage === 'adm-news') {
+    return (
+      <AdmNewsPage
+        noticias={noticias}
+        onCreate={handleCreateNews}
+        onRemove={handleRemoveNews}
+        onBack={() => navigate('adm-dashboard')}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">

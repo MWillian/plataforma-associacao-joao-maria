@@ -174,8 +174,8 @@ const turmasComAlunos = turmasComQuantidade.filter(
               Última notícia
             </h2>
 
-            <ActionButton page="noticias">
-              Ver notícias →
+            <ActionButton page="adm-news">
+              Ver notícias
             </ActionButton>
           </div>
 
