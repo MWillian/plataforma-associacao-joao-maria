@@ -13,6 +13,7 @@ import   { AdmLoginPage }   from './pages/AdmLoginPage.jsx';
 import  { AdmDashboardPage }  from './pages/AdmDashboardPage.jsx';
 import { AdmStudentsPage } from './pages/AdmStudentsPage.jsx';
 import { AdmClassesPage } from './pages/AdmClassesPage.jsx';
+import { AdmClassNoticesPage } from './pages/AdmClassNoticesPage.jsx';
 
 export default function App() {
   const routes = {
@@ -21,6 +22,7 @@ export default function App() {
     '/admin/painel': 'adm-dashboard',
     '/admin/alunos': 'adm-students',
     '/admin/turmas': 'adm-classes',
+    '/admin/avisos': 'adm-classNotices',
   };
 
   const [activePage, setActivePage] = useState(() => {
@@ -107,6 +109,27 @@ export default function App() {
     }
   ]);
 
+  const [avisos, setAvisos] = useState([
+    {
+      id: 1,
+      turmaId: 1,
+      assunto: 'Ensaio Extra',
+      tipo: 'Informativo',
+      mensagem:
+        'Informamos que haverá ensaio extra na próxima sexta-feira, dia 27/09, das 14h às 16h. Presença obrigatória.',
+      data: '21/09/2026',
+    },
+    {
+      id: 2,
+      turmaId: 2,
+      assunto: 'Aula Cancelada',
+      tipo: 'Cancelamento',
+      mensagem:
+        'A aula da próxima quinta-feira, 26/09, está cancelada por motivo de saúde da professora. Retorno previsto para 03/10.',
+      data: '20/09/2026',
+    },
+  ]);
+
   const handleCreateClass = (novaTurma) => {
     setTurmas((listaAnterior) => [
       ...listaAnterior,
@@ -117,6 +140,19 @@ export default function App() {
   const handleRemoveClass = (id) => {
     setTurmas((listaAnterior) =>
       listaAnterior.filter((turma) => turma.id !== id)
+    );
+  };
+
+  const handleCreateNotice = (novoAviso) => {
+    setAvisos((listaAnterior) => [
+      novoAviso,
+      ...listaAnterior,
+    ]);
+  };
+
+  const handleRemoveNotice = (id) => {
+    setAvisos((listaAnterior) =>
+      listaAnterior.filter((aviso) => aviso.id !== id)
     );
   };
 
@@ -155,6 +191,18 @@ export default function App() {
       />
     );
   }
+
+  if (activePage === 'adm-classNotices') {
+    return (
+      <AdmClassNoticesPage
+        turmas={turmas}
+        avisos={avisos}
+        onCreate={handleCreateNotice}
+        onRemove={handleRemoveNotice}
+        onBack={() => navigate('adm-dashboard')}
+      />
+    );
+  } 
 
   return (
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
