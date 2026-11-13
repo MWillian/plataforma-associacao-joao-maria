@@ -15,6 +15,7 @@ import { AdmStudentsPage } from './pages/AdmStudentsPage.jsx';
 import { AdmClassesPage } from './pages/AdmClassesPage.jsx';
 import { AdmClassNoticesPage } from './pages/AdmClassNoticesPage.jsx';
 import { AdmNewsPage } from './pages/AdmNewsPage.jsx';
+import { AdmProductsPage } from './pages/AdmProductsPage.jsx';
 
 export default function App() {
   const routes = {
@@ -25,6 +26,7 @@ export default function App() {
     '/admin/turmas': 'adm-classes',
     '/admin/avisos': 'adm-classNotices',
     '/admin/noticias': 'adm-news',
+    '/admin/produtos': 'adm-products',
   };
 
   const [activePage, setActivePage] = useState(() => {
@@ -151,6 +153,36 @@ export default function App() {
     },
   ]);
 
+  const [produtos, setProdutos] = useState([
+    {
+      id: 1,
+      nome: 'Tomate (Kg)',
+      descricao: 'Tomates produzidos por associados da agricultura familiar.',
+      preco: 15.00,
+      categoria: 'Agricultura Familiar',
+      imagens: [],
+      disponivel: true,
+    },
+    {
+      id: 2,
+      nome: 'Kit pulseiras de macramê',
+      descricao: 'Conjunto de pulseiras artesanais criadas por associados.',
+      preco: 45.00,
+      categoria: 'Artesanato',
+      imagens: [],
+      disponivel: true,
+    },
+    {
+      id: 3,
+      nome: 'Sousplat de crochê',
+      descricao: 'Conjunto de 4 sousplat + 4 porta copos em crochê.',
+      preco: 130.00,
+      categoria: 'Artesanato',
+      imagens: [],
+      disponivel: true,
+    },
+  ]);
+
   const handleCreateClass = (novaTurma) => {
     setTurmas((listaAnterior) => [
       ...listaAnterior,
@@ -190,6 +222,29 @@ export default function App() {
     );
   };
 
+  const handleCreateProduct = (novoProduto) => {
+    setProdutos((listaAnterior) => [
+      ...listaAnterior,
+      novoProduto,
+    ]);
+  };
+
+  const handleUpdateProduct = (produtoAtualizado) => {
+    setProdutos((listaAnterior) =>
+      listaAnterior.map((produto) =>
+        produto.id === produtoAtualizado.id
+          ? produtoAtualizado
+          : produto
+      )
+    );
+  };
+
+  const handleRemoveProduct = (id) => {
+    setProdutos((listaAnterior) =>
+      listaAnterior.filter((produto) => produto.id !== id)
+    );
+  };
+
   if (activePage === 'adm-login') {
     return <AdmLoginPage />;
   }
@@ -200,6 +255,7 @@ export default function App() {
       onNavigate={navigate}
       turmas={turmas}
       alunos={alunos}
+      produtos={produtos}
       />
     );
   } 
@@ -245,6 +301,18 @@ export default function App() {
         onCreate={handleCreateNews}
         onRemove={handleRemoveNews}
         onBack={() => navigate('adm-dashboard')}
+      />
+    );
+  }
+
+  if (activePage === 'adm-products') {
+    return (
+      <AdmProductsPage 
+        produtos={produtos}
+        onCreate={handleCreateProduct}
+        onUpdate={handleUpdateProduct}
+        onRemove={handleRemoveProduct}
+        onBack={ () => navigate('adm-dashboard')}
       />
     );
   }
