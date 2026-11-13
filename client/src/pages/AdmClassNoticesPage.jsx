@@ -1,105 +1,105 @@
 
 import { useState } from 'react';
 
-const obterDataAtual = () => {
-  const hoje = new Date();
+const getCurrentDate = () => {
+  const today = new Date();
 
-  return hoje.toLocaleDateString('pt-BR');
+  return today.toLocaleDateString('pt-BR');
 };
 
 export function AdmClassNoticesPage({
-  turmas = [],
-  avisos = [],
+  classes = [],
+  notices = [],
   onCreate,
   onRemove,
   onBack,
 }) {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  const [formulario, setFormulario] = useState({
-    turmaId: '',
-    assunto: '',
-    tipo: 'Informativo',
-    mensagem: '',
+  const [form, setForm] = useState({
+    danceClassId: '',
+    subject: '',
+    type: 'Informativo',
+    message: '',
   });
 
-  const [erro, setErro] = useState('');
+  const [error, setError] = useState('');
 
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormulario((estadoAnterior) => ({
-      ...estadoAnterior,
+    setForm((prevState) => ({
+      ...prevState,
       [name]: value,
     }));
   };
 
-  const limparFormulario = () => {
-    setFormulario({
-      turmaId: '',
-      assunto: '',
-      tipo: 'Informativo',
-      mensagem: '',
+  const clearForm = () => {
+    setForm({
+      danceClassId: '',
+      subject: '',
+      type: 'Informativo',
+      message: '',
     });
 
-    setErro('');
+    setError('');
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (turmas.length === 0) {
-      setErro('Cadastre uma turma antes de criar um aviso.');
+    if (classes.length === 0) {
+      setError('Cadastre uma turma antes de criar um aviso.');
       return;
     }
 
-    const turmaSelecionada = turmas.find(
-      (turma) => Number(turma.id) === Number(formulario.turmaId)
+    const selectedClass = classes.find(
+      (danceClass) => Number(danceClass.id) === Number(form.danceClassId)
     );
 
-    if (!turmaSelecionada) {
-      setErro('Selecione uma turma válida.');
+    if (!selectedClass) {
+      setError('Selecione uma turma válida.');
       return;
     }
 
-    const novoAviso = {
+    const newNotice = {
       id: Date.now(),
-      turmaId: turmaSelecionada.id,
-      assunto: formulario.assunto.trim(),
-      tipo: formulario.tipo,
-      mensagem: formulario.mensagem.trim(),
-      data: obterDataAtual(),
+      danceClassId: selectedClass.id,
+      subject: form.subject.trim(),
+      type: form.type,
+      message: form.message.trim(),
+      date: getCurrentDate(),
     };
 
-    onCreate(novoAviso);
+    onCreate(newNotice);
 
-    limparFormulario();
-    setMostrarFormulario(false);
+    clearForm();
+    setShowForm(false);
   };
 
   const handleCancel = () => {
-    limparFormulario();
-    setMostrarFormulario(false);
+    clearForm();
+    setShowForm(false);
   };
 
-  const obterTurma = (turmaId) => {
-    return turmas.find(
-      (turma) => Number(turma.id) === Number(turmaId)
+  const getDanceClass = (danceClassId) => {
+    return classes.find(
+      (danceClass) => Number(danceClass.id) === Number(danceClassId)
     );
   };
 
-  const obterNomeTurma = (turmaId) => {
-    const turma = obterTurma(turmaId);
+  const getClassName = (danceClassId) => {
+    const danceClass = getDanceClass(danceClassId);
 
-    if (!turma) {
+    if (!danceClass) {
       return 'Turma não encontrada';
     }
 
-    const dias = turma.dias?.join(', ');
+    const days = danceClass.days?.join(', ');
 
-    return dias
-      ? `${turma.nome} – ${dias}`
-      : turma.nome;
+    return days
+      ? `${danceClass.name} – ${days}`
+      : danceClass.name;
   };
 
   return (
@@ -112,7 +112,7 @@ export function AdmClassNoticesPage({
 
           <div>
             <h1 className="text-2xl font-bold text-[#172957] md:text-3xl">
-              Avisos para Turmas
+              notices para Turmas
             </h1>
 
             <p className="mt-1 text-sm text-[#7183A3] md:text-base">
@@ -122,11 +122,11 @@ export function AdmClassNoticesPage({
 
           <div className="flex flex-wrap gap-3">
 
-            {!mostrarFormulario ? (
+            {!showForm ? (
               <>
                 <button
                   type="button"
-                  onClick={() => setMostrarFormulario(true)}
+                  onClick={() => setShowForm(true)}
                   className="rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
                 >
                   + Novo Aviso
@@ -154,7 +154,7 @@ export function AdmClassNoticesPage({
         </header>
 
         {/* Formulário de novo aviso */}
-        {mostrarFormulario && (
+        {showForm && (
           <section className="mb-6 rounded-xl border border-[#DCE4F0] bg-white p-6 md:p-7">
 
             <h2 className="mb-6 text-lg font-semibold text-[#23418F]">
@@ -168,28 +168,28 @@ export function AdmClassNoticesPage({
                 {/* Turma destinatária */}
                 <div>
                   <label
-                    htmlFor="turmaId"
+                    htmlFor="danceClassId"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
                     Turma destinatária
                   </label>
 
                   <select
-                    id="turmaId"
-                    name="turmaId"
-                    value={formulario.turmaId}
+                    id="danceClassId"
+                    name="danceClassId"
+                    value={form.danceClassId}
                     onChange={handleChange}
                     required
-                    disabled={turmas.length === 0}
+                    disabled={classes.length === 0}
                     className="w-full rounded-lg border border-[#DCE4F0] bg-white px-4 py-3 text-sm text-[#172033] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-100"
                   >
                     <option value="" disabled>
                       Selecione a turma...
                     </option>
 
-                    {turmas.map((turma) => (
-                      <option key={turma.id} value={turma.id}>
-                        {turma.nome}
+                    {classes.map((danceClass) => (
+                      <option key={danceClass.id} value={danceClass.id}>
+                        {danceClass.name}
                       </option>
                     ))}
                   </select>
@@ -198,17 +198,17 @@ export function AdmClassNoticesPage({
                 {/* Assunto */}
                 <div>
                   <label
-                    htmlFor="assunto"
+                    htmlFor="subject"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
                     Assunto <span className="text-blue-600">*</span>
                   </label>
 
                   <input
-                    id="assunto"
+                    id="subject"
                     type="text"
-                    name="assunto"
-                    value={formulario.assunto}
+                    name="subject"
+                    value={form.subject}
                     onChange={handleChange}
                     placeholder="Ex: Ensaio extra, Aula cancelada"
                     required
@@ -219,16 +219,16 @@ export function AdmClassNoticesPage({
                 {/* Tipo de aviso */}
                 <div>
                   <label
-                    htmlFor="tipo"
+                    htmlFor="type"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
                     Tipo de aviso
                   </label>
 
                   <select
-                    id="tipo"
-                    name="tipo"
-                    value={formulario.tipo}
+                    id="type"
+                    name="type"
+                    value={form.type}
                     onChange={handleChange}
                     className="w-full rounded-lg border border-[#DCE4F0] bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   >
@@ -247,16 +247,16 @@ export function AdmClassNoticesPage({
               {/* Mensagem */}
               <div className="mt-5 max-w-2xl">
                 <label
-                  htmlFor="mensagem"
+                  htmlFor="message"
                   className="mb-2 block text-sm font-medium text-[#40516B]"
                 >
                   Mensagem
                 </label>
 
                 <textarea
-                  id="mensagem"
-                  name="mensagem"
-                  value={formulario.mensagem}
+                  id="message"
+                  name="message"
+                  value={form.message}
                   onChange={handleChange}
                   placeholder="Escreva o conteúdo do aviso para os alunos e responsáveis..."
                   required
@@ -265,9 +265,9 @@ export function AdmClassNoticesPage({
                 />
               </div>
 
-              {erro && (
+              {error && (
                 <p className="mt-3 text-sm text-red-600">
-                  {erro}
+                  {error}
                 </p>
               )}
 
@@ -285,12 +285,12 @@ export function AdmClassNoticesPage({
           </section>
         )}
 
-        {/* Lista de avisos */}
+        {/* Lista de notices */}
         <section className="space-y-3">
 
-          {avisos.map((aviso) => (
+          {notices.map((notice) => (
             <article
-              key={aviso.id}
+              key={notice.id}
               className="relative max-w-3xl rounded-xl border border-[#DCE4F0] bg-white p-5 pr-12"
             >
 
@@ -299,39 +299,39 @@ export function AdmClassNoticesPage({
 
                 <span
                   className={`rounded-md px-2 py-1 font-medium ${
-                    aviso.tipo === 'Cancelamento'
+                    notice.type === 'Cancelamento'
                       ? 'bg-red-100 text-red-600'
                       : 'bg-blue-100 text-blue-700'
                   }`}
                 >
-                  {aviso.tipo}
+                  {notice.type}
                 </span>
 
                 <span className="text-[#91A2BF]">
-                  {aviso.data}
+                  {notice.date}
                 </span>
 
                 <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
-                  {obterNomeTurma(aviso.turmaId)}
+                  {getClassName(notice.danceClassId)}
                 </span>
 
               </div>
 
               {/* Assunto */}
               <h3 className="mb-2 font-semibold text-[#172033]">
-                {aviso.assunto}
+                {notice.subject}
               </h3>
 
               {/* Mensagem */}
               <p className="text-sm leading-relaxed text-[#526581]">
-                {aviso.mensagem}
+                {notice.message}
               </p>
 
               {/* Remover aviso */}
               <button
                 type="button"
-                onClick={() => onRemove(aviso.id)}
-                aria-label={`Remover aviso ${aviso.assunto}`}
+                onClick={() => onRemove(notice.id)}
+                aria-label={`Remover aviso ${notice.subject}`}
                 title="Remover aviso"
                 className="absolute right-4 top-5 text-2xl leading-none text-[#B3C1D4] transition hover:text-red-500"
               >
@@ -341,7 +341,7 @@ export function AdmClassNoticesPage({
             </article>
           ))}
 
-          {avisos.length === 0 && (
+          {notices.length === 0 && (
             <div className="rounded-xl border border-[#DCE4F0] bg-white px-6 py-12 text-center">
               <p className="font-medium text-[#526581]">
                 Nenhum aviso cadastrado.

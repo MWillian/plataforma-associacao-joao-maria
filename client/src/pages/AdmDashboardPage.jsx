@@ -1,17 +1,17 @@
-export function AdmDashboardPage({ onNavigate, turmas, alunos, produtos }) {
+export function AdmDashboardPage({ onNavigate, classes, students, products }) {
   
 
-const turmasComQuantidade = turmas.map((turma) => ({
-  ...turma,
-  alunos: alunos.filter(
-    (aluno) => Number(aluno.turmaId) === Number(turma.id)
+const classesWithStudents = classes.map((danceClass) => ({
+  ...danceClass,
+  students: students.filter(
+    (student) => Number(student.danceClassId) === Number(danceClass.id)
   ).length,
 }));
 
-const totalAlunos = alunos.length;
+const totalStudents = students.length;
 
-const turmasComAlunos = turmasComQuantidade.filter(
-  (turma) => turma.alunos > 0
+const classesWithStudentCount = classesWithStudents.filter(
+  (danceClass) => danceClass.students > 0
 ).length;
 
   const ActionButton = ({ children, page, className = '' }) => (
@@ -48,7 +48,7 @@ const turmasComAlunos = turmasComQuantidade.filter(
             </p>
 
             <p className="mt-1 text-3xl font-bold text-blue-700">
-              {turmas.length}
+              {classes.length}
             </p>
 
             <p className="mt-1 text-xs text-[#7183A3]">
@@ -62,7 +62,7 @@ const turmasComAlunos = turmasComQuantidade.filter(
             </p>
 
             <p className="mt-1 text-3xl font-bold text-blue-700">
-              {totalAlunos}
+              {totalStudents}
             </p>
 
             <p className="mt-1 text-xs text-[#7183A3]">
@@ -76,11 +76,11 @@ const turmasComAlunos = turmasComQuantidade.filter(
             </p>
 
             <p className="mt-1 text-3xl font-bold text-blue-700">
-              {turmasComAlunos} de {turmas.length}
+              {classesWithStudentCount} de {classes.length}
             </p>
 
             <p className="mt-1 text-xs text-[#7183A3]">
-              {turmas.length - turmasComAlunos} turmas sem matrículas
+              {classes.length - classesWithStudentCount} turmas sem matrículas
             </p>
           </div>
 
@@ -117,35 +117,35 @@ const turmasComAlunos = turmasComQuantidade.filter(
             <span>ALUNOS MATRICULADOS</span>
           </div>
 
-          {turmasComQuantidade.map((turma) => (
+          {classesWithStudents.map((danceClass) => (
             <div
-              key={turma.id}
+              key={danceClass.id}
               className="flex justify-between border-t border-[#E5EAF2] px-6 py-4 text-sm"
             >
               <span className="font-semibold text-[#172957]">
-                {turma.nome}
+                {danceClass.name}
               </span>
 
               <span className="font-bold text-[#172957]">
-                {turma.alunos}
+                {danceClass.students}
               </span>
             </div>
           ))}
 
           <div className="flex justify-between border-t border-[#E5EAF2] px-6 py-4 text-sm font-bold">
             <span className="text-[#172957]">
-              Total nas {turmas.length} turmas
+              Total nas {classes.length} turmas
             </span>
 
             <span className="text-blue-700">
-              {totalAlunos} alunos
+              {totalStudents} alunos
             </span>
           </div>
         </section>
 
         <p className="mb-6 text-xs text-[#7183A3]">
           Distribuição atual de alunos entre as turmas cadastradas.
-          Total de {totalAlunos} alunos conforme o cadastro.
+          Total de {totalStudents} alunos conforme o cadastro.
         </p>
 
         {/* Última notícia */}
@@ -225,13 +225,13 @@ const turmasComAlunos = turmasComQuantidade.filter(
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 
-            {produtos.map((produto) => (
+            {products.map((product) => (
               <article
-                key={produto.nome}
+                key={product.name}
                 className="overflow-hidden rounded-xl border border-[#DCE4F0] bg-white"
               >
                 <div className="flex h-24 items-center justify-center bg-[#EDF4FD]">
-                  <span className="text-5xl" role="img" aria-label={produto.nome}>
+                  <span className="text-5xl" role="img" aria-label={product.name}>
                   </span>
                 </div>
 
@@ -239,16 +239,19 @@ const turmasComAlunos = turmasComQuantidade.filter(
 
                   <div>
                     <h3 className="text-sm font-semibold text-[#172033]">
-                      {produto.nome}
+                      {product.name}
                     </h3>
 
                     <p className="mt-7 text-xs leading-relaxed text-[#7183A3]">
-                      {produto.descricao}
+                      {product.description}
                     </p>
                   </div>
 
                   <p className="mt-5 font-bold text-blue-700">
-                    {produto.preco}
+                    {Number(product.price).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}
                   </p>
                 </div>
               </article>

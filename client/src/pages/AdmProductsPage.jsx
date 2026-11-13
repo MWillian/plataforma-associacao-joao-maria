@@ -1,7 +1,7 @@
 
 import { useMemo, useState } from 'react';
 
-const categoriasDisponiveis = [
+const availableCategories = [
   'Artesanato',
   'Agricultura familiar',
   'Vestuário',
@@ -10,43 +10,43 @@ const categoriasDisponiveis = [
   'Outros',
 ];
 
-const formularioInicial = {
-  nome: '',
-  descricao: '',
-  preco: '',
-  categoria: '',
-  imagens: [],
-  disponivel: true,
+const initialForm = {
+  name: '',
+  description: '',
+  price: '',
+  category: '',
+  images: [],
+  available: true,
 };
 
-function formatarPreco(valor) {
-  return Number(valor || 0).toLocaleString('pt-BR', {
+function formatPrice(value) {
+  return Number(value || 0).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   });
 }
 
-function obterImagens(produto) {
-  if (produto.imagens) {
-    return produto.imagens;
+function getProductImages(product) {
+  if (product.images) {
+    return product.images;
   }
 
-  // Compatibilidade com os produtos demonstrativos antigos,
-  // que utilizavam a propriedade "fotos".
-  return (produto.fotos || []).map((foto) => ({
-    url: foto,
-    tipo: 'emoji',
+  // Compatibilidade com produtos antigos que utilizavam a propriedade "photos".
+  return (product.photos || []).map((photo) => ({
+    url: photo,
+    type: 'emoji',
   }));
 }
 
-function ImagemProduto({ imagem }) {
-  const url = typeof imagem === 'string' ? imagem : imagem.url;
-  const ehArquivoImagem =
+function ProductImage({ image }) {
+  const url = typeof image === 'string' ? image : image.url;
+
+  const isImageFile =
     url?.startsWith('blob:') ||
     url?.startsWith('data:') ||
     url?.startsWith('http');
 
-  if (ehArquivoImagem) {
+  if (isImageFile) {
     return (
       <img
         src={url}
@@ -64,145 +64,153 @@ function ImagemProduto({ imagem }) {
 }
 
 export function AdmProductsPage({
-  produtos = [],
+  products = [],
   onCreate,
   onUpdate,
   onRemove,
   onBack,
 }) {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [produtoEditando, setProdutoEditando] = useState(null);
-  const [formulario, setFormulario] = useState(formularioInicial);
+  const [showForm, setShowForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [form, setForm] = useState(initialForm);
 
-  const [filtroCategoria, setFiltroCategoria] = useState('Todas');
-  const [precoMinimo, setPrecoMinimo] = useState('');
-  const [precoMaximo, setPrecoMaximo] = useState('');
-  const [ordenacao, setOrdenacao] = useState('nome');
+  const [categoryFilter, setCategoryFilter] = useState('Todas');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [sortOrder, setSortOrder] = useState('name');
 
-  const categoriasCadastradas = useMemo(() => {
-    return [...new Set(produtos.map((produto) => produto.categoria || 'Outros'))];
-  }, [produtos]);
+  const registeredCategories = useMemo(() => {
+    return [
+      ...new Set(
+        products.map((product) => product.category || 'Outros')
+      ),
+    ];
+  }, [products]);
 
-  const produtosFiltrados = useMemo(() => {
-    const resultado = produtos.filter((produto) => {
-      const preco = Number(produto.preco);
-      const categoria = produto.categoria || 'Outros';
+  const filteredProducts = useMemo(() => {
+    const result = products.filter((product) => {
+      const price = Number(product.price);
+      const category = product.category || 'Outros';
 
-      const atendeCategoria =
-        filtroCategoria === 'Todas' || categoria === filtroCategoria;
+      const matchesCategory =
+        categoryFilter === 'Todas' || category === categoryFilter;
 
-      const atendePrecoMinimo =
-        precoMinimo === '' || preco >= Number(precoMinimo);
+      const matchesMinPrice =
+        minPrice === '' || price >= Number(minPrice);
 
-      const atendePrecoMaximo =
-        precoMaximo === '' || preco <= Number(precoMaximo);
+      const matchesMaxPrice =
+        maxPrice === '' || price <= Number(maxPrice);
 
-      return atendeCategoria && atendePrecoMinimo && atendePrecoMaximo;
+      return matchesCategory && matchesMinPrice && matchesMaxPrice;
     });
 
-    return resultado.sort((a, b) => {
-      if (ordenacao === 'preco') {
-        return Number(a.preco) - Number(b.preco);
+    return result.sort((a, b) => {
+      if (sortOrder === 'price') {
+        return Number(a.price) - Number(b.price);
       }
 
-      if (ordenacao === 'categoria') {
-        return (a.categoria || 'Outros').localeCompare(
-          b.categoria || 'Outros',
+      if (sortOrder === 'category') {
+        return (a.category || 'Outros').localeCompare(
+          b.category || 'Outros',
           'pt-BR'
         );
       }
 
-      return a.nome.localeCompare(b.nome, 'pt-BR');
+      return a.name.localeCompare(b.name, 'pt-BR');
     });
-  }, [produtos, filtroCategoria, precoMinimo, precoMaximo, ordenacao]);
+  }, [products, categoryFilter, minPrice, maxPrice, sortOrder]);
 
-  const atualizarCampo = (campo, valor) => {
-    setFormulario((anterior) => ({
-      ...anterior,
-      [campo]: valor,
+  const updateField = (field, value) => {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
     }));
   };
 
-  const adicionarImagens = (evento) => {
-    const arquivosSelecionados = Array.from(evento.target.files || []);
-    const espacosDisponiveis = 3 - formulario.imagens.length;
+  const addImages = (event) => {
+    const selectedFiles = Array.from(event.target.files || []);
+    const availableSlots = 3 - form.images.length;
 
-    if (espacosDisponiveis <= 0) {
+    if (availableSlots <= 0) {
       alert('Este produto já possui o limite de 3 imagens.');
-      evento.target.value = '';
+      event.target.value = '';
       return;
     }
 
-    const arquivosValidos = arquivosSelecionados
-      .filter((arquivo) => arquivo.type.startsWith('image/'))
-      .slice(0, espacosDisponiveis);
+    const validFiles = selectedFiles
+      .filter((file) => file.type.startsWith('image/'))
+      .slice(0, availableSlots);
 
-    const novasImagens = arquivosValidos.map((arquivo) => ({
-      url: URL.createObjectURL(arquivo),
-      arquivo,
+    const newImages = validFiles.map((file) => ({
+      url: URL.createObjectURL(file),
+      file,
     }));
 
-    setFormulario((anterior) => ({
-      ...anterior,
-      imagens: [...anterior.imagens, ...novasImagens],
+    setForm((previous) => ({
+      ...previous,
+      images: [...previous.images, ...newImages],
     }));
 
-    evento.target.value = '';
+    event.target.value = '';
   };
 
-  const removerImagem = (indice) => {
-    setFormulario((anterior) => ({
-      ...anterior,
-      imagens: anterior.imagens.filter((_, i) => i !== indice),
+  const removeImage = (index) => {
+    setForm((previous) => ({
+      ...previous,
+      images: previous.images.filter((_, i) => i !== index),
     }));
   };
 
-  const limparFormulario = () => {
-    setFormulario(formularioInicial);
-    setProdutoEditando(null);
-    setMostrarFormulario(false);
+  const clearForm = () => {
+    setForm(initialForm);
+    setEditingProduct(null);
+    setShowForm(false);
   };
 
-  const salvarProduto = (evento) => {
-    evento.preventDefault();
+  const saveProduct = (event) => {
+    event.preventDefault();
 
-    if (!formulario.nome.trim() || !formulario.categoria || formulario.preco === '') {
+    if (
+      !form.name.trim() ||
+      !form.category ||
+      form.price === ''
+    ) {
       alert('Preencha o nome, a categoria e o preço do produto.');
       return;
     }
 
-    const dadosProduto = {
-      ...formulario,
-      nome: formulario.nome.trim(),
-      descricao: formulario.descricao.trim(),
-      preco: Number(formulario.preco),
+    const productData = {
+      ...form,
+      name: form.name.trim(),
+      description: form.description.trim(),
+      price: Number(form.price),
     };
 
-    if (produtoEditando) {
+    if (editingProduct) {
       onUpdate?.({
-        ...dadosProduto,
-        id: produtoEditando.id,
+        ...productData,
+        id: editingProduct.id,
       });
     } else {
       onCreate?.({
-        ...dadosProduto,
+        ...productData,
         id: Date.now(),
       });
     }
 
-    limparFormulario();
+    clearForm();
   };
 
-  const abrirEdicao = (produto) => {
-    setProdutoEditando(produto);
+  const openEdit = (product) => {
+    setEditingProduct(product);
 
-    setFormulario({
-      nome: produto.nome || '',
-      descricao: produto.descricao || '',
-      preco: String(produto.preco ?? ''),
-      categoria: produto.categoria || 'Outros',
-      imagens: obterImagens(produto),
-      disponivel: produto.disponivel ?? true,
+    setForm({
+      name: product.name || '',
+      description: product.description || '',
+      price: String(product.price ?? ''),
+      category: product.category || 'Outros',
+      images: getProductImages(product),
+      available: product.available ?? true,
     });
   };
 
@@ -226,9 +234,9 @@ export function AdmProductsPage({
             <button
               type="button"
               onClick={() => {
-                setFormulario(formularioInicial);
-                setProdutoEditando(null);
-                setMostrarFormulario(true);
+                setForm(initialForm);
+                setEditingProduct(null);
+                setShowForm(true);
               }}
               className="rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800"
             >
@@ -246,7 +254,7 @@ export function AdmProductsPage({
         </header>
 
         {/* Formulário de cadastro */}
-        {mostrarFormulario && (
+        {showForm && (
           <section className="mb-8 rounded-xl border border-[#DCE4F0] bg-white p-6">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="font-bold text-[#172957]">
@@ -255,14 +263,14 @@ export function AdmProductsPage({
 
               <button
                 type="button"
-                onClick={limparFormulario}
+                onClick={clearForm}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
               >
                 ✕ Cancelar
               </button>
             </div>
 
-            <form onSubmit={salvarProduto}>
+            <form onSubmit={saveProduct}>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[#344563]">
@@ -271,8 +279,10 @@ export function AdmProductsPage({
 
                   <input
                     type="text"
-                    value={formulario.nome}
-                    onChange={(e) => atualizarCampo('nome', e.target.value)}
+                    value={form.name}
+                    onChange={(event) =>
+                      updateField('name', event.target.value)
+                    }
                     placeholder="Ex: Camiseta Oficial"
                     required
                     className="w-full rounded-lg border border-[#DCE4F0] px-3 py-3 text-sm outline-none focus:border-blue-600"
@@ -288,8 +298,10 @@ export function AdmProductsPage({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formulario.preco}
-                    onChange={(e) => atualizarCampo('preco', e.target.value)}
+                    value={form.price}
+                    onChange={(event) =>
+                      updateField('price', event.target.value)
+                    }
                     placeholder="0,00"
                     required
                     className="w-full rounded-lg border border-[#DCE4F0] px-3 py-3 text-sm outline-none focus:border-blue-600"
@@ -302,16 +314,20 @@ export function AdmProductsPage({
                   </label>
 
                   <select
-                    value={formulario.categoria}
-                    onChange={(e) => atualizarCampo('categoria', e.target.value)}
+                    value={form.category}
+                    onChange={(event) =>
+                      updateField('category', event.target.value)
+                    }
                     required
                     className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-3 text-sm outline-none focus:border-blue-600"
                   >
-                    <option value="">Selecione uma categoria...</option>
+                    <option value="">
+                      Selecione uma categoria...
+                    </option>
 
-                    {categoriasDisponiveis.map((categoria) => (
-                      <option key={categoria} value={categoria}>
-                        {categoria}
+                    {availableCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
                       </option>
                     ))}
                   </select>
@@ -324,8 +340,10 @@ export function AdmProductsPage({
                 </label>
 
                 <textarea
-                  value={formulario.descricao}
-                  onChange={(e) => atualizarCampo('descricao', e.target.value)}
+                  value={form.description}
+                  onChange={(event) =>
+                    updateField('description', event.target.value)
+                  }
                   placeholder="Descreva o produto, materiais, tamanhos disponíveis..."
                   rows={4}
                   className="w-full resize-none rounded-lg border border-[#DCE4F0] px-3 py-3 text-sm outline-none focus:border-blue-600"
@@ -338,16 +356,16 @@ export function AdmProductsPage({
                 </label>
 
                 <div className="flex flex-wrap gap-3">
-                  {formulario.imagens.map((imagem, indice) => (
+                  {form.images.map((image, index) => (
                     <div
-                      key={`${imagem.url}-${indice}`}
+                      key={`${image.url}-${index}`}
                       className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-[#DCE4F0] bg-[#EDF4FD]"
                     >
-                      <ImagemProduto imagem={imagem} />
+                      <ProductImage image={image} />
 
                       <button
                         type="button"
-                        onClick={() => removerImagem(indice)}
+                        onClick={() => removeImage(index)}
                         aria-label="Remover imagem"
                         className="absolute right-1 top-1 rounded-full bg-white px-1.5 text-xs text-red-600 shadow"
                       >
@@ -356,7 +374,7 @@ export function AdmProductsPage({
                     </div>
                   ))}
 
-                  {formulario.imagens.length < 3 && (
+                  {form.images.length < 3 && (
                     <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-blue-300 text-sm text-blue-600 hover:bg-blue-50">
                       <span className="text-xl">+</span>
                       <span>Foto</span>
@@ -365,7 +383,7 @@ export function AdmProductsPage({
                         type="file"
                         accept="image/*"
                         multiple
-                        onChange={adicionarImagens}
+                        onChange={addImages}
                         className="hidden"
                       />
                     </label>
@@ -373,7 +391,7 @@ export function AdmProductsPage({
                 </div>
 
                 <p className="mt-2 text-xs text-[#91A2BF]">
-                  {formulario.imagens.length} de 3 imagens selecionadas.
+                  {form.images.length} de 3 imagens selecionadas.
                 </p>
               </div>
 
@@ -402,15 +420,17 @@ export function AdmProductsPage({
               </label>
 
               <select
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
+                value={categoryFilter}
+                onChange={(event) =>
+                  setCategoryFilter(event.target.value)
+                }
                 className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm"
               >
                 <option value="Todas">Todas as categorias</option>
 
-                {categoriasCadastradas.map((categoria) => (
-                  <option key={categoria} value={categoria}>
-                    {categoria}
+                {registeredCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
                   </option>
                 ))}
               </select>
@@ -425,8 +445,8 @@ export function AdmProductsPage({
                 type="number"
                 min="0"
                 step="0.01"
-                value={precoMinimo}
-                onChange={(e) => setPrecoMinimo(e.target.value)}
+                value={minPrice}
+                onChange={(event) => setMinPrice(event.target.value)}
                 placeholder="0,00"
                 className="w-full rounded-lg border border-[#DCE4F0] px-3 py-2.5 text-sm"
               />
@@ -441,8 +461,8 @@ export function AdmProductsPage({
                 type="number"
                 min="0"
                 step="0.01"
-                value={precoMaximo}
-                onChange={(e) => setPrecoMaximo(e.target.value)}
+                value={maxPrice}
+                onChange={(event) => setMaxPrice(event.target.value)}
                 placeholder="Sem limite"
                 className="w-full rounded-lg border border-[#DCE4F0] px-3 py-2.5 text-sm"
               />
@@ -454,29 +474,29 @@ export function AdmProductsPage({
               </label>
 
               <select
-                value={ordenacao}
-                onChange={(e) => setOrdenacao(e.target.value)}
+                value={sortOrder}
+                onChange={(event) => setSortOrder(event.target.value)}
                 className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm"
               >
-                <option value="nome">Ordem alfabética</option>
-                <option value="preco">Menor preço</option>
-                <option value="categoria">Categoria</option>
+                <option value="name">Ordem alfabética</option>
+                <option value="price">Menor preço</option>
+                <option value="category">Categoria</option>
               </select>
             </div>
           </div>
 
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs text-[#7183A3]">
-              {produtosFiltrados.length} produto(s) encontrado(s)
+              {filteredProducts.length} produto(s) encontrado(s)
             </p>
 
             <button
               type="button"
               onClick={() => {
-                setFiltroCategoria('Todas');
-                setPrecoMinimo('');
-                setPrecoMaximo('');
-                setOrdenacao('nome');
+                setCategoryFilter('Todas');
+                setMinPrice('');
+                setMaxPrice('');
+                setSortOrder('name');
               }}
               className="text-xs font-semibold text-blue-700 hover:underline"
             >
@@ -486,24 +506,24 @@ export function AdmProductsPage({
         </section>
 
         {/* Listagem de produtos */}
-        {produtosFiltrados.length > 0 ? (
+        {filteredProducts.length > 0 ? (
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {produtosFiltrados.map((produto) => {
-              const imagens = obterImagens(produto);
+            {filteredProducts.map((product) => {
+              const images = getProductImages(product);
 
               return (
                 <article
-                  key={produto.id}
+                  key={product.id}
                   className="overflow-hidden rounded-xl border border-[#DCE4F0] bg-white"
                 >
                   <div className="relative flex h-36 items-center justify-center gap-2 bg-[#EDF4FD] p-3">
-                    {imagens.length > 0 ? (
-                      imagens.slice(0, 3).map((imagem, indice) => (
+                    {images.length > 0 ? (
+                      images.slice(0, 3).map((image, index) => (
                         <div
-                          key={indice}
+                          key={index}
                           className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg"
                         >
-                          <ImagemProduto imagem={imagem} />
+                          <ProductImage image={image} />
                         </div>
                       ))
                     ) : (
@@ -514,13 +534,13 @@ export function AdmProductsPage({
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-sm font-bold text-[#172033]">
-                        {produto.nome}
+                        {product.name}
                       </h3>
 
                       <button
                         type="button"
-                        onClick={() => onRemove?.(produto.id)}
-                        aria-label={`Excluir ${produto.nome}`}
+                        onClick={() => onRemove?.(product.id)}
+                        aria-label={`Excluir ${product.name}`}
                         className="text-xl leading-none text-[#B7C5D8] hover:text-red-600"
                       >
                         ×
@@ -528,33 +548,33 @@ export function AdmProductsPage({
                     </div>
 
                     <p className="mt-2 text-xs text-[#7183A3]">
-                      {produto.categoria || 'Outros'}
+                      {product.category || 'Outros'}
                     </p>
 
                     <p className="mt-2 min-h-10 text-xs leading-relaxed text-[#7183A3]">
-                      {produto.descricao}
+                      {product.description}
                     </p>
 
                     <p className="mt-3 font-bold text-blue-700">
-                      {formatarPreco(produto.preco)}
+                      {formatPrice(product.price)}
                     </p>
 
                     <div className="mt-3 flex items-center justify-between gap-2">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                          produto.disponivel === false
+                          product.available === false
                             ? 'bg-red-100 text-red-700'
                             : 'bg-green-100 text-green-700'
                         }`}
                       >
-                        {produto.disponivel === false
+                        {product.available === false
                           ? 'Indisponível'
                           : 'Disponível'}
                       </span>
 
                       <button
                         type="button"
-                        onClick={() => abrirEdicao(produto)}
+                        onClick={() => openEdit(product)}
                         className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
                       >
                         Editar
@@ -579,13 +599,13 @@ export function AdmProductsPage({
       </div>
 
       {/* Dialog de edição */}
-      {produtoEditando && (
+      {editingProduct && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
           role="presentation"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) {
-              limparFormulario();
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              clearForm();
             }
           }}
         >
@@ -605,7 +625,7 @@ export function AdmProductsPage({
 
               <button
                 type="button"
-                onClick={limparFormulario}
+                onClick={clearForm}
                 className="text-2xl text-[#91A2BF] hover:text-red-600"
                 aria-label="Fechar edição"
               >
@@ -613,7 +633,7 @@ export function AdmProductsPage({
               </button>
             </div>
 
-            <form onSubmit={salvarProduto}>
+            <form onSubmit={saveProduct}>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[#344563]">
@@ -622,8 +642,10 @@ export function AdmProductsPage({
 
                   <input
                     type="text"
-                    value={formulario.nome}
-                    onChange={(e) => atualizarCampo('nome', e.target.value)}
+                    value={form.name}
+                    onChange={(event) =>
+                      updateField('name', event.target.value)
+                    }
                     required
                     className="w-full rounded-lg border border-[#DCE4F0] px-3 py-3 text-sm"
                   />
@@ -638,8 +660,10 @@ export function AdmProductsPage({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formulario.preco}
-                    onChange={(e) => atualizarCampo('preco', e.target.value)}
+                    value={form.price}
+                    onChange={(event) =>
+                      updateField('price', event.target.value)
+                    }
                     required
                     className="w-full rounded-lg border border-[#DCE4F0] px-3 py-3 text-sm"
                   />
@@ -651,14 +675,16 @@ export function AdmProductsPage({
                   </label>
 
                   <select
-                    value={formulario.categoria}
-                    onChange={(e) => atualizarCampo('categoria', e.target.value)}
+                    value={form.category}
+                    onChange={(event) =>
+                      updateField('category', event.target.value)
+                    }
                     required
                     className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-3 text-sm"
                   >
-                    {categoriasDisponiveis.map((categoria) => (
-                      <option key={categoria} value={categoria}>
-                        {categoria}
+                    {availableCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
                       </option>
                     ))}
                   </select>
@@ -671,8 +697,10 @@ export function AdmProductsPage({
 
                   <textarea
                     rows={3}
-                    value={formulario.descricao}
-                    onChange={(e) => atualizarCampo('descricao', e.target.value)}
+                    value={form.description}
+                    onChange={(event) =>
+                      updateField('description', event.target.value)
+                    }
                     className="w-full resize-none rounded-lg border border-[#DCE4F0] px-3 py-3 text-sm"
                   />
                 </div>
@@ -684,16 +712,16 @@ export function AdmProductsPage({
                 </label>
 
                 <div className="flex flex-wrap gap-3">
-                  {formulario.imagens.map((imagem, indice) => (
+                  {form.images.map((image, index) => (
                     <div
-                      key={`${imagem.url}-${indice}`}
+                      key={`${image.url}-${index}`}
                       className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-[#DCE4F0] bg-[#EDF4FD]"
                     >
-                      <ImagemProduto imagem={imagem} />
+                      <ProductImage image={image} />
 
                       <button
                         type="button"
-                        onClick={() => removerImagem(indice)}
+                        onClick={() => removeImage(index)}
                         aria-label="Remover imagem"
                         className="absolute right-1 top-1 rounded-full bg-white px-1.5 text-xs text-red-600 shadow"
                       >
@@ -702,7 +730,7 @@ export function AdmProductsPage({
                     </div>
                   ))}
 
-                  {formulario.imagens.length < 3 && (
+                  {form.images.length < 3 && (
                     <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-blue-300 text-sm text-blue-600 hover:bg-blue-50">
                       <span className="text-xl">+</span>
                       <span>Foto</span>
@@ -711,7 +739,7 @@ export function AdmProductsPage({
                         type="file"
                         accept="image/*"
                         multiple
-                        onChange={adicionarImagens}
+                        onChange={addImages}
                         className="hidden"
                       />
                     </label>
@@ -734,9 +762,9 @@ export function AdmProductsPage({
 
                   <input
                     type="checkbox"
-                    checked={formulario.disponivel}
-                    onChange={(e) =>
-                      atualizarCampo('disponivel', e.target.checked)
+                    checked={form.available}
+                    onChange={(event) =>
+                      updateField('available', event.target.checked)
                     }
                     className="h-5 w-5 accent-blue-700"
                   />
@@ -746,7 +774,7 @@ export function AdmProductsPage({
               <div className="mt-6 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={limparFormulario}
+                  onClick={clearForm}
                   className="rounded-lg border border-[#DCE4F0] px-5 py-2.5 text-sm font-semibold text-[#526581] hover:bg-[#F7F9FC]"
                 >
                   Cancelar

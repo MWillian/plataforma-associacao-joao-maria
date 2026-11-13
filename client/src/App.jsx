@@ -68,55 +68,55 @@ export default function App() {
   const [alunos, setAlunos] = useState([
     {
       id: 1,
-      nome: 'Lucas Ferreira',
+      name: 'Lucas Ferreira',
       email: 'lucas@email.com',
       telefone: '(11) 99234-5678',
-      turmaId: 1,
+      danceClassId: 1,
       menor: true,
       responsavel: 'Maria Ferreira (Mãe)',
     },
     {
       id: 2,
-      nome: 'Carolina Mendes',
+      name: 'Carolina Mendes',
       email: 'carol@email.com',
       telefone: '(21) 97654-3210',
-      turmaId: 2,
+      danceClassId: 2,
       menor: false,
       responsavel: '',
     },
   ]);
 
-  const [turmas, setTurmas] = useState([
+  const [classes, setclasses] = useState([
     {
       id: 1,
-      nome: 'Ballet Infantil A',
-      turno: 'Tarde',
-      dias: ['Terça-feira', 'Quinta-feira'],
+      name: 'Ballet Infantil A',
+      turn: 'Tarde',
+      days: ['Terça-feira', 'Quinta-feira'],
     },
     {
       id: 2,
-      nome: 'Ballet Adolescente',
-      turno: 'Manhã',
-      dias: ['Segunda-feira', 'Quarta-feira'],
+      name: 'Ballet Adolescente',
+      turn: 'Manhã',
+      days: ['Segunda-feira', 'Quarta-feira'],
     },
     {
       id: 3,
-      nome: 'Jazz Adolescente',
-      turno: 'Tarde',
-      dias: ['Quinta-feira'],
+      name: 'Jazz Adolescente',
+      turn: 'Tarde',
+      days: ['Quinta-feira'],
     },
     {
       id: 4,
-      nome: 'Ballet Adulto',
-      turno: 'Manhã',
-      dias: ['Sexta-feira'],
+      name: 'Ballet Adulto',
+      turn: 'Manhã',
+      days: ['Sexta-feira'],
     }
   ]);
 
   const [avisos, setAvisos] = useState([
     {
       id: 1,
-      turmaId: 1,
+      danceClassId: 1,
       assunto: 'Ensaio Extra',
       tipo: 'Informativo',
       mensagem:
@@ -125,7 +125,7 @@ export default function App() {
     },
     {
       id: 2,
-      turmaId: 2,
+      danceClassId: 2,
       assunto: 'Aula Cancelada',
       tipo: 'Cancelamento',
       mensagem:
@@ -138,7 +138,7 @@ export default function App() {
     {
       id: 1,
       titulo: 'Festival de Dança 2026',
-      descricao:
+      description:
         'Nossa instituição realizará o Grande Festival de Dança no próximo mês. Inscrições abertas para todas as turmas!',
       data: '14/09/2026',
       fotos: ['🎭', '📸'],
@@ -146,53 +146,53 @@ export default function App() {
     {
       id: 2,
       titulo: 'Encerramento do 2º Semestre',
-      descricao:
+      description:
         'Convocamos alunos e responsáveis para a festa de encerramento do semestre com apresentações especiais.',
       data: '09/09/2026',
       fotos: ['🎉'],
     },
   ]);
 
-  const [produtos, setProdutos] = useState([
+  const [products, setProducts] = useState([
     {
       id: 1,
-      nome: 'Tomate (Kg)',
-      descricao: 'Tomates produzidos por associados da agricultura familiar.',
-      preco: 15.00,
-      categoria: 'Agricultura Familiar',
-      imagens: [],
-      disponivel: true,
+      name: 'Tomate (Kg)',
+      description: 'Tomates produzidos por associados da agricultura familiar.',
+      price: 15.00,
+      category: 'Agricultura Familiar',
+      images: [],
+      avaliable: true,
     },
     {
       id: 2,
-      nome: 'Kit pulseiras de macramê',
-      descricao: 'Conjunto de pulseiras artesanais criadas por associados.',
-      preco: 45.00,
-      categoria: 'Artesanato',
-      imagens: [],
-      disponivel: true,
+      name: 'Kit pulseiras de macramê',
+      description: 'Conjunto de pulseiras artesanais criadas por associados.',
+      price: 45.00,
+      category: 'Artesanato',
+      images: [],
+      avaliable: true,
     },
     {
       id: 3,
-      nome: 'Sousplat de crochê',
-      descricao: 'Conjunto de 4 sousplat + 4 porta copos em crochê.',
-      preco: 130.00,
-      categoria: 'Artesanato',
-      imagens: [],
-      disponivel: true,
+      name: 'Sousplat de crochê',
+      description: 'Conjunto de 4 sousplat + 4 porta copos em crochê.',
+      price: 130.00,
+      category: 'Artesanato',
+      images: [],
+      avaliable: true,
     },
   ]);
 
-  const handleCreateClass = (novaTurma) => {
-    setTurmas((listaAnterior) => [
+  const handleCreateDanceClass = (novaTurma) => {
+    setclasses((listaAnterior) => [
       ...listaAnterior,
-      novaTurma,
+      novadanceClass,
     ]);
   };
 
-  const handleRemoveClass = (id) => {
-    setTurmas((listaAnterior) =>
-      listaAnterior.filter((turma) => turma.id !== id)
+  const handleRemoveDanceClass = (id) => {
+    setclasses((listaAnterior) =>
+      listaAnterior.filter((danceClass) => danceClass.id !== id)
     );
   };
 
@@ -223,14 +223,14 @@ export default function App() {
   };
 
   const handleCreateProduct = (novoProduto) => {
-    setProdutos((listaAnterior) => [
+    setProducts((listaAnterior) => [
       ...listaAnterior,
       novoProduto,
     ]);
   };
 
   const handleUpdateProduct = (produtoAtualizado) => {
-    setProdutos((listaAnterior) =>
+    setProducts((listaAnterior) =>
       listaAnterior.map((produto) =>
         produto.id === produtoAtualizado.id
           ? produtoAtualizado
@@ -240,7 +240,7 @@ export default function App() {
   };
 
   const handleRemoveProduct = (id) => {
-    setProdutos((listaAnterior) =>
+    setProducts((listaAnterior) =>
       listaAnterior.filter((produto) => produto.id !== id)
     );
   };
@@ -253,7 +253,7 @@ export default function App() {
     return (
       <AdmDashboardPage 
       onNavigate={navigate}
-      turmas={turmas}
+      classes={classes}
       alunos={alunos}
       produtos={produtos}
       />
@@ -263,7 +263,7 @@ export default function App() {
   if (activePage === 'adm-students') {
     return (
       <AdmStudentsPage 
-      turmas={turmas}
+      classes={classes}
       alunos={alunos}
       setAlunos={setAlunos}
       onBack={() => navigate('adm-dashboard')}
@@ -274,9 +274,9 @@ export default function App() {
   if (activePage === 'adm-classes') {
     return (
       <AdmClassesPage
-        turmas={turmas}
-        onCreate={handleCreateClass}
-        onRemove={handleRemoveClass}
+        classes={classes}
+        onCreate={handleCreateDanceClass}
+        onRemove={handleRemoveDanceClass}
         onBack={() => navigate('adm-dashboard')}
       />
     );
@@ -285,7 +285,7 @@ export default function App() {
   if (activePage === 'adm-classNotices') {
     return (
       <AdmClassNoticesPage
-        turmas={turmas}
+        classes={classes}
         avisos={avisos}
         onCreate={handleCreateNotice}
         onRemove={handleRemoveNotice}
@@ -307,12 +307,12 @@ export default function App() {
 
   if (activePage === 'adm-products') {
     return (
-      <AdmProductsPage 
-        produtos={produtos}
+      <AdmProductsPage
+        products={products}
         onCreate={handleCreateProduct}
         onUpdate={handleUpdateProduct}
         onRemove={handleRemoveProduct}
-        onBack={ () => navigate('adm-dashboard')}
+        onBack={() => navigate('adm-dashboard')}
       />
     );
   }

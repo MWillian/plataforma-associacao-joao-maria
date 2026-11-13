@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-const diasSemana = [
+const daysOfWeek = [
   'Segunda-feira',
   'Terça-feira',
   'Quarta-feira',
@@ -12,83 +12,83 @@ const diasSemana = [
 ];
 
 export function AdmClassesPage({
-  turmas,
+  classes,
   onCreate,
   onRemove,
   onBack,
 }) {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  const [formulario, setFormulario] = useState({
-    nome: '',
-    turno: '',
-    dias: [],
+  const [form, setForm] = useState({
+    name: '',
+    turn: '',
+    days: [],
   });
 
-  const [erroDias, setErroDias] = useState('');
+  const [daysErr, setDaysErr] = useState('');
 
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormulario((estadoAnterior) => ({
-      ...estadoAnterior,
+    setForm((prevState) => ({
+      ...prevState,
       [name]: value,
     }));
   };
 
   // Marca ou desmarca um dia da semana
-  const handleDayToggle = (dia) => {
-    setFormulario((estadoAnterior) => {
-      const diaJaSelecionado = estadoAnterior.dias.includes(dia);
+  const handleDayToggle = (day) => {
+    setForm((prevState) => {
+      const selectedDay = prevState.days.includes(day);
 
-      const novosDias = diaJaSelecionado
-        ? estadoAnterior.dias.filter((item) => item !== dia)
-        : [...estadoAnterior.dias, dia];
+      const newDays = selectedDay
+        ? prevState.days.filter((item) => item !== day)
+        : [...prevState.days, day];
 
       return {
-        ...estadoAnterior,
-        dias: novosDias,
+        ...prevState,
+        days: newDays,
       };
     });
 
-    setErroDias('');
+    setDaysErr('');
   };
 
-  const limparFormulario = () => {
-    setFormulario({
-      nome: '',
-      turno: '',
-      dias: [],
+  const clearForm = () => {
+    setForm({
+      name: '',
+      turn: '',
+      days: [],
     });
 
-    setErroDias('');
+    setDaysErr('');
   };
 
   // Cadastra a turma
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (formulario.dias.length === 0) {
-      setErroDias('Selecione pelo menos um dia da semana.');
+    if (form.days.length === 0) {
+      setDaysErr('Selecione pelo menos um dia da semana.');
       return;
     }
 
-    const novaTurma = {
+    const newClass = {
       id: Date.now(),
-      nome: formulario.nome.trim(),
-      turno: formulario.turno,
-      dias: formulario.dias,
+      name: form.name.trim(),
+      turn: form.turn,
+      days: form.days,
     };
 
-    onCreate(novaTurma);
+    onCreate(newClass);
 
-    limparFormulario();
-    setMostrarFormulario(false);
+    clearForm();
+    setShowForm(false);
   };
 
   const handleCancel = () => {
-    limparFormulario();
-    setMostrarFormulario(false);
+    clearForm();
+    setShowForm(false);
   };
 
   return (
@@ -109,11 +109,11 @@ export function AdmClassesPage({
 
         <div className="flex flex-wrap gap-3">
 
-          {!mostrarFormulario ? (
+          {!showForm ? (
             <>
               <button
                 type="button"
-                onClick={() => setMostrarFormulario(true)}
+                onClick={() => setShowForm(true)}
                 className="rounded-xl bg-[#2450DC] px-7 py-3 font-semibold text-white transition hover:bg-blue-700"
               >
                 + Nova Turma
@@ -131,7 +131,7 @@ export function AdmClassesPage({
             <button
               type="button"
               onClick={handleCancel}
-              className="rounded-xl bg-[#2450DC] px-7 py-3 font-semibold text-white transition hover:bg-blue-700"
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
             >
               × Cancelar
             </button>
@@ -141,7 +141,7 @@ export function AdmClassesPage({
       </header>
 
       {/* Formulário */}
-      {mostrarFormulario && (
+      {showForm && (
         <section className="mb-9 rounded-2xl border border-[#DCE4F0] bg-white p-7 md:p-9">
 
           <h2 className="mb-7 text-xl font-semibold text-[#23418F]">
@@ -160,8 +160,8 @@ export function AdmClassesPage({
 
                 <input
                   type="text"
-                  name="nome"
-                  value={formulario.nome}
+                  name="name"
+                  value={form.name}
                   onChange={handleChange}
                   placeholder="Ex: Ballet Infantil A"
                   required
@@ -176,8 +176,8 @@ export function AdmClassesPage({
                 </label>
 
                 <select
-                  name="turno"
-                  value={formulario.turno}
+                  name="turn"
+                  value={form.turn}
                   onChange={handleChange}
                   required
                   className="w-full rounded-xl border border-[#DCE4F0] bg-white px-4 py-3 text-[#40516B] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -201,31 +201,31 @@ export function AdmClassesPage({
               </label>
 
               <div className="flex flex-wrap gap-2">
-                {diasSemana.map((dia) => {
-                  const selecionado = formulario.dias.includes(dia);
+                {daysOfWeek.map((day) => {
+                  const selected = form.days.includes(day);
 
                   return (
                     <button
-                      key={dia}
+                      key={day}
                       type="button"
-                      aria-pressed={selecionado}
-                      onClick={() => handleDayToggle(dia)}
+                      aria-pressed={selected}
+                      onClick={() => handleDayToggle(day)}
                       className={`rounded-lg border px-4 py-3 font-medium transition ${
-                        selecionado
+                        selected
                           ? 'border-blue-600 bg-blue-600 text-white'
                           : 'border-[#DCE4F0] bg-white text-[#526581] hover:border-blue-400 hover:bg-blue-50'
                       }`}
                     >
-                      {dia}
+                      {day}
                     </button>
                   );
                 })}
               </div>
 
               <p className={`mt-2 text-sm ${
-                erroDias ? 'text-red-600' : 'text-[#91A2BF]'
+                daysErr ? 'text-red-600' : 'text-[#91A2BF]'
               }`}>
-                {erroDias || 'Selecione ao menos um dia.'}
+                {daysErr || 'Selecione ao menos um dia.'}
               </p>
             </div>
 
@@ -247,12 +247,12 @@ export function AdmClassesPage({
       <section className="overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white">
 
         <div className="border-b border-[#E7EDF5] px-7 py-5 text-lg text-[#71839F]">
-          {turmas.length} turma(s) cadastrada(s)
+          {classes.length} turma(s) cadastrada(s)
         </div>
 
-        {turmas.map((turma) => (
+        {classes.map((danceClass) =>  (
           <div
-            key={turma.id}
+            key={danceClass.id}
             className="flex items-center justify-between gap-4 border-b border-[#E7EDF5] px-6 py-5 last:border-b-0"
           >
 
@@ -266,16 +266,16 @@ export function AdmClassesPage({
               {/* Informações */}
               <div className="min-w-0">
                 <h3 className="font-semibold text-[#17233D]">
-                  {turma.nome}
+                  {danceClass.name}
                 </h3>
 
                 <div className="mt-1 flex flex-wrap gap-2">
-                  {turma.dias.map((dia) => (
+                  {danceClass.days.map((day) => (
                     <span
-                      key={dia}
+                      key={day}
                       className="rounded-md bg-[#F0F4F9] px-2 py-1 text-xs text-[#526581]"
                     >
-                      {dia}
+                      {day}
                     </span>
                   ))}
                 </div>
@@ -287,20 +287,20 @@ export function AdmClassesPage({
 
               <span
                 className={`rounded-full px-4 py-1 text-sm font-medium ${
-                  turma.turno === 'Manhã'
+                  danceClass.turn === 'Manhã'
                     ? 'bg-[#FFF1C7] text-[#C65B00]'
-                    : turma.turno === 'Tarde'
+                    : danceClass.turn === 'Tarde'
                       ? 'bg-[#DCEAFF] text-[#2450DC]'
                       : 'bg-[#EDE3FF] text-[#7041B5]'
                 }`}
               >
-                {turma.turno}
+                {danceClass.turn}
               </span>
 
               <button
                 type="button"
-                onClick={() => onRemove(turma.id)}
-                aria-label={`Remover turma ${turma.nome}`}
+                onClick={() => onRemove(danceClass.id)}
+                aria-label={`Remover turma ${danceClass.name}`}
                 className="text-3xl leading-none text-[#9AACC5] transition hover:text-red-500"
               >
                 ×
@@ -311,7 +311,7 @@ export function AdmClassesPage({
           </div>
         ))}
 
-        {turmas.length === 0 && (
+        {classes.length === 0 && (
           <p className="px-7 py-10 text-center text-[#71839F]">
             Nenhuma turma cadastrada.
           </p>

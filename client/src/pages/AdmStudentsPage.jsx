@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
-export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+export function AdmStudentsPage({ onBack, classes, alunos, setAlunos }) {
+  const [showForm, setShowForm] = useState(false);
 
-  const [formulario, setFormulario] = useState({
-    nome: '',
+  const [form, setForm] = useState({
+    name: '',
     email: '',
     telefone: '',
-    turmaId: '',
+    danceClassId: '',
     menor: false,
     responsavel: '',
   });
@@ -16,7 +16,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
-    setFormulario((estadoAnterior) => ({
+    setForm((estadoAnterior) => ({
       ...estadoAnterior,
       [name]: type === 'checkbox' ? checked : value,
     }));
@@ -28,7 +28,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
 
     const novoAluno = {
       id: Date.now(),
-      ...formulario,
+      ...form,
     };
 
     setAlunos((listaAnterior) => [
@@ -36,15 +36,15 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
       novoAluno,
     ]);
 
-    setFormulario({
-      nome: '',
+    setForm({
+      name: '',
       email: '',
       telefone: '',
       menor: false,
       responsavel: '',
     });
 
-    setMostrarFormulario(false);
+    setShowForm(false);
   };
 
   // Remove um aluno
@@ -56,10 +56,10 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
 
   // Cancela o cadastro
   const handleCancel = () => {
-    setMostrarFormulario(false);
+    setShowForm(false);
 
-    setFormulario({
-      nome: '',
+    setForm({
+      name: '',
       email: '',
       telefone: '',
       menor: false,
@@ -85,10 +85,10 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
 
         <div className="flex flex-wrap gap-3">
 
-          {!mostrarFormulario ? (
+          {!showForm ? (
             <>
               <button
-                onClick={() => setMostrarFormulario(true)}
+                onClick={() => setShowForm(true)}
                 className="rounded-xl bg-[#2450DC] px-7 py-4 font-semibold text-white transition hover:bg-blue-700"
               >
                 + Novo Aluno
@@ -114,7 +114,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
       </header>
 
       {/* Formulário de cadastro */}
-      {mostrarFormulario && (
+      {showForm && (
         <section className="mb-9 rounded-2xl border border-[#DCE4F0] bg-white p-7 md:p-9">
 
           <h2 className="mb-8 text-xl font-semibold text-[#23418F]">
@@ -133,8 +133,8 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
 
                 <input
                   type="text"
-                  name="nome"
-                  value={formulario.nome}
+                  name="name"
+                  value={form.name}
                   onChange={handleChange}
                   placeholder="Nome do aluno"
                   required
@@ -151,7 +151,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
                 <input
                   type="email"
                   name="email"
-                  value={formulario.email}
+                  value={form.email}
                   onChange={handleChange}
                   placeholder="aluno@email.com"
                   required
@@ -168,7 +168,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
                 <input
                   type="tel"
                   name="telefone"
-                  value={formulario.telefone}
+                  value={form.telefone}
                   onChange={handleChange}
                   placeholder="(11) 99999-9999"
                   required
@@ -183,8 +183,8 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
               </label>
 
               <select
-                name="turmaId"
-                value={formulario.turmaId}
+                name="danceClassId"
+                value={form.danceClassId}
                 onChange={handleChange}
                 required
                 className="w-full rounded-xl border border-[#DCE4F0] bg-white px-5 py-4 text-[#40516B] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -193,9 +193,9 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
                 Selecione uma turma
                 </option>
 
-                {turmas.map((turma) => (
-                <option key={turma.id} value={turma.id}>
-                    {turma.nome}
+                {classes.map((danceClass) => (
+                <option key={danceClass.id} value={danceClass.id}>
+                    {danceClass.name}
                 </option>
                 ))}
             </select>
@@ -206,7 +206,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
                 <input
                   type="checkbox"
                   name="menor"
-                  checked={formulario.menor}
+                  checked={form.menor}
                   onChange={handleChange}
                   className="h-5 w-5 accent-blue-600"
                 />
@@ -217,7 +217,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
               </div>
 
               {/* Responsável: aparece somente para menores */}
-              {formulario.menor && (
+              {form.menor && (
                 <div className="md:col-span-2">
                   <label className="mb-2 block font-medium text-[#40516B]">
                     Nome do responsável <span className="text-blue-600">*</span>
@@ -226,7 +226,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
                   <input
                     type="text"
                     name="responsavel"
-                    value={formulario.responsavel}
+                    value={form.responsavel}
                     onChange={handleChange}
                     placeholder="Nome completo do responsável"
                     required
@@ -270,13 +270,13 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
 
               {/* Avatar */}
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#DCEAFF] text-xl font-semibold text-[#2450DC]">
-                {aluno.nome.charAt(0).toUpperCase()}
+                {aluno.name.charAt(0).toUpperCase()}
               </div>
 
               {/* Informações */}
               <div className="min-w-0">
                 <h3 className="font-semibold text-[#17233D]">
-                  {aluno.nome}
+                  {aluno.name}
                 </h3>
 
                 <p className="text-[#9AACC5]">
@@ -302,7 +302,7 @@ export function AdmStudentsPage({ onBack, turmas, alunos, setAlunos }) {
 
               <button
                 onClick={() => handleRemove(aluno.id)}
-                aria-label={`Remover ${aluno.nome}`}
+                aria-label={`Remover ${aluno.name}`}
                 className="text-3xl leading-none text-[#9AACC5] transition hover:text-red-500"
               >
                 ×
