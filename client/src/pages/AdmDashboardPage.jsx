@@ -1,23 +1,5 @@
-export function AdmDashboardPage({ onNavigate, turmas, alunos }) {
+export function AdmDashboardPage({ onNavigate, turmas, alunos, produtos }) {
   
-
-  const produtos = [
-    {
-      nome: 'Tomate (Kg)',
-      descricao: 'Tomates produzidos por associados da agricultura familiar.',
-      preco: 'R$ 15,00'
-    },
-    {
-      nome: 'Kit pulseiras de macramê',
-      descricao: 'Conjunto de pulseiras artesanais criadas por associados.',
-      preco: 'R$ 45,00'
-    },
-    {
-      nome: 'Sousplat de crochê',
-      descricao: 'Conjunto de 4 sousplat + 4 porta copos em crochê.',
-      preco: 'R$ 130,00'
-    },
-  ];
 
 const turmasComQuantidade = turmas.map((turma) => ({
   ...turma,
@@ -236,7 +218,7 @@ const turmasComAlunos = turmasComQuantidade.filter(
               Produtos
             </h2>
 
-            <ActionButton page="produtos">
+            <ActionButton page="adm-products">
               Ver produtos
             </ActionButton>
           </div>
