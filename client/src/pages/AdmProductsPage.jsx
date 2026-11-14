@@ -231,25 +231,37 @@ export function AdmProductsPage({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setForm(initialForm);
-                setEditingProduct(null);
-                setShowForm(true);
-              }}
-              className="rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800"
-            >
-              + Novo Produto
-            </button>
+            {!showForm ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm(initialForm);
+                    setEditingProduct(null);
+                    setShowForm(true);
+                  }}
+                  className="rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800"
+                >
+                  + Novo Produto
+                </button>
 
-            <button
-              type="button"
-              onClick={onBack}
-              className="rounded-lg border border-blue-700 bg-white px-5 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-50"
-            >
-              Voltar ao painel principal
-            </button>
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="rounded-lg border border-blue-700 bg-white px-5 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                >
+                  Voltar ao painel principal
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={clearForm}
+                className="rounded-lg bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                ✕ Cancelar
+              </button>
+            )}
           </div>
         </header>
 
@@ -260,14 +272,6 @@ export function AdmProductsPage({
               <h2 className="font-bold text-[#172957]">
                 Novo Produto
               </h2>
-
-              <button
-                type="button"
-                onClick={clearForm}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-              >
-                ✕ Cancelar
-              </button>
             </div>
 
             <form onSubmit={saveProduct}>

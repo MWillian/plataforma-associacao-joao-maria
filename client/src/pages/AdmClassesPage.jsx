@@ -230,7 +230,7 @@ export function AdmClassesPage({
             </div>
 
             {/* Salvar */}
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex justify-end">
               <button
                 type="submit"
                 className="rounded-xl bg-[#2450DC] px-8 py-4 font-semibold text-white transition hover:bg-blue-700"

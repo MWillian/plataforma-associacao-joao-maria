@@ -112,7 +112,7 @@ export function AdmClassNoticesPage({
 
           <div>
             <h1 className="text-2xl font-bold text-[#172957] md:text-3xl">
-              notices para Turmas
+              Avisos para Turmas
             </h1>
 
             <p className="mt-1 text-sm text-[#7183A3] md:text-base">
@@ -144,7 +144,7 @@ export function AdmClassNoticesPage({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
               >
                 × Cancelar
               </button>
@@ -272,7 +272,7 @@ export function AdmClassNoticesPage({
               )}
 
               {/* Botão de envio */}
-              <div className="mt-4 flex justify-center md:justify-end md:pr-[28%]">
+              <div className="mt-4 flex justify-end">
                 <button
                   type="submit"
                   className="rounded-lg bg-blue-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"

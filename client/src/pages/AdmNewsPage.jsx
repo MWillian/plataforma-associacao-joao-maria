@@ -2,17 +2,17 @@
 import { useState } from 'react';
 
 export function AdmNewsPage({
-  noticias,
+  news = [],
   onCreate,
   onRemove,
   onBack,
 }) {
   const [showForm, setShowForm] = useState(false);
-  const [titulo, setTitulo] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [fotos, setFotos] = useState([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [images, setImages] = useState([]);
 
-  const handlePhotoChange = (event) => {
+  const handleImageChange = (event) => {
     const files = Array.from(event.target.files || []);
 
     files.forEach((file) => {
@@ -21,41 +21,43 @@ export function AdmNewsPage({
       const reader = new FileReader();
 
       reader.onload = () => {
-        setFotos((previousPhotos) => [
-          ...previousPhotos,
+        setImages((previousImages) => [
+          ...previousImages,
           reader.result,
         ]);
       };
 
       reader.readAsDataURL(file);
     });
+
+    event.target.value = '';
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!titulo.trim()) return;
+    if (!title.trim()) return;
 
-    const novaNoticia = {
+    const newNews = {
       id: Date.now(),
-      titulo: titulo.trim(),
-      descricao: descricao.trim(),
-      data: new Date().toLocaleDateString('pt-BR'),
-      fotos,
+      title: title.trim(),
+      description: description.trim(),
+      date: new Date().toLocaleDateString('pt-BR'),
+      images,
     };
 
-    onCreate(novaNoticia);
+    onCreate?.(newNews);
 
-    setTitulo('');
-    setDescricao('');
-    setFotos([]);
+    setTitle('');
+    setDescription('');
+    setImages([]);
     setShowForm(false);
   };
 
   const handleCancel = () => {
-    setTitulo('');
-    setDescricao('');
-    setFotos([]);
+    setTitle('');
+    setDescription('');
+    setImages([]);
     setShowForm(false);
   };
 
@@ -88,7 +90,7 @@ export function AdmNewsPage({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
               >
                 ✕ Cancelar
               </button>
@@ -128,8 +130,8 @@ export function AdmNewsPage({
                   <input
                     id="news-title"
                     type="text"
-                    value={titulo}
-                    onChange={(event) => setTitulo(event.target.value)}
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
                     placeholder="Ex: Festival de Encerramento 2026"
                     required
                     className="w-full rounded-lg border border-[#DCE4F0] px-3.5 py-2.5 text-sm text-[#172033] outline-none transition placeholder:text-[#91A4C2] focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -147,8 +149,8 @@ export function AdmNewsPage({
 
                   <textarea
                     id="news-description"
-                    value={descricao}
-                    onChange={(event) => setDescricao(event.target.value)}
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
                     placeholder="Descreva o evento ou notícia em detalhes..."
                     rows={5}
                     className="w-full resize-y rounded-lg border border-[#DCE4F0] px-3.5 py-3 text-sm text-[#172033] outline-none transition placeholder:text-[#91A4C2] focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -170,18 +172,18 @@ export function AdmNewsPage({
                         type="file"
                         accept="image/*"
                         multiple
-                        onChange={handlePhotoChange}
+                        onChange={handleImageChange}
                         className="sr-only"
                       />
                     </label>
 
-                    {fotos.map((foto, index) => (
+                    {images.map((image, index) => (
                       <div
                         key={index}
                         className="relative h-[60px] w-[60px] overflow-hidden rounded-lg border border-[#DCE4F0]"
                       >
                         <img
-                          src={foto}
+                          src={image}
                           alt={`Foto selecionada ${index + 1}`}
                           className="h-full w-full object-cover"
                         />
@@ -189,9 +191,9 @@ export function AdmNewsPage({
                         <button
                           type="button"
                           onClick={() =>
-                            setFotos((previousPhotos) =>
-                              previousPhotos.filter(
-                                (_, photoIndex) => photoIndex !== index
+                            setImages((previousImages) =>
+                              previousImages.filter(
+                                (_, imageIndex) => imageIndex !== index
                               )
                             )
                           }
@@ -211,7 +213,7 @@ export function AdmNewsPage({
               </div>
 
               {/* Publicar */}
-              <div className="flex justify-center">
+              <div className="flex justify-end">
                 <button
                   type="submit"
                   className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
@@ -224,7 +226,7 @@ export function AdmNewsPage({
         )}
 
         {/* Listagem */}
-        {noticias.length === 0 ? (
+        {news.length === 0 ? (
           <div className="rounded-xl border border-[#DCE4F0] bg-white px-6 py-12 text-center">
             <p className="font-medium text-[#526581]">
               Nenhuma notícia cadastrada.
@@ -236,21 +238,21 @@ export function AdmNewsPage({
           </div>
         ) : (
           <section className="mx-auto grid max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
-            {noticias.map((noticia) => (
+            {news.map((newsItem) => (
               <article
-                key={noticia.id}
+                key={newsItem.id}
                 className="rounded-xl border border-[#DCE4F0] bg-white p-5"
               >
                 {/* Data e exclusão */}
                 <div className="mb-4 flex items-center justify-between">
                   <span className="text-xs text-[#91A4C2]">
-                    {noticia.data}
+                    {newsItem.date}
                   </span>
 
                   <button
                     type="button"
-                    onClick={() => onRemove(noticia.id)}
-                    aria-label={`Excluir notícia ${noticia.titulo}`}
+                    onClick={() => onRemove?.(newsItem.id)}
+                    aria-label={`Excluir notícia ${newsItem.title}`}
                     className="text-xl leading-none text-[#B7C5D9] transition hover:text-red-500"
                   >
                     ×
@@ -259,30 +261,30 @@ export function AdmNewsPage({
 
                 {/* Conteúdo */}
                 <h3 className="mb-2 font-semibold text-[#172033]">
-                  {noticia.titulo}
+                  {newsItem.title}
                 </h3>
 
                 <p className="text-sm leading-relaxed text-[#7183A3]">
-                  {noticia.descricao}
+                  {newsItem.description}
                 </p>
 
                 {/* Fotos */}
-                {noticia.fotos?.length > 0 && (
+                {newsItem.images?.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {noticia.fotos.map((foto, index) => (
+                    {newsItem.images.map((image, index) => (
                       <div
                         key={index}
                         className="flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-lg border border-[#DCE4F0] bg-[#EDF4FD]"
                       >
-                        {foto.startsWith('data:image/') ? (
+                        {image.startsWith('data:image/') ? (
                           <img
-                            src={foto}
+                            src={image}
                             alt={`Imagem da notícia ${index + 1}`}
                             className="h-full w-full object-cover"
                           />
                         ) : (
                           <span className="text-2xl" role="img">
-                            {foto}
+                            {image}
                           </span>
                         )}
                       </div>

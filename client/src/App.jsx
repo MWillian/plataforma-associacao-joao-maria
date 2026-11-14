@@ -65,24 +65,26 @@ export default function App() {
     setActivePage(page);
   };
 
-  const [alunos, setAlunos] = useState([
+  const [students, setStudents] = useState([
     {
       id: 1,
       name: 'Lucas Ferreira',
       email: 'lucas@email.com',
-      telefone: '(11) 99234-5678',
+      phone: '(11) 99234-5678',
       danceClassId: 1,
-      menor: true,
-      responsavel: 'Maria Ferreira (Mãe)',
+      isMinor: true,
+      guardian: 'Maria Ferreira (Mãe)',
+      guardianEmail: 'maria@email.com',
     },
     {
       id: 2,
       name: 'Carolina Mendes',
       email: 'carol@email.com',
-      telefone: '(21) 97654-3210',
+      phone: '(21) 97654-3210',
       danceClassId: 2,
-      menor: false,
-      responsavel: '',
+      isMinor: false,
+      guardian: '',
+      guardianEmail: '',
     },
   ]);
 
@@ -113,43 +115,43 @@ export default function App() {
     }
   ]);
 
-  const [avisos, setAvisos] = useState([
+  const [notices, setNotices] = useState([
     {
       id: 1,
-      danceClassId: 1,
-      assunto: 'Ensaio Extra',
-      tipo: 'Informativo',
-      mensagem:
+      classId: 1,
+      subject: 'Ensaio Extra',
+      type: 'Informativo',
+      message:
         'Informamos que haverá ensaio extra na próxima sexta-feira, dia 27/09, das 14h às 16h. Presença obrigatória.',
-      data: '21/09/2026',
+      date: '21/09/2026',
     },
     {
       id: 2,
-      danceClassId: 2,
-      assunto: 'Aula Cancelada',
-      tipo: 'Cancelamento',
-      mensagem:
+      classId: 2,
+      subject: 'Aula Cancelada',
+      type: 'Cancelamento',
+      message:
         'A aula da próxima quinta-feira, 26/09, está cancelada por motivo de saúde da professora. Retorno previsto para 03/10.',
-      data: '20/09/2026',
+      date: '20/09/2026',
     },
   ]);
 
-  const [noticias, setNoticias] = useState([
+  const [news, setNews] = useState([
     {
       id: 1,
-      titulo: 'Festival de Dança 2026',
+      title: 'Festival de Dança 2026',
       description:
         'Nossa instituição realizará o Grande Festival de Dança no próximo mês. Inscrições abertas para todas as turmas!',
-      data: '14/09/2026',
-      fotos: ['🎭', '📸'],
+      date: '14/09/2026',
+      images: ['🎭', '📸'],
     },
     {
       id: 2,
-      titulo: 'Encerramento do 2º Semestre',
+      title: 'Encerramento do 2º Semestre',
       description:
         'Convocamos alunos e responsáveis para a festa de encerramento do semestre com apresentações especiais.',
-      data: '09/09/2026',
-      fotos: ['🎉'],
+      date: '09/09/2026',
+      images: ['🎉'],
     },
   ]);
 
@@ -183,65 +185,65 @@ export default function App() {
     },
   ]);
 
-  const handleCreateDanceClass = (novaTurma) => {
-    setclasses((listaAnterior) => [
-      ...listaAnterior,
-      novadanceClass,
+  const handleCreateDanceClass = (newClass) => {
+    setClasses((previousClasses) => [
+      ...previousClasses,
+      newClass,
     ]);
   };
 
   const handleRemoveDanceClass = (id) => {
-    setclasses((listaAnterior) =>
-      listaAnterior.filter((danceClass) => danceClass.id !== id)
+    setClasses((previousClasses) =>
+      previousClasses.filter((danceClass) => danceClass.id !== id)
     );
   };
 
-  const handleCreateNotice = (novoAviso) => {
-    setAvisos((listaAnterior) => [
-      novoAviso,
-      ...listaAnterior,
+  const handleCreateNotice = (newNotice) => {
+    setNotices((previousNotices) => [
+      newNotice,
+      ...previousNotices,
     ]);
   };
 
   const handleRemoveNotice = (id) => {
-    setAvisos((listaAnterior) =>
-      listaAnterior.filter((aviso) => aviso.id !== id)
+    setNotices((previousNotices) =>
+      previousNotices.filter((notice) => notice.id !== id)
     );
   };
 
-  const handleCreateNews = (novaNoticia) => {
-    setNoticias((listaAnterior) => [
-      novaNoticia,
-      ...listaAnterior,
+  const handleCreateNews = (newNews) => {
+    setNews((previousNews) => [
+      newNews,
+      ...previousNews,
     ]);
   };
 
   const handleRemoveNews = (id) => {
-    setNoticias((listaAnterior) =>
-      listaAnterior.filter((noticia) => noticia.id !== id)
+    setNews((previousNews) =>
+      previousNews.filter((newsItem) => newsItem.id !== id)
     );
   };
 
-  const handleCreateProduct = (novoProduto) => {
-    setProducts((listaAnterior) => [
-      ...listaAnterior,
-      novoProduto,
+  const handleCreateProduct = (newProduct) => {
+    setProducts((previousProducts) => [
+      ...previousProducts,
+      newProduct,
     ]);
   };
 
-  const handleUpdateProduct = (produtoAtualizado) => {
-    setProducts((listaAnterior) =>
-      listaAnterior.map((produto) =>
-        produto.id === produtoAtualizado.id
-          ? produtoAtualizado
-          : produto
+  const handleUpdateProduct = (updatedProduct) => {
+    setProducts((previousProducts) =>
+      previousProducts.map((product) =>
+        product.id === updatedProduct.id
+          ? updatedProduct
+          : product
       )
     );
   };
 
   const handleRemoveProduct = (id) => {
-    setProducts((listaAnterior) =>
-      listaAnterior.filter((produto) => produto.id !== id)
+    setProducts((previousProducts) =>
+      previousProducts.filter((product) => product.id !== id)
     );
   };
 
@@ -254,8 +256,8 @@ export default function App() {
       <AdmDashboardPage 
       onNavigate={navigate}
       classes={classes}
-      alunos={alunos}
-      produtos={produtos}
+      students={students}
+      products={products}
       />
     );
   } 
@@ -264,8 +266,8 @@ export default function App() {
     return (
       <AdmStudentsPage 
       classes={classes}
-      alunos={alunos}
-      setAlunos={setAlunos}
+      students={students}
+      setStudents={setStudents}
       onBack={() => navigate('adm-dashboard')}
       />
     );
@@ -286,7 +288,7 @@ export default function App() {
     return (
       <AdmClassNoticesPage
         classes={classes}
-        avisos={avisos}
+        notices={notices}
         onCreate={handleCreateNotice}
         onRemove={handleRemoveNotice}
         onBack={() => navigate('adm-dashboard')}
@@ -297,7 +299,7 @@ export default function App() {
   if (activePage === 'adm-news') {
     return (
       <AdmNewsPage
-        noticias={noticias}
+        news={news}
         onCreate={handleCreateNews}
         onRemove={handleRemoveNews}
         onBack={() => navigate('adm-dashboard')}
