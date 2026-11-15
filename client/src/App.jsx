@@ -328,6 +328,7 @@ export default function App() {
         'Nossa instituição realizará o Grande Festival de Dança no próximo mês. Inscrições abertas para todas as turmas!',
       date: '14/09/2026',
       images: ['🎭', '📸'],
+      publicationArea: 'studio',
     },
     {
       id: 2,
@@ -336,6 +337,7 @@ export default function App() {
         'Convocamos alunos e responsáveis para a festa de encerramento do semestre com apresentações especiais.',
       date: '09/09/2026',
       images: ['🎉'],
+      publicationArea: 'crafts',
     },
   ]);
 
@@ -576,6 +578,7 @@ export default function App() {
 
         {activePage === 'crafts' && (
           <CraftsPage
+            news={news}
             onSelectProduct={handleSelectCraftProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'crafts')}
           />
@@ -583,6 +586,7 @@ export default function App() {
 
         {activePage === 'agriculture' && (
           <AgriculturePage
+            news={news}
             onSelectProduct={handleSelectAgricultureProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'agriculture')}
           />
@@ -590,6 +594,7 @@ export default function App() {
 
         {activePage === 'studio' && (
           <StudioPage
+            news={news}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'studio')}
           />
         )}

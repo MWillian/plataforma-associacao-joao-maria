@@ -6,12 +6,14 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState([]);
+  const [publicationArea, setPublicationArea] = useState('');
   const [newsToDelete, setNewsToDelete] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
     images: [],
+    publicationArea: '',
   });
 
   const handleImageChange = (event) => {
@@ -46,6 +48,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
       description: description.trim(),
       date: new Date().toLocaleDateString('pt-BR'),
       images,
+      publicationArea,
     };
 
     onCreate?.(newNews);
@@ -53,6 +56,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     setTitle('');
     setDescription('');
     setImages([]);
+    setPublicationArea('');
     setShowForm(false);
   };
 
@@ -60,6 +64,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     setTitle('');
     setDescription('');
     setImages([]);
+    setPublicationArea('');
     setShowForm(false);
   };
 
@@ -84,6 +89,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
       title: newsItem.title || '',
       description: newsItem.description || '',
       images: [...(newsItem.images || [])],
+      publicationArea: newsItem.publicationArea || '',
     });
   };
 
@@ -137,6 +143,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
       title: '',
       description: '',
       images: [],
+      publicationArea: '',
     });
   };
 
@@ -151,6 +158,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
       title: editForm.title.trim(),
       description: editForm.description.trim(),
       images: editForm.images,
+      publicationArea: editForm.publicationArea,
     };
 
     onUpdate?.(updatedNews);
@@ -170,7 +178,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
             </h1>
 
             <p className="mt-1 text-sm text-[#7183A3]">
-              Publique eventos e novidades da instituição
+              Publique notícias da instituição
             </p>
           </div>
 
@@ -209,7 +217,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
         {showForm && (
           <section className="mb-6 rounded-xl border border-[#DCE4F0] bg-white p-6">
             <h2 className="mb-5 font-semibold text-[#21418E]">
-              Nova Notícia / Evento
+              Nova Notícia
             </h2>
 
             <form onSubmit={handleSubmit}>
@@ -248,7 +256,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                     id="news-description"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    placeholder="Descreva o evento ou notícia em detalhes..."
+                    placeholder="Descreva a notícia em detalhes..."
                     rows={5}
                     className="w-full resize-y rounded-lg border border-[#DCE4F0] px-3.5 py-3 text-sm text-[#172033] outline-none transition placeholder:text-[#91A4C2] focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
@@ -306,6 +314,30 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                   <p className="mt-2 text-xs text-[#91A4C2]">
                     Você pode selecionar uma ou mais imagens.
                   </p>
+                </div>
+
+                <div className="mb-5">
+                  <label
+                    htmlFor="news-publication-area"
+                    className="mb-2 block text-sm font-medium text-[#344563]"
+                  >
+                    Área de exibição <span className="text-blue-600">*</span>
+                  </label>
+
+                  <select
+                    id="news-publication-area"
+                    value={publicationArea}
+                    onChange={(event) => setPublicationArea(event.target.value)}
+                    required
+                    className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3.5 py-2.5 text-sm text-[#172033] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="" disabled>
+                      Selecione onde a notícia será exibida
+                    </option>
+                    <option value="studio">Estúdio Adágio</option>
+                    <option value="crafts">Artesanato</option>
+                    <option value="agriculture">Agricultura Familiar</option>
+                  </select>
                 </div>
               </div>
 
@@ -374,6 +406,16 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
 
                 <p className="text-sm leading-relaxed text-[#7183A3]">
                   {newsItem.description}
+                </p>
+
+                <p className="mt-3 text-xs font-medium text-blue-700">
+                  Exibição: {
+                    {
+                      studio: 'Estúdio Adágio',
+                      crafts: 'Artesanato',
+                      agriculture: 'Agricultura Familiar',
+                    }[newsItem.publicationArea] || 'Não definida'
+                  }
                 </p>
 
                 {/* Fotos */}
@@ -555,10 +597,35 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                   name="description"
                   value={editForm.description}
                   onChange={handleEditChange}
-                  placeholder="Descreva o evento ou notícia..."
+                  placeholder="Descreva a notícia..."
                   rows={5}
                   className="w-full resize-y rounded-lg border border-[#DCE4F0] px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
+              </div>
+
+              <div className="mb-5">
+                <label
+                  htmlFor="edit-news-publication-area"
+                  className="mb-2 block text-sm font-medium text-[#344563]"
+                >
+                  Área de exibição *
+                </label>
+
+                <select
+                  id="edit-news-publication-area"
+                  name="publicationArea"
+                  value={editForm.publicationArea}
+                  onChange={handleEditChange}
+                  required
+                  className="w-full rounded-lg border border-[#DCE4F0] bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="" disabled>
+                    Selecione onde a notícia será exibida
+                  </option>
+                  <option value="studio">Estúdio Adágio</option>
+                  <option value="crafts">Artesanato</option>
+                  <option value="agriculture">Agricultura Familiar</option>
+                </select>
               </div>
 
               {/* Imagens */}
