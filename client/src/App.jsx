@@ -384,7 +384,14 @@ export default function App() {
       previousStudents.filter((student) => student.danceClassId !== id)
     );
     setNotices((previousNotices) =>
-      previousNotices.filter((notice) => (notice.classId ?? notice.danceClassId) !== id)
+      previousNotices.filter((notice) => {
+        const classIds = notice.classIds
+          || [notice.classId ?? notice.danceClassId];
+
+        return !classIds.some(
+          (classId) => Number(classId) === Number(id)
+        );
+      })
     );
   };
 
