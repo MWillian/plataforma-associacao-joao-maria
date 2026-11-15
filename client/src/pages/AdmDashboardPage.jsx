@@ -35,6 +35,10 @@ const classesWithStudentCount = classesWithStudents.filter(
 ).length;
 
 const getDanceClassName = (classId) => {
+  if (Array.isArray(classId)) {
+    return classId.map((id) => getDanceClassName(id)).join(', ');
+  }
+
   const danceClass = classes.find(
     (danceClass) => Number(danceClass.id) === Number(classId)
   );
@@ -299,7 +303,9 @@ const getDanceClassName = (classId) => {
                     </span>
 
                     <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
-                      {getDanceClassName(notice.classId)}
+                      {getDanceClassName(
+                        notice.classIds || notice.classId || notice.danceClassId
+                      )}
                     </span>
 
                     <span className="text-[#91A2BF]">

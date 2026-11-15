@@ -1,6 +1,28 @@
 
 import { useState } from 'react';
 
+function MedicalField({ name, label, value, onChange, placeholder }) {
+  return (
+    <div>
+      <label
+        htmlFor={`${name}-student`}
+        className="mb-2 block text-sm font-medium text-[#40516B]"
+      >
+        {label}
+      </label>
+      <textarea
+        id={`${name}-student`}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        rows={3}
+        className="w-full resize-y rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+      />
+    </div>
+  );
+}
+
 export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
   const [showForm, setShowForm] = useState(false);
@@ -15,6 +37,10 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     isMinor: false,
     guardian: '',
     guardianEmail: '',
+    allergies: '',
+    medicalConditions: '',
+    medications: '',
+    physicalRestrictions: '',
   });
 
   const [editForm, setEditForm] = useState({
@@ -25,6 +51,10 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     isMinor: false,
     guardian: '',
     guardianEmail: '',
+    allergies: '',
+    medicalConditions: '',
+    medications: '',
+    physicalRestrictions: '',
   });
 
   // Atualiza os campos do formulário
@@ -59,6 +89,10 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       isMinor: false,
       guardian: '',
       guardianEmail: '',
+      allergies: '',
+      medicalConditions: '',
+      medications: '',
+      physicalRestrictions: '',
     });
 
     setShowForm(false);
@@ -93,6 +127,10 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       isMinor: student.isMinor ?? false,
       guardian: student.guardian || '',
       guardianEmail: student.guardianEmail || '',
+      allergies: student.allergies || '',
+      medicalConditions: student.medicalConditions || '',
+      medications: student.medications || '',
+      physicalRestrictions: student.physicalRestrictions || '',
     });
   };
 
@@ -125,6 +163,10 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       guardianEmail: editForm.isMinor
         ? editForm.guardianEmail.trim()
         : '',
+      allergies: editForm.allergies.trim(),
+      medicalConditions: editForm.medicalConditions.trim(),
+      medications: editForm.medications.trim(),
+      physicalRestrictions: editForm.physicalRestrictions.trim(),
     };
 
     setStudents((previousStudents) =>
@@ -149,6 +191,10 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       isMinor: false,
       guardian: '',
       guardianEmail: '',
+      allergies: '',
+      medicalConditions: '',
+      medications: '',
+      physicalRestrictions: '',
     });
   };
 
@@ -352,6 +398,46 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
                   </div>
                 )}
+
+                <div className="md:col-span-2">
+                  <h3 className="mb-1 text-lg font-semibold text-[#23418F]">
+                    Informações médicas
+                  </h3>
+                  <p className="mb-4 text-sm text-[#71839F]">
+                    Registre informações importantes para a segurança do aluno.
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <MedicalField
+                      name="allergies"
+                      label="Alergias"
+                      value={form.allergies}
+                      onChange={handleChange}
+                      placeholder="Ex.: alergia a medicamentos ou alimentos"
+                    />
+                    <MedicalField
+                      name="medicalConditions"
+                      label="Condições médicas"
+                      value={form.medicalConditions}
+                      onChange={handleChange}
+                      placeholder="Ex.: asma, diabetes ou outra condição"
+                    />
+                    <MedicalField
+                      name="medications"
+                      label="Medicamentos"
+                      value={form.medications}
+                      onChange={handleChange}
+                      placeholder="Informe medicamentos de uso contínuo"
+                    />
+                    <MedicalField
+                      name="physicalRestrictions"
+                      label="Restrições físicas"
+                      value={form.physicalRestrictions}
+                      onChange={handleChange}
+                      placeholder="Ex.: restrições para exercícios"
+                    />
+                  </div>
+                </div>
             </div>
 
             {/* Botão salvar */}
@@ -715,6 +801,46 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     </div>
                   </>
                 )}
+
+                <div className="md:col-span-2">
+                  <h3 className="mb-1 text-lg font-semibold text-[#23418F]">
+                    Informações médicas
+                  </h3>
+                  <p className="mb-4 text-sm text-[#71839F]">
+                    Registre informações importantes para a segurança do aluno.
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <MedicalField
+                      name="allergies"
+                      label="Alergias"
+                      value={editForm.allergies}
+                      onChange={handleEditChange}
+                      placeholder="Ex.: alergia a medicamentos ou alimentos"
+                    />
+                    <MedicalField
+                      name="medicalConditions"
+                      label="Condições médicas"
+                      value={editForm.medicalConditions}
+                      onChange={handleEditChange}
+                      placeholder="Ex.: asma, diabetes ou outra condição"
+                    />
+                    <MedicalField
+                      name="medications"
+                      label="Medicamentos"
+                      value={editForm.medications}
+                      onChange={handleEditChange}
+                      placeholder="Informe medicamentos de uso contínuo"
+                    />
+                    <MedicalField
+                      name="physicalRestrictions"
+                      label="Restrições físicas"
+                      value={editForm.physicalRestrictions}
+                      onChange={handleEditChange}
+                      placeholder="Ex.: restrições para exercícios"
+                    />
+                  </div>
+                </div>
 
               </div>
 
