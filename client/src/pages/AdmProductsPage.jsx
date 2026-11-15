@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const availableCategories = [
   'Artesanato',
@@ -50,6 +50,14 @@ function isProductAvailable(product) {
   return product.available ?? product.active ?? product.avaliable ?? true;
 }
 
+function revokeObjectUrl(image) {
+  const url = typeof image === 'string' ? image : image?.url;
+
+  if (url?.startsWith('blob:')) {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function ProductImage({ image }) {
   const url = typeof image === 'string' ? image : image?.url;
 
@@ -86,11 +94,31 @@ export function AdmProductsPage({
   const [editingProduct, setEditingProduct] = useState(null);
   const [productsToDelete, setProductsToDelete] = useState(null);
   const [form, setForm] = useState(initialForm);
+  const [formError, setFormError] = useState('');
 
   const [categoryFilter, setCategoryFilter] = useState('Todas');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [sortOrder, setSortOrder] = useState('name');
+
+  useEffect(() => {
+    if (!editingProduct && !productsToDelete) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setEditingProduct(null);
+        setProductsToDelete(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editingProduct, productsToDelete]);
 
   const registeredCategories = useMemo(() => {
     return [
@@ -149,7 +177,7 @@ export function AdmProductsPage({
     const availableSlots = 3 - form.images.length;
 
     if (availableSlots <= 0) {
-      alert('Este produto já possui o limite de 3 imagens.');
+      setFormError('Este produto já possui o limite de 3 imagens.');
       event.target.value = '';
       return;
     }
@@ -157,6 +185,12 @@ export function AdmProductsPage({
     const validFiles = selectedFiles
       .filter((file) => file.type.startsWith('image/'))
       .slice(0, availableSlots);
+
+    if (validFiles.length === 0) {
+      setFormError('Selecione pelo menos uma imagem válida.');
+      event.target.value = '';
+      return;
+    }
 
     const newImages = validFiles.map((file) => ({
       url: URL.createObjectURL(file),
@@ -172,16 +206,23 @@ export function AdmProductsPage({
   };
 
   const removeImage = (index) => {
+    revokeObjectUrl(form.images[index]);
+
     setForm((previous) => ({
       ...previous,
       images: previous.images.filter((_, i) => i !== index),
     }));
   };
 
-  const clearForm = () => {
+  const clearForm = (revokeImages = true) => {
+    if (revokeImages) {
+      form.images.forEach(revokeObjectUrl);
+    }
+
     setForm(initialForm);
     setEditingProduct(null);
     setShowForm(false);
+    setFormError('');
   };
 
   const saveProduct = (event) => {
@@ -190,11 +231,15 @@ export function AdmProductsPage({
     if (
       !form.name.trim() ||
       !form.category ||
-      form.price === ''
+      form.price === '' ||
+      !Number.isFinite(Number(form.price)) ||
+      Number(form.price) < 0
     ) {
-      alert('Preencha o nome, a categoria e o preço do produto.');
+      setFormError('Preencha nome, categoria e um preço válido.');
       return;
     }
+
+    setFormError('');
 
     const productData = {
       ...form,
@@ -215,7 +260,7 @@ export function AdmProductsPage({
       });
     }
 
-    clearForm();
+    clearForm(false);
   };
 
   const openEdit = (product) => {
@@ -304,6 +349,12 @@ export function AdmProductsPage({
               <h2 className="font-bold text-[#172957]">
                 Novo Produto
               </h2>
+
+              {formError && (
+                <p className="mt-2 text-sm text-red-600" role="alert">
+                  {formError}
+                </p>
+              )}
             </div>
 
             <form onSubmit={saveProduct}>
@@ -659,6 +710,12 @@ export function AdmProductsPage({
               >
                 Editar Produto
               </h2>
+
+              {formError && (
+                <p className="mt-2 text-sm text-red-600" role="alert">
+                  {formError}
+                </p>
+              )}
 
               <button
                 type="button"
