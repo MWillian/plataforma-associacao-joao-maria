@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { api } from '../services/api.js';
+import { setAccessToken } from '../services/auth.js';
 import InputField from "../components/details/InputFieldLogin.jsx";
 
 export function AdmLoginPage({ onLogin }) {
@@ -33,7 +34,7 @@ export function AdmLoginPage({ onLogin }) {
         throw new Error('A resposta de autenticação não possui um token.');
       }
 
-      api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
+      setAccessToken(data.accessToken);
       onLogin?.(data.user);
     } catch (requestError) {
       setError(

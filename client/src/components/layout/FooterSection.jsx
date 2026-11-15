@@ -7,11 +7,21 @@ export function FooterSection() {
           {/* Coluna 1: Logo e Descrição */}
           <div className="space-y-4">
             <div className="w-36 h-20 bg-white rounded-lg flex items-center justify-center p-2 shadow-md">
-              <span className="text-[#0b1b3d] text-xs font-bold text-center">Logo Associação</span>
+              <img
+                src="/logo-joao-maria.png"
+                alt="Associação Comunitária João Maria"
+                className="h-full w-full object-contain"
+              />
             </div>
             <p className="text-slate-300 font-roboto text-xs leading-relaxed">
               Associação Comunitária João Maria - Fortalecendo vínculos, gerando oportunidades e transformando vidas em Coruripe-AL através do artesanato e da agricultura familiar.
             </p>
+            <a
+              href="/admin/login"
+              className="inline-flex rounded-lg bg-white px-4 py-2 text-xs font-semibold text-[#0b1b3d] transition hover:bg-blue-100"
+            >
+              Acesso administrativo
+            </a>
           </div>
 
           {/* Coluna 2: Navegação */}

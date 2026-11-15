@@ -1,5 +1,6 @@
 export function AdmDashboardPage({
   onNavigate,
+  onLogout,
   classes,
   students,
   news = [],
@@ -44,14 +45,24 @@ const getDanceClassName = (classId) => {
       <div className="mx-auto max-w-360">
 
         {/* Cabeçalho */}
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-[#172957]">
-            Painel principal
-          </h1>
+        <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-[#172957]">
+              Painel principal
+            </h1>
 
-          <p className="mt-1 text-sm text-[#7183A3]">
-            Acompanhe as turmas e as matrículas da instituição.
-          </p>
+            <p className="mt-1 text-sm text-[#7183A3]">
+              Acompanhe as turmas e as matrículas da instituição.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onLogout}
+            className="rounded-lg border border-red-700 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+          >
+            Sair
+          </button>
         </header>
 
         {/* Indicadores */}

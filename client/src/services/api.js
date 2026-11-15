@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { storeAccessToken } from './token.js';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -29,6 +30,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
+      storeAccessToken(data.accessToken);
       api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
       request.headers.Authorization = `Bearer ${data.accessToken}`;
 
