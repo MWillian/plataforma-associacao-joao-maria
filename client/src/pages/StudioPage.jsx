@@ -1,12 +1,17 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { Search, ChevronRight, Users, Clock } from 'lucide-react';
+import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 
 export function StudioPage({ news = [], onSelectNews }) {
   // Referência para controlar a rolagem da seção do mural
   const newsSectionRef = useRef(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useUrlQueryState('studioNewsSearch', '');
+  const [currentPage, setCurrentPage] = useUrlQueryState('studioNewsPage', 1, {
+    parse: (value) => Math.max(1, Number(value) || 1),
+    serialize: String,
+    history: 'push',
+  });
 
   // Função para mudar de página com rolagem suave até o início do mural
   const handlePageChange = (newPage) => {

@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
+import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 
 export function CraftsPage({ news = [], onSelectProduct, onSelectNews }) {
   // Referências para controlar a rolagem exata das seções
@@ -7,12 +8,20 @@ export function CraftsPage({ news = [], onSelectProduct, onSelectNews }) {
   const newsSectionRef = useRef(null);
 
   // Estados para o Catálogo de Produtos
-  const [productSearch, setProductSearch] = useState('');
-  const [productPage, setProductPage] = useState(1);
+  const [productSearch, setProductSearch] = useUrlQueryState('craftProductSearch', '');
+  const [productPage, setProductPage] = useUrlQueryState('craftProductPage', 1, {
+    parse: (value) => Math.max(1, Number(value) || 1),
+    serialize: String,
+    history: 'push',
+  });
 
   // Estados para o Mural de Notícias e Eventos
-  const [newsSearch, setNewsSearch] = useState('');
-  const [newsPage, setNewsPage] = useState(1);
+  const [newsSearch, setNewsSearch] = useUrlQueryState('craftNewsSearch', '');
+  const [newsPage, setNewsPage] = useUrlQueryState('craftNewsPage', 1, {
+    parse: (value) => Math.max(1, Number(value) || 1),
+    serialize: String,
+    history: 'push',
+  });
 
   // Funções de mudança de página com rolagem automática para o topo da seção
   const handleProductPageChange = (newPage) => {

@@ -1,6 +1,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
+import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 
 const availableCategories = [
   'Artesanato',
@@ -78,8 +79,8 @@ function ProductImage({ image }) {
   }
 
   return (
-    <span className="text-5xl" role="img" aria-label="Imagem ilustrativa">
-      {url || '📦'}
+    <span className="text-xs text-slate-400">
+      Sem imagem
     </span>
   );
 }
@@ -98,10 +99,13 @@ export function AdmProductsPage({
   const [formError, setFormError] = useState('');
   const [feedback, setFeedback] = useState('');
 
-  const [categoryFilter, setCategoryFilter] = useState('Todas');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [sortOrder, setSortOrder] = useState('name');
+  const [categoryFilter, setCategoryFilter] = useUrlQueryState(
+    'adminProductCategory',
+    'Todas'
+  );
+  const [minPrice, setMinPrice] = useUrlQueryState('adminProductMinPrice', '');
+  const [maxPrice, setMaxPrice] = useUrlQueryState('adminProductMaxPrice', '');
+  const [sortOrder, setSortOrder] = useUrlQueryState('adminProductSort', 'name');
 
   useEffect(() => {
     if (!editingProduct && !productsToDelete) {
@@ -622,7 +626,7 @@ export function AdmProductsPage({
                         </div>
                       ))
                     ) : (
-                      <span className="text-5xl">📦</span>
+                      <span className="text-xs text-slate-400">Sem imagem</span>
                     )}
                   </div>
 

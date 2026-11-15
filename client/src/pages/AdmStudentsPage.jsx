@@ -21,7 +21,7 @@ function MedicalField({ name, label, value, onChange, placeholder }) {
         className="w-full resize-y rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
       />
     </div>
-  );
+  )
 }
 
 export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
@@ -149,7 +149,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
         ? { guardian: '', guardianEmail: '' }
         : {}),
     }));
-  };
+  }
 
   // Salva as alterações do aluno
   const handleUpdateStudent = (event) => {
@@ -294,7 +294,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
               {/* E-mail */}
               <div>
                 <label className="mb-2 block font-medium text-[#40516B]">
-                  E-mail <span className="text-blue-600">*</span>
+                  E-mail <span className="text-sm font-normal text-[#71839F]">(opcional)</span>
                 </label>
 
                 <input
@@ -303,15 +303,17 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                   value={form.email}
                   onChange={handleChange}
                   placeholder="aluno@email.com"
-                  required
                   className="w-full rounded-xl border border-[#DCE4F0] px-5 py-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
+                <p className="mt-1 text-xs text-[#71839F]">
+                  Se não houver e-mail, o aluno não receberá avisos diretamente.
+                </p>
               </div>
 
               {/* Telefone */}
               <div>
                 <label className="mb-2 block font-medium text-[#40516B]">
-                  Telefone <span className="text-blue-600">*</span>
+                  Telefone                   <span className="text-sm font-normal text-[#71839F]">(opcional)</span>
                 </label>
 
                 <input
@@ -320,9 +322,11 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                   value={form.phone}
                   onChange={handleChange}
                   placeholder="(11) 99999-9999"
-                  required
                   className="w-full rounded-xl border border-[#DCE4F0] px-5 py-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
+                <p className="mt-1 text-xs text-[#71839F]">
+                  Sem e-mail cadastrado, o responsável não receberá avisos.
+                </p>
               </div>
 
               {/* Seleção da turma */}
@@ -389,7 +393,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     {/* E-mail do responsável */}
                     <div>
                       <label className="mb-2 block font-medium text-[#40516B]">
-                        E-mail do responsável <span className="text-blue-600">*</span>
+                        E-mail do responsável <span className="text-sm font-normal text-[#71839F]">(opcional)</span>
                       </label>
 
                       <input
@@ -398,9 +402,11 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                         value={form.guardianEmail}
                         onChange={handleChange}
                         placeholder="responsavel@email.com"
-                        required
                         className="w-full rounded-xl border border-[#DCE4F0] px-5 py-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                       />
+                      <p className="mt-1 text-xs text-[#71839F]">
+                        Sem e-mail cadastrado, o responsável não receberá avisos.
+                      </p>
                     </div>
 
                   </div>
@@ -489,8 +495,8 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                   {student.name}
                 </h3>
 
-                <p className="text-[#9AACC5]">
-                  {student.email} · {student.phone}
+                <p className="text-[#9AACC5]"                >
+                  {student.email || 'Sem e-mail cadastrado'} · {student.phone}
                 </p>
 
                 <p className="text-[#9AACC5]">
@@ -602,7 +608,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
             </div>
           </section>
         </div>
-      )};
+      )}
 
       {/* Diálogo de edição do aluno */}
       {editingStudent && (
@@ -679,7 +685,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     htmlFor="edit-student-email"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
-                    E-mail *
+                    E-mail <span className="font-normal text-[#71839F]">(opcional)</span>
                   </label>
 
                   <input
@@ -688,9 +694,11 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     name="email"
                     value={editForm.email}
                     onChange={handleEditChange}
-                    required
                     className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
+                  <p className="mt-1 text-xs text-[#71839F]">
+                    Sem e-mail cadastrado, o aluno não receberá avisos diretamente.
+                  </p>
                 </div>
 
                 {/* Telefone */}
@@ -792,7 +800,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                         htmlFor="edit-student-guardian-email"
                         className="mb-2 block text-sm font-medium text-[#40516B]"
                       >
-                        E-mail do responsável *
+                        E-mail do responsável <span className="font-normal text-[#71839F]">(opcional)</span>
                       </label>
 
                       <input
@@ -801,10 +809,12 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                         name="guardianEmail"
                         value={editForm.guardianEmail}
                         onChange={handleEditChange}
-                        required
                         placeholder="responsavel@email.com"
                         className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                       />
+                      <p className="mt-1 text-xs text-[#71839F]">
+                        Sem e-mail cadastrado, o responsável não receberá avisos.
+                      </p>
                     </div>
                   </>
                 )}
@@ -874,8 +884,8 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
             </form>
           </section>
         </div>
-      )};
+      )}
       </main>
     </>
-  );
+  )
 }

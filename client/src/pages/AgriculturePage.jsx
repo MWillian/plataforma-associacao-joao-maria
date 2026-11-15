@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
+import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 
 export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
   // Referências para controlar a rolagem exata das seções
@@ -7,12 +8,20 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
   const newsSectionRef = useRef(null);
 
   // Estados para o Catálogo de Alimentos
-  const [productSearch, setProductSearch] = useState('');
-  const [productPage, setProductPage] = useState(1);
+  const [productSearch, setProductSearch] = useUrlQueryState('agricultureProductSearch', '');
+  const [productPage, setProductPage] = useUrlQueryState('agricultureProductPage', 1, {
+    parse: (value) => Math.max(1, Number(value) || 1),
+    serialize: String,
+    history: 'push',
+  });
 
   // Estados para o Mural de Notícias e Eventos
-  const [newsSearch, setNewsSearch] = useState('');
-  const [newsPage, setNewsPage] = useState(1);
+  const [newsSearch, setNewsSearch] = useUrlQueryState('agricultureNewsSearch', '');
+  const [newsPage, setNewsPage] = useUrlQueryState('agricultureNewsPage', 1, {
+    parse: (value) => Math.max(1, Number(value) || 1),
+    serialize: String,
+    history: 'push',
+  });
 
   // Funções de troca de página com rolagem suave automática
   const handleProductPageChange = (newPage) => {
