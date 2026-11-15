@@ -1,4 +1,24 @@
-export function AdmDashboardPage({ onNavigate, classes, students, news= [], notices = [], products }) {
+function ActionButton({ children, page, className = '', onNavigate }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate?.(page)}
+      className={`rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function AdmDashboardPage({
+  onNavigate,
+  onLogout,
+  classes,
+  students,
+  news = [],
+  notices = [],
+  products = [],
+}) {
   
 
 const classesWithStudents = classes.map((danceClass) => ({
@@ -14,16 +34,6 @@ const classesWithStudentCount = classesWithStudents.filter(
   (danceClass) => danceClass.students > 0
 ).length;
 
-  const ActionButton = ({ children, page, className = '' }) => (
-    <button
-      type="button"
-      onClick={() => onNavigate?.(page)}
-      className={`rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 ${className}`}
-    >
-      {children}
-    </button>
-  );
-
 const getDanceClassName = (classId) => {
   const danceClass = classes.find(
     (danceClass) => Number(danceClass.id) === Number(classId)
@@ -37,14 +47,24 @@ const getDanceClassName = (classId) => {
       <div className="mx-auto max-w-360">
 
         {/* Cabeçalho */}
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-[#172957]">
-            Painel principal
-          </h1>
+        <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-[#172957]">
+              Painel principal
+            </h1>
 
-          <p className="mt-1 text-sm text-[#7183A3]">
-            Acompanhe as turmas e as matrículas da instituição.
-          </p>
+            <p className="mt-1 text-sm text-[#7183A3]">
+              Acompanhe as turmas e as matrículas da instituição.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onLogout}
+            className="rounded-lg border border-red-700 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+          >
+            Sair
+          </button>
         </header>
 
         {/* Indicadores */}
@@ -110,11 +130,11 @@ const getDanceClassName = (classId) => {
             </div>
 
             <div className="flex gap-3">
-              <ActionButton page="adm-students">
+              <ActionButton page="adm-students" onNavigate={onNavigate}>
                 Ver alunos
               </ActionButton>
 
-              <ActionButton page="adm-classes">
+              <ActionButton page="adm-classes" onNavigate={onNavigate}>
                 Ver turmas
               </ActionButton>
             </div>
@@ -164,7 +184,7 @@ const getDanceClassName = (classId) => {
               Notícias
             </h2>
 
-            <ActionButton page="adm-news">
+            <ActionButton page="adm-news" onNavigate={onNavigate}>
               Ver notícias
             </ActionButton>
           </div>
@@ -252,7 +272,7 @@ const getDanceClassName = (classId) => {
               Avisos
             </h2>
 
-            <ActionButton page="adm-class-notices">
+            <ActionButton page="adm-class-notices" onNavigate={onNavigate}>
               Ver avisos
             </ActionButton>
           </div>
@@ -320,7 +340,7 @@ const getDanceClassName = (classId) => {
               Produtos
             </h2>
 
-            <ActionButton page="adm-products">
+            <ActionButton page="adm-products" onNavigate={onNavigate}>
               Ver produtos
             </ActionButton>
           </div>
@@ -343,6 +363,12 @@ const getDanceClassName = (classId) => {
                       alt={product.name}
                       className="h-full w-full object-cover"
                     />
+                  ) : product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name || product.title}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <span className="text-5xl" role="img" aria-label={product.name}>
                       📦
@@ -363,10 +389,12 @@ const getDanceClassName = (classId) => {
                   </div>
 
                   <p className="mt-5 font-bold text-blue-700">
-                    {Number(product.price).toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}
+                    {product.price == null
+                      ? 'Consulte disponibilidade'
+                      : Number(product.price).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
                   </p>
                 </div>
               </article>

@@ -62,7 +62,9 @@ export function Navbar({ activePage, setActivePage }) {
         >
           <div className="flex items-center gap-5">
             <a
-              href="#"
+              href="https://www.facebook.com/associacaojoaomaria"
+              target="_blank"
+              rel="noreferrer"
               aria-label="Facebook"
               className="hover:text-blue-300 hover:scale-110 transition-all duration-300"
             >
@@ -72,7 +74,9 @@ export function Navbar({ activePage, setActivePage }) {
             </a>
 
             <a
-              href="#"
+              href="https://www.instagram.com/associacaojoaomaria"
+              target="_blank"
+              rel="noreferrer"
               aria-label="Instagram"
               className="hover:text-blue-300 hover:scale-110 transition-all duration-300"
             >
@@ -82,7 +86,7 @@ export function Navbar({ activePage, setActivePage }) {
             </a>
 
             <a
-              href="#"
+              href="mailto:contato@associacaojoaomaria.org"
               aria-label="E-mail"
               className="hover:text-blue-300 hover:scale-110 transition-all duration-300"
             >
@@ -127,7 +131,11 @@ export function Navbar({ activePage, setActivePage }) {
                 ${scrolled ? 'w-[85px] h-[55px] scale-90' : 'w-[103px] h-[65px]'}
               `}
             >
-              Logo 103x85
+              <img
+                src="/logo-joao-maria.png"
+                alt="Associação Comunitária João Maria"
+                className="h-full w-full object-contain"
+              />
             </div>
           </button>
         </div>

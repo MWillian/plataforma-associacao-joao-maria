@@ -1,12 +1,49 @@
 
+import { useState } from 'react';
+import { api } from '../services/api.js';
+import { setAccessToken } from '../services/auth.js';
 import InputField from "../components/details/InputFieldLogin.jsx";
 
-export function AdmLoginPage() {
-  function handleSubmit(event) {
+export function AdmLoginPage({ onLogin }) {
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    // Aqui será implementada a autenticação.
-    console.log("Tentativa de login");
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const { data } = await api.post('/auth/login', form);
+
+      if (!data?.accessToken) {
+        throw new Error('A resposta de autenticação não possui um token.');
+      }
+
+      setAccessToken(data.accessToken);
+      onLogin?.(data.user);
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+        'Não foi possível realizar o login.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -79,33 +116,31 @@ export function AdmLoginPage() {
             >
 
               <InputField
+                id="login-email"
+                name="email"
                 label="E-mail"
                 type="email"
                 placeholder="email@instituicao.com.br"
+                value={form.email}
+                onChange={handleChange}
                 required
               />
 
               <InputField
+                id="login-password"
+                name="password"
                 label="Senha"
                 type="password"
                 placeholder="••••••••"
+                value={form.password}
+                onChange={handleChange}
                 required
-              >
-                <a
-                  href="/recuperar-senha"
-                  className="
-                    text-sm font-medium
-                    text-blue-600
-                    transition hover:text-blue-800
-                  "
-                >
-                  Esqueceu a senha?
-                </a>
-              </InputField>
+              />
 
               {/* Botão */}
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="
                   mt-[-1px] h-10 w-full
                   rounded-lg bg-[#2050DE]
@@ -117,10 +152,16 @@ export function AdmLoginPage() {
                   focus:ring-offset-2
                 "
               >
-                Entrar no painel
+                {isSubmitting ? 'Entrando...' : 'Entrar no painel'}
               </button>
 
             </form>
+
+            {error && (
+              <p className="mt-4 text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            )}
 
             {/* Rodapé */}
             <footer className="
@@ -129,17 +170,7 @@ export function AdmLoginPage() {
             ">
 
               <p className="text-sm text-slate-500">
-                Não tem uma conta?{" "}
-                <a
-                  href="/cadastro"
-                  className="
-                    font-medium text-blue-600
-                    hover:text-blue-800
-                    transition
-                  "
-                >
-                  Cadastrar-se
-                </a>
+                Contas administrativas são criadas pelo responsável do sistema.
               </p>
 
             </footer>

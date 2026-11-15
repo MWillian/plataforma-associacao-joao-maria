@@ -4,12 +4,19 @@ function InputField({
   type = "text",
   placeholder,
   required = false,
+  id,
+  name,
+  value,
+  onChange,
   children,
 }) {
   return (
     <div className="w-full">
       <div className="mb-2 flex items-center justify-between">
-        <label className="text-sm font-medium text-slate-700">
+        <label
+          htmlFor={id}
+          className="text-sm font-medium text-slate-700"
+        >
           {label}
           {required && (
             <span className="ml-1 text-blue-600">*</span>
@@ -21,8 +28,12 @@ function InputField({
 
       <input
         type={type}
+        id={id}
+        name={name}
         placeholder={placeholder}
         required={required}
+        value={value}
+        onChange={onChange}
         className="
           h-[42px] w-full rounded-lg
           border border-slate-200

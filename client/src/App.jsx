@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { FooterSection } from './components/layout/FooterSection.jsx';
@@ -16,53 +16,237 @@ import { AdmClassesPage } from './pages/AdmClassesPage.jsx';
 import { AdmClassNoticesPage } from './pages/AdmClassNoticesPage.jsx';
 import { AdmNewsPage } from './pages/AdmNewsPage.jsx';
 import { AdmProductsPage } from './pages/AdmProductsPage.jsx';
+import {
+  clearAccessToken,
+  getAccessToken,
+  logout,
+  restoreSession,
+} from './services/auth.js';
+import {
+  productFromApi,
+  productToApi,
+} from './services/productMapper.js';
+
+const routes = {
+  '/': 'home',
+  '/studio': 'studio',
+  '/artesanato': 'crafts',
+  '/agricultura': 'agriculture',
+  '/admin/login': 'adm-login',
+  '/admin/painel': 'adm-dashboard',
+  '/admin/alunos': 'adm-students',
+  '/admin/turmas': 'adm-classes',
+  '/admin/avisos': 'adm-class-notices',
+  '/admin/noticias': 'adm-news',
+  '/admin/produtos': 'adm-products',
+};
+
+const DETAIL_STORAGE_KEYS = {
+  product: 'joao-maria.selected-product',
+  news: 'joao-maria.selected-news',
+};
+
+function getLocationState() {
+  const { pathname } = window.location;
+  const craftMatch = pathname.match(/^\/artesanato\/produtos\/([^/]+)$/);
+  const agricultureMatch = pathname.match(/^\/agricultura\/produtos\/([^/]+)$/);
+  const newsMatch = pathname.match(/^\/(studio|artesanato|agricultura)\/noticias\/([^/]+)$/);
+
+  if (craftMatch) {
+    return {
+      activePage: 'craft-detail',
+      productId: decodeURIComponent(craftMatch[1]),
+    };
+  }
+
+  if (agricultureMatch) {
+    return {
+      activePage: 'agriculture-detail',
+      productId: decodeURIComponent(agricultureMatch[1]),
+    };
+  }
+
+  if (newsMatch) {
+    return {
+      activePage: 'news-detail',
+      newsSourcePage:
+        newsMatch[1] === 'artesanato'
+          ? 'crafts'
+          : newsMatch[1] === 'agricultura'
+            ? 'agriculture'
+            : 'studio',
+      newsId: decodeURIComponent(newsMatch[2]),
+    };
+  }
+
+  return {
+    activePage: routes[pathname] || 'home',
+  };
+}
+
+function readStoredValue(key) {
+  try {
+    const value = sessionStorage.getItem(key);
+    return value ? JSON.parse(value) : null;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredDetail(key, id) {
+  const value = readStoredValue(key);
+
+  if (!value || (id && String(value.id) !== String(id))) {
+    return null;
+  }
+
+  return value;
+}
+
+function isAdminPage(page) {
+  return page.startsWith('adm-');
+}
 
 export default function App() {
-  const routes = {
-    '/': 'home',
-    '/admin/login': 'adm-login',
-    '/admin/painel': 'adm-dashboard',
-    '/admin/alunos': 'adm-students',
-    '/admin/turmas': 'adm-classes',
-    '/admin/avisos': 'adm-class-notices',
-    '/admin/noticias': 'adm-news',
-    '/admin/produtos': 'adm-products',
-  };
-
+  const initialLocation = getLocationState();
   const [activePage, setActivePage] = useState(() => {
-    return routes[window.location.pathname] || 'home';
-})
+    return initialLocation.activePage;
+  });
+  const [selectedProduct, setSelectedProduct] = useState(() =>
+    readStoredDetail(DETAIL_STORAGE_KEYS.product, initialLocation.productId)
+  );
+  const [selectedNews, setSelectedNews] = useState(() =>
+    readStoredDetail(DETAIL_STORAGE_KEYS.news, initialLocation.newsId)
+  );
+  const [newsSourcePage, setNewsSourcePage] = useState(
+    initialLocation.newsSourcePage || 'studio'
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState(() =>
+    Boolean(getAccessToken())
+  );
+  const [isAuthLoading, setIsAuthLoading] = useState(() =>
+    isAdminPage(initialLocation.activePage)
+  );
 
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedNews, setSelectedNews] = useState(null);
-  const [newsSourcePage, setNewsSourcePage] = useState('studio');
+  useEffect(() => {
+    if (!isAdminPage(initialLocation.activePage)) {
+      return undefined;
+    }
+
+    restoreSession()
+      .then(() => {
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        clearAccessToken();
+        setIsAuthenticated(false);
+
+        if (window.location.pathname !== '/admin/login') {
+          window.history.replaceState({}, '', '/admin/login');
+          setActivePage('adm-login');
+        }
+      })
+      .finally(() => {
+        setIsAuthLoading(false);
+      });
+
+    return undefined;
+  }, [initialLocation.activePage]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const locationState = getLocationState();
+      setActivePage(locationState.activePage);
+      setSelectedProduct(
+        readStoredDetail(DETAIL_STORAGE_KEYS.product, locationState.productId)
+      );
+      setSelectedNews(
+        readStoredDetail(DETAIL_STORAGE_KEYS.news, locationState.newsId)
+      );
+
+      if (locationState.newsSourcePage) {
+        setNewsSourcePage(locationState.newsSourcePage);
+      }
+
+      if (isAdminPage(locationState.activePage) && !isAuthenticated) {
+        setActivePage('adm-login');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isAuthenticated]);
 
   const handleSelectCraftProduct = (product) => {
     setSelectedProduct(product);
+    sessionStorage.setItem(
+      DETAIL_STORAGE_KEYS.product,
+      JSON.stringify(product)
+    );
+    window.history.pushState({}, '', `/artesanato/produtos/${product.id}`);
     setActivePage('craft-detail');
   };
 
   const handleSelectAgricultureProduct = (product) => {
     setSelectedProduct(product);
+    sessionStorage.setItem(
+      DETAIL_STORAGE_KEYS.product,
+      JSON.stringify(product)
+    );
+    window.history.pushState({}, '', `/agricultura/produtos/${product.id}`);
     setActivePage('agriculture-detail');
   };
 
   const handleSelectNews = (newsItem, sourcePage) => {
     setSelectedNews(newsItem);
     setNewsSourcePage(sourcePage);
+    sessionStorage.setItem(
+      DETAIL_STORAGE_KEYS.news,
+      JSON.stringify(newsItem)
+    );
+    const sourcePath =
+      sourcePage === 'crafts'
+        ? 'artesanato'
+        : sourcePage === 'agriculture'
+          ? 'agricultura'
+          : 'studio';
+    window.history.pushState({}, '', `/${sourcePath}/noticias/${newsItem.id}`);
     setActivePage('news-detail');
   }; 
 
   const navigate = (page) => {
+    const targetPage =
+      isAdminPage(page) && page !== 'adm-login' && !isAuthenticated
+        ? 'adm-login'
+        : page;
+
     const route = Object.entries(routes).find(
-      ([path, pageName]) => pageName === page
+      ([, pageName]) => pageName === targetPage
     )?.[0];
 
     if (route && window.location.pathname !== route) {
       window.history.pushState({}, '', route);
     }
 
-    setActivePage(page);
+    setActivePage(targetPage);
+  };
+
+  const handleLogin = (user) => {
+    setIsAuthenticated(true);
+    navigate('adm-dashboard');
+    return user;
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      setIsAuthenticated(false);
+      navigate('adm-login');
+    }
   };
 
   const [students, setStudents] = useState([
@@ -163,7 +347,7 @@ export default function App() {
       price: 15.00,
       category: 'Agricultura Familiar',
       images: [],
-      avaliable: true,
+      available: true,
     },
     {
       id: 2,
@@ -172,7 +356,7 @@ export default function App() {
       price: 45.00,
       category: 'Artesanato',
       images: [],
-      avaliable: true,
+      available: true,
     },
     {
       id: 3,
@@ -181,7 +365,7 @@ export default function App() {
       price: 130.00,
       category: 'Artesanato',
       images: [],
-      avaliable: true,
+      available: true,
     },
   ]);
 
@@ -195,6 +379,12 @@ export default function App() {
   const handleRemoveDanceClass = (id) => {
     setClasses((previousClasses) =>
       previousClasses.filter((danceClass) => danceClass.id !== id)
+    );
+    setStudents((previousStudents) =>
+      previousStudents.filter((student) => student.danceClassId !== id)
+    );
+    setNotices((previousNotices) =>
+      previousNotices.filter((notice) => (notice.classId ?? notice.danceClassId) !== id)
     );
   };
 
@@ -218,6 +408,16 @@ export default function App() {
     ]);
   };
 
+  const handleUpdateNews = (updatedNews) => {
+    setNews((previousNews) =>
+      previousNews.map((newsItem) =>
+        newsItem.id === updatedNews.id
+          ? updatedNews
+          : newsItem
+      )
+    );
+  };
+
   const handleRemoveNews = (id) => {
     setNews((previousNews) =>
       previousNews.filter((newsItem) => newsItem.id !== id)
@@ -225,17 +425,22 @@ export default function App() {
   };
 
   const handleCreateProduct = (newProduct) => {
+    const apiProduct = productToApi(newProduct);
+
     setProducts((previousProducts) => [
       ...previousProducts,
-      newProduct,
+      productFromApi(apiProduct, newProduct),
     ]);
   };
 
   const handleUpdateProduct = (updatedProduct) => {
+    const apiProduct = productToApi(updatedProduct);
+    const normalizedProduct = productFromApi(apiProduct, updatedProduct);
+
     setProducts((previousProducts) =>
       previousProducts.map((product) =>
         product.id === updatedProduct.id
-          ? updatedProduct
+          ? normalizedProduct
           : product
       )
     );
@@ -258,14 +463,27 @@ export default function App() {
     );
   };
 
+  if (isAuthLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
+        <p className="text-sm text-[#526581]">Restaurando sua sessão...</p>
+      </main>
+    );
+  }
+
   if (activePage === 'adm-login') {
-    return <AdmLoginPage />;
+    return <AdmLoginPage onLogin={handleLogin} />;
+  }
+
+  if (isAdminPage(activePage) && !isAuthenticated) {
+    return <AdmLoginPage onLogin={handleLogin} />;
   }
 
   if (activePage === 'adm-dashboard') {
     return (
       <AdmDashboardPage 
       onNavigate={navigate}
+      onLogout={handleLogout}
       classes={classes}
       students={students}
       news={news}
@@ -315,6 +533,7 @@ export default function App() {
       <AdmNewsPage
         news={news}
         onCreate={handleCreateNews}
+        onUpdate={handleUpdateNews}
         onRemove={handleRemoveNews}
         onBack={() => navigate('adm-dashboard')}
       />
@@ -339,7 +558,7 @@ export default function App() {
         <Navbar
           activePage={activePage}
           setActivePage={(page) => {
-            setActivePage(page);
+            navigate(page);
             setSelectedProduct(null);
           }}
         />
@@ -371,8 +590,8 @@ export default function App() {
         {activePage === 'craft-detail' && (
           <CraftDetailPage
             product={selectedProduct}
-            onBack={() => setActivePage('crafts')}
-            onGoHome={() => setActivePage('home')}
+            onBack={() => navigate('crafts')}
+            onGoHome={() => navigate('home')}
             onSelectProduct={handleSelectCraftProduct}
           />
         )}
@@ -380,8 +599,8 @@ export default function App() {
         {activePage === 'agriculture-detail' && (
           <AgricultureDetailPage
             product={selectedProduct}
-            onBack={() => setActivePage('agriculture')}
-            onGoHome={() => setActivePage('home')}
+            onBack={() => navigate('agriculture')}
+            onGoHome={() => navigate('home')}
             onSelectProduct={handleSelectAgricultureProduct}
           />
         )}
@@ -389,8 +608,8 @@ export default function App() {
         {activePage === 'news-detail' && (
           <NewsDetailPage
             news={selectedNews}
-            onBack={() => setActivePage(newsSourcePage)}
-            onGoHome={() => setActivePage('home')}
+            onBack={() => navigate(newsSourcePage)}
+            onGoHome={() => navigate('home')}
             backLabel={
               newsSourcePage === 'crafts'
                 ? 'Mural / Artesanato'

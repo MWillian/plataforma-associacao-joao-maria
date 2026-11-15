@@ -1,9 +1,9 @@
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const availableCategories = [
   'Artesanato',
-  'Agricultura familiar',
+  'Agricultura Familiar',
   'Vestuário',
   'Calçados',
   'Acessórios',
@@ -27,8 +27,12 @@ function formatPrice(value) {
 }
 
 function getProductImages(product) {
-  if (product.images) {
+  if (product.images?.length) {
     return product.images;
+  }
+
+  if (product.imageUrl) {
+    return [{ url: product.imageUrl }];
   }
 
   // Compatibilidade com produtos antigos que utilizavam a propriedade "photos".
@@ -38,8 +42,24 @@ function getProductImages(product) {
   }));
 }
 
+function getProductName(product) {
+  return product.name || product.title || 'Produto sem nome';
+}
+
+function isProductAvailable(product) {
+  return product.available ?? product.active ?? product.avaliable ?? true;
+}
+
+function revokeObjectUrl(image) {
+  const url = typeof image === 'string' ? image : image?.url;
+
+  if (url?.startsWith('blob:')) {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function ProductImage({ image }) {
-  const url = typeof image === 'string' ? image : image.url;
+  const url = typeof image === 'string' ? image : image?.url;
 
   const isImageFile =
     url?.startsWith('blob:') ||
@@ -74,11 +94,31 @@ export function AdmProductsPage({
   const [editingProduct, setEditingProduct] = useState(null);
   const [productsToDelete, setProductsToDelete] = useState(null);
   const [form, setForm] = useState(initialForm);
+  const [formError, setFormError] = useState('');
 
   const [categoryFilter, setCategoryFilter] = useState('Todas');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [sortOrder, setSortOrder] = useState('name');
+
+  useEffect(() => {
+    if (!editingProduct && !productsToDelete) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setEditingProduct(null);
+        setProductsToDelete(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editingProduct, productsToDelete]);
 
   const registeredCategories = useMemo(() => {
     return [
@@ -106,8 +146,12 @@ export function AdmProductsPage({
     });
 
     return result.sort((a, b) => {
-      if (sortOrder === 'price') {
+      if (sortOrder === 'price-asc') {
         return Number(a.price) - Number(b.price);
+      }
+
+      if (sortOrder === 'price-desc') {
+        return Number(b.price) - Number(a.price);
       }
 
       if (sortOrder === 'category') {
@@ -117,7 +161,7 @@ export function AdmProductsPage({
         );
       }
 
-      return a.name.localeCompare(b.name, 'pt-BR');
+      return getProductName(a).localeCompare(getProductName(b), 'pt-BR');
     });
   }, [products, categoryFilter, minPrice, maxPrice, sortOrder]);
 
@@ -133,7 +177,7 @@ export function AdmProductsPage({
     const availableSlots = 3 - form.images.length;
 
     if (availableSlots <= 0) {
-      alert('Este produto já possui o limite de 3 imagens.');
+      setFormError('Este produto já possui o limite de 3 imagens.');
       event.target.value = '';
       return;
     }
@@ -141,6 +185,12 @@ export function AdmProductsPage({
     const validFiles = selectedFiles
       .filter((file) => file.type.startsWith('image/'))
       .slice(0, availableSlots);
+
+    if (validFiles.length === 0) {
+      setFormError('Selecione pelo menos uma imagem válida.');
+      event.target.value = '';
+      return;
+    }
 
     const newImages = validFiles.map((file) => ({
       url: URL.createObjectURL(file),
@@ -156,16 +206,23 @@ export function AdmProductsPage({
   };
 
   const removeImage = (index) => {
+    revokeObjectUrl(form.images[index]);
+
     setForm((previous) => ({
       ...previous,
       images: previous.images.filter((_, i) => i !== index),
     }));
   };
 
-  const clearForm = () => {
+  const clearForm = (revokeImages = true) => {
+    if (revokeImages) {
+      form.images.forEach(revokeObjectUrl);
+    }
+
     setForm(initialForm);
     setEditingProduct(null);
     setShowForm(false);
+    setFormError('');
   };
 
   const saveProduct = (event) => {
@@ -174,11 +231,15 @@ export function AdmProductsPage({
     if (
       !form.name.trim() ||
       !form.category ||
-      form.price === ''
+      form.price === '' ||
+      !Number.isFinite(Number(form.price)) ||
+      Number(form.price) < 0
     ) {
-      alert('Preencha o nome, a categoria e o preço do produto.');
+      setFormError('Preencha nome, categoria e um preço válido.');
       return;
     }
+
+    setFormError('');
 
     const productData = {
       ...form,
@@ -199,19 +260,21 @@ export function AdmProductsPage({
       });
     }
 
-    clearForm();
+    clearForm(false);
   };
 
   const openEdit = (product) => {
     setEditingProduct(product);
 
     setForm({
-      name: product.name || '',
+      name: getProductName(product) === 'Produto sem nome'
+        ? ''
+        : getProductName(product),
       description: product.description || '',
       price: String(product.price ?? ''),
       category: product.category || 'Outros',
       images: getProductImages(product),
-      available: product.available ?? true,
+      available: isProductAvailable(product),
     });
   };
 
@@ -223,7 +286,7 @@ export function AdmProductsPage({
   const confirmRemove = () => {
     if (!productsToDelete) return;
 
-    onRemove(productsToDelete.id);
+    onRemove?.(productsToDelete.id);
 
     setProductsToDelete(null);
   };
@@ -286,6 +349,12 @@ export function AdmProductsPage({
               <h2 className="font-bold text-[#172957]">
                 Novo Produto
               </h2>
+
+              {formError && (
+                <p className="mt-2 text-sm text-red-600" role="alert">
+                  {formError}
+                </p>
+              )}
             </div>
 
             <form onSubmit={saveProduct}>
@@ -497,8 +566,8 @@ export function AdmProductsPage({
                 className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm"
               >
                 <option value="name">Ordem alfabética</option>
-                <option value="price">Menor preço</option>
-                <option value="price">Maior preço</option>
+                <option value="price-asc">Menor preço</option>
+                <option value="price-desc">Maior preço</option>
                 <option value="category">Categoria</option>
               </select>
             </div>
@@ -553,13 +622,13 @@ export function AdmProductsPage({
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-sm font-bold text-[#172033]">
-                        {product.name}
+                        {getProductName(product)}
                       </h3>
 
                       <button
                         type="button"
                         onClick={() => handleRemove(product)}
-                        aria-label={`Excluir ${product.name}`}
+                        aria-label={`Excluir ${getProductName(product)}`}
                         className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                       >
                         Excluir
@@ -581,12 +650,12 @@ export function AdmProductsPage({
                     <div className="mt-3 flex items-center justify-between gap-2">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                          product.available === false
+                          !isProductAvailable(product)
                             ? 'bg-red-100 text-red-700'
                             : 'bg-green-100 text-green-700'
                         }`}
                       >
-                        {product.available === false
+                        {!isProductAvailable(product)
                           ? 'Indisponível'
                           : 'Disponível'}
                       </span>
@@ -641,6 +710,12 @@ export function AdmProductsPage({
               >
                 Editar Produto
               </h2>
+
+              {formError && (
+                <p className="mt-2 text-sm text-red-600" role="alert">
+                  {formError}
+                </p>
+              )}
 
               <button
                 type="button"
