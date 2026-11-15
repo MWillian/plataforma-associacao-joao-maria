@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 
 const daysOfWeek = [
   'Segunda-feira',
@@ -23,6 +24,7 @@ export function AdmClassesPage({
   const [editingDanceClass, setEditingDanceClass] = useState(null);
   const [editDaysErr, setEditDaysErr] = useState('');
   const [daysErr, setDaysErr] = useState('');
+  const [feedback, setFeedback] = useState('');
 
   const [form, setForm] = useState({
     name: '',
@@ -92,6 +94,7 @@ export function AdmClassesPage({
 
     clearForm();
     setShowForm(false);
+    setFeedback('Turma cadastrada com sucesso.');
   };
 
   const handleCancel = () => {
@@ -110,6 +113,7 @@ export function AdmClassesPage({
     onRemove(danceClassToDelete.id);
 
     setDanceClassToDelete(null);
+    setFeedback('Turma excluída com sucesso.');
   };
 
   // Abre o diálogo de edição
@@ -185,12 +189,15 @@ export function AdmClassesPage({
     };
 
     onUpdate?.(updatedClass);
+    setFeedback('Turma atualizada com sucesso.');
 
     handleCancelEdit();
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
+    <>
+      <FeedbackToast message={feedback} />
+      <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
 
       {/* Cabeçalho */}
       <header className="mb-9 flex flex-col justify-between gap-6 md:flex-row md:items-start">
@@ -650,6 +657,7 @@ export function AdmClassesPage({
           </section>
         </div>
       )}
-    </main>
+      </main>
+    </>
   );
 }

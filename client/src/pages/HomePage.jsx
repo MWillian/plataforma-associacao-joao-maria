@@ -11,13 +11,13 @@ export default function HomePage({ news = [], onSelectNews }) {
   return (
     <main>
       <HeroSection />
+      <NewsCarousel news={news} onSelectNews={onSelectNews} />
       <AboutSection />
       <StudioSection />
       <CraftsSection />
       <AgricultureSection />
       <FoundersSection />
       <DonationSection />
-      <NewsCarousel news={news} onSelectNews={onSelectNews} />
     </main>
   );
 }

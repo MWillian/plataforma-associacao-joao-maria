@@ -229,9 +229,18 @@ export function CraftsPage({ news = [], onSelectProduct, onSelectNews }) {
             {currentProducts.map((item, index) => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver detalhes de ${item.title}`}
                 onClick={() => onSelectProduct && onSelectProduct(item)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectProduct?.(item);
+                  }
+                }}
                 style={{ animationDelay: `${150 + index * 90}ms` }}
-                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 {/* Imagem Placeholder */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
@@ -341,9 +350,18 @@ export function CraftsPage({ news = [], onSelectProduct, onSelectNews }) {
             {currentNews.map((item, index) => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ler notícia: ${item.title}`}
                 onClick={() => onSelectNews && onSelectNews(item)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectNews?.(item);
+                  }
+                }}
                 style={{ animationDelay: `${150 + index * 90}ms` }}
-                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 <div className="w-full h-44 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
                   <span className="text-slate-400 text-xs font-roboto">

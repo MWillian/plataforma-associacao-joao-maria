@@ -196,12 +196,21 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
             {similarAgricultureItems.map((item) => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver detalhes de ${item.title}`}
                 onClick={() => {
                   if (onSelectProduct) {
                     onSelectProduct(item);
                   }
                 }}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectProduct?.(item);
+                  }
+                }}
+                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 {/* Imagem do Card */}
                 <div className="w-full h-44 sm:h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
