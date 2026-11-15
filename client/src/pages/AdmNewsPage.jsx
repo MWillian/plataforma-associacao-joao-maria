@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 
 export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) {
   const [showForm, setShowForm] = useState(false);
@@ -9,6 +10,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   const [publicationArea, setPublicationArea] = useState('');
   const [newsToDelete, setNewsToDelete] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
+  const [feedback, setFeedback] = useState('');
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
@@ -58,6 +60,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     setImages([]);
     setPublicationArea('');
     setShowForm(false);
+    setFeedback('Notícia publicada com sucesso.');
   };
 
   const handleCancel = () => {
@@ -79,6 +82,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     onRemove?.(newsToDelete.id);
 
     setNewsToDelete(null);
+    setFeedback('Notícia excluída com sucesso.');
   };
 
   // Abre o diálogo de edição
@@ -162,12 +166,15 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     };
 
     onUpdate?.(updatedNews);
+    setFeedback('Notícia atualizada com sucesso.');
 
     handleCancelEdit();
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
+    <>
+      <FeedbackToast message={feedback} />
+      <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
       <div className="mx-auto max-w-6xl">
 
         {/* Cabeçalho */}
@@ -713,6 +720,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
         </div>
       )}
 
-    </main>
+      </main>
+    </>
   );
 }

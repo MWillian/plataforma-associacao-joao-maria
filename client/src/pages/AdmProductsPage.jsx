@@ -1,5 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
+import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 
 const availableCategories = [
   'Artesanato',
@@ -95,6 +96,7 @@ export function AdmProductsPage({
   const [productsToDelete, setProductsToDelete] = useState(null);
   const [form, setForm] = useState(initialForm);
   const [formError, setFormError] = useState('');
+  const [feedback, setFeedback] = useState('');
 
   const [categoryFilter, setCategoryFilter] = useState('Todas');
   const [minPrice, setMinPrice] = useState('');
@@ -253,11 +255,13 @@ export function AdmProductsPage({
         ...productData,
         id: editingProduct.id,
       });
+      setFeedback('Produto atualizado com sucesso.');
     } else {
       onCreate?.({
         ...productData,
         id: Date.now(),
       });
+      setFeedback('Produto cadastrado com sucesso.');
     }
 
     clearForm(false);
@@ -289,10 +293,13 @@ export function AdmProductsPage({
     onRemove?.(productsToDelete.id);
 
     setProductsToDelete(null);
+    setFeedback('Produto excluído com sucesso.');
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
+    <>
+      <FeedbackToast message={feedback} />
+      <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
       <div className="mx-auto max-w-360">
 
         {/* Cabeçalho */}
@@ -943,6 +950,7 @@ export function AdmProductsPage({
           </section>
         </div>
       )}
-    </main>
+      </main>
+    </>
   );
 }

@@ -16,11 +16,6 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
     badge: 'PRODUTO COOPERATIVO',
     description:
       'Sousplat artesanal feito inteiramente à mão em crochê com fios selecionados de 100% algodão natural. Ideal para emoldurar pratos e decorar sua mesa com elegância, aconchego e um autêntico toque regional nordestino. Disponível sob encomenda em diversas cores personalizadas.',
-    specs: {
-      diameter: '35 cm',
-      composition: 'Fio de Algodão Ecológico',
-      colors: 'Cru, Mostarda, Terracota, Verde Oliva e Azul Marinho',
-    },
     images: [
       'Placeholder Imagem Principal',
       'Miniatura 1',
@@ -42,7 +37,6 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
       badge: 'ARTESANATO',
       description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
       category: 'Produtos',
-      specs: { diameter: '120x40 cm', composition: 'Fio de Algodão', colors: 'Cru e Bege' },
       images: ['Caminho de Mesa Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
     },
     {
@@ -53,7 +47,6 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
       badge: 'ARTESANATO',
       description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
       category: 'Produtos',
-      specs: { diameter: '35 cm cada', composition: 'Fio de Algodão Ecológico', colors: 'Cru, Corda e Branco' },
       images: ['Jogo Americano Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
     },
     {
@@ -64,7 +57,6 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
       badge: 'ARTESANATO',
       description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
       category: 'Produtos',
-      specs: { diameter: '12 cm', composition: 'Fio de Algodão', colors: 'Variadas' },
       images: ['Porta-copos Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
     },
     {
@@ -75,7 +67,6 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
       badge: 'ARTESANATO',
       description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
       category: 'Produtos',
-      specs: { diameter: '140x140 cm', composition: 'Linho e Linha de Bordado', colors: 'Branco com Flores Coloridas' },
       images: ['Toalha Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
     }
   ];
@@ -173,22 +164,6 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
               </p>
             </div>
 
-            {/* Especificações */}
-            <div className="space-y-2 font-roboto text-xs sm:text-sm text-slate-700 pt-1">
-              <p>
-                <strong className="font-bold text-[#0b1b3d]">Diâmetro:</strong>{' '}
-                {currentProduct.specs?.diameter || '35 cm'}
-              </p>
-              <p>
-                <strong className="font-bold text-[#0b1b3d]">Composição:</strong>{' '}
-                {currentProduct.specs?.composition || 'Fio de Algodão Ecológico'}
-              </p>
-              <p>
-                <strong className="font-bold text-[#0b1b3d]">Cores Disponíveis:</strong>{' '}
-                {currentProduct.specs?.colors || 'Cru, Mostarda, Terracota, Verde Oliva e Azul Marinho'}
-              </p>
-            </div>
-
             {/* Botão do WhatsApp */}
             <div className="pt-2 space-y-3">
               <a
@@ -239,12 +214,21 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
             {similarProducts.map((item) => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver detalhes de ${item.title}`}
                 onClick={() => {
                   if (onSelectProduct) {
                     onSelectProduct(item);
                   }
                 }}
-                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectProduct?.(item);
+                  }
+                }}
+                className="bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 {/* Imagem do Card */}
                 <div className="w-full h-44 sm:h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">

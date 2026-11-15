@@ -34,7 +34,6 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     {
       id: 1,
       tag: 'Produto',
-      priceText: 'Consulte disponibilidade',
       title: 'Tomates',
       description: 'Cultivados de forma agroecológica e sem agrotóxicos pelas famílias associadas.',
       category: 'Produtos',
@@ -42,7 +41,6 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     {
       id: 2,
       tag: 'Produto',
-      priceText: 'Consulte disponibilidade',
       title: 'Cebola',
       description: 'Cebolas frescas e selecionadas, colhidas no tempo certo de maturação.',
       category: 'Produtos',
@@ -50,7 +48,6 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     {
       id: 3,
       tag: 'Produto',
-      priceText: 'Consulte disponibilidade',
       title: 'Macaxeira',
       description: 'Macaxeira macia de altíssima qualidade, colhida diretamente da roça local.',
       category: 'Produtos',
@@ -58,7 +55,6 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     {
       id: 4,
       tag: 'Produto',
-      priceText: 'Consulte disponibilidade',
       title: 'Batata inglesa',
       description: 'Alimento nutritivo cultivado de forma sustentável pelos pequenos produtores.',
       category: 'Produtos',
@@ -66,7 +62,6 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     {
       id: 5,
       tag: 'Produto',
-      priceText: 'Consulte disponibilidade',
       title: 'Batata doce',
       description: 'Rica em fibras e nutrientes, cultivada com carinho na região de Coruripe.',
       category: 'Produtos',
@@ -74,7 +69,6 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     {
       id: 6,
       tag: 'Produto',
-      priceText: 'Consulte disponibilidade',
       title: 'Pimentão',
       description: 'Pimentões coloridos e frescos colhidos semanalmente na horta comunitária.',
       category: 'Produtos',
@@ -82,7 +76,6 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     {
       id: 9,
       tag: 'Produto',
-      priceText: 'Consulte disponibilidade',
       title: 'Cenoura fresca',
       description: 'Cultivada com técnicas de manejo orgânico pelas famílias da comunidade.',
       category: 'Produtos',
@@ -222,9 +215,18 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
             {currentProducts.map((item, index) => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver detalhes de ${item.title}`}
                 onClick={() => onSelectProduct && onSelectProduct(item)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectProduct?.(item);
+                  }
+                }}
                 style={{ animationDelay: `${150 + index * 90}ms` }}
-                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 {/* Imagem Placeholder */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
@@ -235,12 +237,9 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
 
                 {/* Conteúdo do Card */}
                 <div className="p-6 flex flex-col justify-between flex-1 space-y-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-start items-center">
                     <span className="inline-block bg-emerald-100 text-emerald-900 text-xs font-bold px-3 py-1 rounded shadow-sm">
                       {item.tag || 'Notícia'}
-                    </span>
-                    <span className="text-emerald-800 text-xs font-roboto font-semibold">
-                      {item.priceText}
                     </span>
                   </div>
 
@@ -334,9 +333,18 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
             {currentNews.map((item, index) => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ler notícia: ${item.title}`}
                 onClick={() => onSelectNews && onSelectNews(item)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectNews?.(item);
+                  }
+                }}
                 style={{ animationDelay: `${150 + index * 90}ms` }}
-                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer"
+                className="page-reveal-up bg-white rounded-2xl shadow-md border border-slate-100 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2 group cursor-pointer"
               >
                 <div className="w-full h-44 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
                   <span className="text-slate-400 text-xs font-roboto">

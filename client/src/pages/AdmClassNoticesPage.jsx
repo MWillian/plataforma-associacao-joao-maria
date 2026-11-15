@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 
 const getCurrentDate = () => {
   const today = new Date();
@@ -20,6 +21,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
   const [error, setError] = useState('');
   const [noticeToDelete, setNoticeToDelete] = useState(null);
   const [noticeToSend, setNoticeToSend] = useState(null);
+  const [feedback, setFeedback] = useState('');
 
   const handleChange = (event) => {
     const { name, value, checked } = event.target;
@@ -112,6 +114,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
     setNoticeToSend(null);
     clearForm();
     setShowForm(false);
+    setFeedback('Aviso enviado com sucesso.');
   };
 
   const confirmRemove = () => {
@@ -119,10 +122,13 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
 
     onRemove?.(noticeToDelete.id);
     setNoticeToDelete(null);
+    setFeedback('Aviso excluído com sucesso.');
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
+    <>
+      <FeedbackToast message={feedback} />
+      <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
 
       <div className="mx-auto max-w-360">
 
@@ -462,6 +468,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
           </section>
         </div>
       )}
-    </main>
+      </main>
+    </>
   );
 }

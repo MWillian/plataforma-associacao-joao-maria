@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 
 function MedicalField({ name, label, value, onChange, placeholder }) {
   return (
@@ -28,6 +29,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
   const [showForm, setShowForm] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [feedback, setFeedback] = useState('');
 
   const [form, setForm] = useState({
     name: '',
@@ -96,6 +98,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     });
 
     setShowForm(false);
+    setFeedback('Aluno cadastrado com sucesso.');
   };
 
   const handleRemove = (student) => {
@@ -113,6 +116,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     );
 
     setStudentToDelete(null);
+    setFeedback('Aluno excluído com sucesso.');
   };
 
   // Abre o diálogo de edição
@@ -177,6 +181,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       )
     );
     setEditingStudent(null);
+    setFeedback('Dados do aluno atualizados com sucesso.');
   };
 
   // Cancela o cadastro
@@ -207,7 +212,9 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
+    <>
+      <FeedbackToast message={feedback} />
+      <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
 
       {/* Cabeçalho */}
       <header className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-start">
@@ -868,6 +875,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
           </section>
         </div>
       )};
-    </main>
+      </main>
+    </>
   );
 }
