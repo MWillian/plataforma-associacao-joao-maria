@@ -1,12 +1,11 @@
 import { useState, useRef } from 'react';
 import { Search, ChevronRight, Users, Clock } from 'lucide-react';
 
-export function StudioPage({ onSelectNews }) {
+export function StudioPage({ news = [], onSelectNews }) {
   // Referência para controlar a rolagem da seção do mural
   const newsSectionRef = useRef(null);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [currentPage, setCurrentPage] = useState(1);
 
   // Função para mudar de página com rolagem suave até o início do mural
@@ -53,81 +52,11 @@ export function StudioPage({ onSelectNews }) {
     },
   ];
 
-  // Feed de Notícias, Notícias de Turmas e Eventos
-  const allNews = [
-    {
-      id: 1,
-      tag: 'Evento',
-      title: '1º Festival de Dança da Economia Solidária',
-      description: 'Apresentação especial natalina "Um Conto de Natal" com nossos alunos.',
-      category: 'Eventos',
-    },
-    {
-      id: 2,
-      tag: 'Notícia',
-      title: 'Novas Vagas Abertas para Ballet Infantil',
-      description: 'Garanta a vaga do seu filho para o novo semestre letivo no Estúdio Adágio.',
-      category: 'Notícias',
-    },
-    {
-      id: 3,
-      tag: 'Notícia',
-      title: 'Novos Figurinos do Grupo Principal',
-      description: 'Confira a confecção das roupas sustentáveis feitas pela nossa comunidade.',
-      category: 'Notícias',
-    },
-    {
-      id: 4,
-      tag: 'Turma',
-      title: 'Aulão Aberto de Jazz para Iniciantes',
-      description: 'Venha experimentar uma aula gratuita de Jazz Dance neste sábado.',
-      category: 'Turmas',
-    },
-    {
-      id: 5,
-      tag: 'Evento',
-      title: 'Espetáculo de Fim de Ano no Teatro',
-      description: 'Nossos alunos sobem ao palco principal para a grande apresentação anual.',
-      category: 'Eventos',
-    },
-    {
-      id: 6,
-      tag: 'Notícia',
-      title: 'Aluna do Estúdio Aprovada em Audição',
-      description: 'Orgulho para Coruripe! Nossa bailarina ganha destaque em seleção estadual.',
-      category: 'Notícias',
-    },
-    {
-      id: 7,
-      tag: 'Turma',
-      title: 'Inscrições Prorrogadas para Sapateado',
-      description: 'Aproveite a oportunidade para ingressar na nova turma de sapateado.',
-      category: 'Turmas',
-    },
-    {
-      id: 8,
-      tag: 'Evento',
-      title: 'Ensaio Geral Aberto aos Pais e Familiares',
-      description: 'Um momento de integração e prévia das coreografias do semestre.',
-      category: 'Eventos',
-    },
-    {
-      id: 9,
-      tag: 'Notícia',
-      title: 'Oficina de Expressão Corporal com Convidado',
-      description: 'Workshop especial ministrado para a aperfeiçoar a interpretação artística.',
-      category: 'Notícias',
-    },
-  ];
-
-  // Filtro por termo de busca e categoria
-  const filteredNews = allNews.filter((item) => {
+  const filteredNews = news.filter((item) => {
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === 'Todas' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    return matchesSearch && item.publicationArea === 'studio';
   });
 
   const itemsPerPage = 6;
@@ -225,7 +154,7 @@ export function StudioPage({ onSelectNews }) {
             >
               <div className="space-y-4">
                 <span className="inline-block bg-[#0b1b3d] text-white text-[10px] font-bold px-3 py-1 rounded shadow-sm uppercase tracking-wider">
-                  {item.tag}
+                  {item.tag || 'Notícia'}
                 </span>
 
                 <h3 className="text-xl font-bold text-[#142D59] leading-snug">
@@ -268,29 +197,12 @@ export function StudioPage({ onSelectNews }) {
             Mural do Estúdio
           </span>
           <h2 className="text-3xl font-extrabold text-[#0b1b3d] tracking-tight">
-            Notícias e Avisos
+            Notícias
           </h2>
         </div>
 
         {/* Controles de Filtro e Busca */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10 page-reveal-up" style={{ animationDelay: '100ms' }}>
-          {/* Seletor de Categorias */}
-          <div className="w-full sm:w-64">
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium focus:outline-none focus:border-[#3570FC] shadow-sm cursor-pointer"
-            >
-              <option value="Todas">Todas as Categorias</option>
-              <option value="Turmas">Avisos de Turmas</option>
-              <option value="Notícias">Notícias</option>
-              <option value="Eventos">Eventos e Apresentações</option>
-            </select>
-          </div>
-
           {/* Campo de Busca */}
           <div className="w-full sm:w-96 relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">

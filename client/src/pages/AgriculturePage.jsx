@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
 
-export function AgriculturePage({ onSelectProduct, onSelectNews }) {
+export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
   // Referências para controlar a rolagem exata das seções
   const productsSectionRef = useRef(null);
   const newsSectionRef = useRef(null);
@@ -12,7 +12,6 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
 
   // Estados para o Mural de Notícias e Eventos
   const [newsSearch, setNewsSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [newsPage, setNewsPage] = useState(1);
 
   // Funções de troca de página com rolagem suave automática
@@ -90,42 +89,6 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
     },
   ];
 
-  // 2. Mural de Notícias, Feiras e Eventos da Agricultura Familiar
-  const agricultureNews = [
-    {
-      id: 7,
-      tag: 'Evento',
-      title: 'Edição Especial da Feira Comunitária',
-      description: 'Confira as datas, horários e os locais das próximas feiras da agricultura familiar em Coruripe.',
-      category: 'Eventos',
-      date: '18 de Outubro, 2026',
-    },
-    {
-      id: 8,
-      tag: 'Notícia',
-      title: 'Incentivo à produção orgânica local',
-      description: 'Novas parcerias garantem sementes crioulas e insumos agroecológicos para as famílias associadas.',
-      category: 'Notícias',
-      date: '10 de Outubro, 2026',
-    },
-    {
-      id: 10,
-      tag: 'Evento',
-      title: 'Encontro sobre Transição Agroecológica',
-      description: 'Oficina técnica comunitária compartilhando boas práticas de cultivo sem agrotóxicos.',
-      category: 'Eventos',
-      date: '02 de Novembro, 2026',
-    },
-    {
-      id: 11,
-      tag: 'Notícia',
-      title: 'Ampliação das Entregas para a Merenda Escolar',
-      description: 'Associação celebra novos contratos de fornecimento de alimentos frescos para escolas da região.',
-      category: 'Notícias',
-      date: '25 de Setembro, 2026',
-    },
-  ];
-
   // Filtro do Catálogo de Alimentos
   const filteredProducts = agricultureProducts.filter((item) =>
     item.title.toLowerCase().includes(productSearch.toLowerCase()) ||
@@ -140,13 +103,11 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
   );
 
   // Filtro de Notícias/Eventos
-  const filteredNews = agricultureNews.filter((item) => {
+  const filteredNews = news.filter((item) => {
     const matchesSearch =
       item.title.toLowerCase().includes(newsSearch.toLowerCase()) ||
       item.description.toLowerCase().includes(newsSearch.toLowerCase());
-    const matchesCategory =
-      selectedCategory === 'Todas' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    return matchesSearch && item.publicationArea === 'agriculture';
   });
 
   const newsPerPage = 3;
@@ -276,7 +237,7 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
                 <div className="p-6 flex flex-col justify-between flex-1 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="inline-block bg-emerald-100 text-emerald-900 text-xs font-bold px-3 py-1 rounded shadow-sm">
-                      {item.tag}
+                      {item.tag || 'Notícia'}
                     </span>
                     <span className="text-emerald-800 text-xs font-roboto font-semibold">
                       {item.priceText}
@@ -344,27 +305,12 @@ export function AgriculturePage({ onSelectProduct, onSelectNews }) {
             Mural Agroecológico
           </span>
           <h2 className="text-3xl font-extrabold text-[#0b1b3d] tracking-tight">
-            Notícias, Feiras e Encontros
+            Notícias
           </h2>
         </div>
 
-        {/* Controles de Filtro e Busca de Notícias */}
+        {/* Busca de Notícias */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10 page-reveal-up" style={{ animationDelay: '100ms' }}>
-          <div className="w-full sm:w-64">
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setNewsPage(1);
-              }}
-              className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium focus:outline-none focus:border-[#3570FC] shadow-sm cursor-pointer"
-            >
-              <option value="Todas">Todas as Publicações</option>
-              <option value="Notícias">Notícias e Parcerias</option>
-              <option value="Eventos">Feiras e Cursos</option>
-            </select>
-          </div>
-
           <div className="w-full sm:w-96 relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
               <Search size={18} />
