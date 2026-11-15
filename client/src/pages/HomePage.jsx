@@ -5,8 +5,9 @@ import { CraftsSection } from '../components/home/CraftsSection.jsx';
 import { AgricultureSection } from '../components/home/AgricultureSection.jsx';
 import { FoundersSection } from '../components/home/FoundersSection.jsx';
 import { DonationSection } from '../components/home/DonationSection.jsx';
+import { NewsCarousel } from '../components/home/NewsCarousel.jsx';
 
-export default function HomePage() {
+export default function HomePage({ news = [], onSelectNews }) {
   return (
     <main>
       <HeroSection />
@@ -16,6 +17,7 @@ export default function HomePage() {
       <AgricultureSection />
       <FoundersSection />
       <DonationSection />
+      <NewsCarousel news={news} onSelectNews={onSelectNews} />
     </main>
   );
 }

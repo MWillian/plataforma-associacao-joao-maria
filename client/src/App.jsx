@@ -573,7 +573,13 @@ export default function App() {
         />
 
         {activePage === 'home' && (
-          <HomePage />
+          <HomePage
+            news={news}
+            onSelectNews={(newsItem) => handleSelectNews(
+              newsItem,
+              newsItem.publicationArea || 'studio'
+            )}
+          />
         )}
 
         {activePage === 'crafts' && (
