@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-const diasSemana = [
+const daysOfWeek = [
   'Segunda-feira',
   'Terça-feira',
   'Quarta-feira',
@@ -11,84 +11,176 @@ const diasSemana = [
   'Domingo',
 ];
 
-export function AdmClassesPage({
-  turmas,
-  onCreate,
-  onRemove,
-  onBack,
-}) {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+export function AdmClassesPage({ classes, onCreate, onRemove, onBack,}) {
+  const [showForm, setShowForm] = useState(false);
+  const [danceClassToDelete, setDanceClassToDelete] = useState(null);
+  const [editingDanceClass, setEditingDanceClass] = useState(null);
+  const [editDaysErr, setEditDaysErr] = useState('');
+  const [daysErr, setDaysErr] = useState('');
 
-  const [formulario, setFormulario] = useState({
-    nome: '',
-    turno: '',
-    dias: [],
+  const [form, setForm] = useState({
+    name: '',
+    turn: '',
+    days: [],
   });
-
-  const [erroDias, setErroDias] = useState('');
+  const [editForm, setEditForm] = useState({
+    name: '',
+    turn: '',
+    days: [],
+  });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormulario((estadoAnterior) => ({
-      ...estadoAnterior,
+    setForm((prevState) => ({
+      ...prevState,
       [name]: value,
     }));
   };
 
   // Marca ou desmarca um dia da semana
-  const handleDayToggle = (dia) => {
-    setFormulario((estadoAnterior) => {
-      const diaJaSelecionado = estadoAnterior.dias.includes(dia);
+  const handleDayToggle = (day) => {
+    setForm((prevState) => {
+      const selectedDay = prevState.days.includes(day);
 
-      const novosDias = diaJaSelecionado
-        ? estadoAnterior.dias.filter((item) => item !== dia)
-        : [...estadoAnterior.dias, dia];
+      const newDays = selectedDay
+        ? prevState.days.filter((item) => item !== day)
+        : [...prevState.days, day];
 
       return {
-        ...estadoAnterior,
-        dias: novosDias,
+        ...prevState,
+        days: newDays,
       };
     });
 
-    setErroDias('');
+    setDaysErr('');
   };
 
-  const limparFormulario = () => {
-    setFormulario({
-      nome: '',
-      turno: '',
-      dias: [],
+  const clearForm = () => {
+    setForm({
+      name: '',
+      turn: '',
+      days: [],
     });
 
-    setErroDias('');
+    setDaysErr('');
   };
 
   // Cadastra a turma
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (formulario.dias.length === 0) {
-      setErroDias('Selecione pelo menos um dia da semana.');
+    if (form.days.length === 0) {
+      setDaysErr('Selecione pelo menos um dia da semana.');
       return;
     }
 
-    const novaTurma = {
+    const newClass = {
       id: Date.now(),
-      nome: formulario.nome.trim(),
-      turno: formulario.turno,
-      dias: formulario.dias,
+      name: form.name.trim(),
+      turn: form.turn,
+      days: form.days,
     };
 
-    onCreate(novaTurma);
+    onCreate(newClass);
 
-    limparFormulario();
-    setMostrarFormulario(false);
+    clearForm();
+    setShowForm(false);
   };
 
   const handleCancel = () => {
-    limparFormulario();
-    setMostrarFormulario(false);
+    clearForm();
+    setShowForm(false);
+  };
+
+  const handleRemove = (danceClass) => {
+    setDanceClassToDelete(danceClass);
+  };
+
+  // Confirma a exclusão da turma
+  const confirmRemove = () => {
+    if (!danceClassToDelete) return;
+
+    onRemove(danceClassToDelete.id);
+
+    setDanceClassToDelete(null);
+  };
+
+  // Abre o diálogo de edição
+  const handleEdit = (danceClass) => {
+    setEditingDanceClass(danceClass);
+
+    setEditForm({
+      name: danceClass.name || '',
+      turn: danceClass.turn || '',
+      days: [...(danceClass.days || [])],
+    });
+
+    setEditDaysErr('');
+  };
+
+  // Atualiza os campos do formulário de edição
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+
+    setEditForm((previousState) => ({
+      ...previousState,
+      [name]: value,
+    }));
+  };
+
+  // Marca ou desmarca os dias da turma durante a edição
+  const handleEditDayToggle = (day) => {
+    setEditForm((previousState) => {
+      const isSelected = previousState.days.includes(day);
+
+      const updatedDays = isSelected
+        ? previousState.days.filter((item) => item !== day)
+        : [...previousState.days, day];
+
+      return {
+        ...previousState,
+        days: updatedDays,
+      };
+    });
+
+    setEditDaysErr('');
+  };
+
+  // Fecha o diálogo de edição
+  const handleCancelEdit = () => {
+    setEditingDanceClass(null);
+
+    setEditForm({
+      name: '',
+      turn: '',
+      days: [],
+    });
+
+    setEditDaysErr('');
+  };
+
+  // Salva as alterações da turma
+  const handleUpdateDanceClass = (event) => {
+    event.preventDefault();
+
+    if (editForm.days.length === 0) {
+      setEditDaysErr('Selecione pelo menos um dia da semana.');
+      return;
+    }
+
+    if (!editingDanceClass) return;
+
+    const updatedClass = {
+      ...editingDanceClass,
+      name: editForm.name.trim(),
+      turn: editForm.turn,
+      days: [...editForm.days],
+    };
+
+    onUpdate?.(updatedClass);
+
+    handleCancelEdit();
   };
 
   return (
@@ -109,11 +201,11 @@ export function AdmClassesPage({
 
         <div className="flex flex-wrap gap-3">
 
-          {!mostrarFormulario ? (
+          {!showForm ? (
             <>
               <button
                 type="button"
-                onClick={() => setMostrarFormulario(true)}
+                onClick={() => setShowForm(true)}
                 className="rounded-xl bg-[#2450DC] px-7 py-3 font-semibold text-white transition hover:bg-blue-700"
               >
                 + Nova Turma
@@ -131,7 +223,7 @@ export function AdmClassesPage({
             <button
               type="button"
               onClick={handleCancel}
-              className="rounded-xl bg-[#2450DC] px-7 py-3 font-semibold text-white transition hover:bg-blue-700"
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
             >
               × Cancelar
             </button>
@@ -141,7 +233,7 @@ export function AdmClassesPage({
       </header>
 
       {/* Formulário */}
-      {mostrarFormulario && (
+      {showForm && (
         <section className="mb-9 rounded-2xl border border-[#DCE4F0] bg-white p-7 md:p-9">
 
           <h2 className="mb-7 text-xl font-semibold text-[#23418F]">
@@ -160,8 +252,8 @@ export function AdmClassesPage({
 
                 <input
                   type="text"
-                  name="nome"
-                  value={formulario.nome}
+                  name="name"
+                  value={form.name}
                   onChange={handleChange}
                   placeholder="Ex: Ballet Infantil A"
                   required
@@ -176,8 +268,8 @@ export function AdmClassesPage({
                 </label>
 
                 <select
-                  name="turno"
-                  value={formulario.turno}
+                  name="turn"
+                  value={form.turn}
                   onChange={handleChange}
                   required
                   className="w-full rounded-xl border border-[#DCE4F0] bg-white px-4 py-3 text-[#40516B] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -201,36 +293,36 @@ export function AdmClassesPage({
               </label>
 
               <div className="flex flex-wrap gap-2">
-                {diasSemana.map((dia) => {
-                  const selecionado = formulario.dias.includes(dia);
+                {daysOfWeek.map((day) => {
+                  const selected = form.days.includes(day);
 
                   return (
                     <button
-                      key={dia}
+                      key={day}
                       type="button"
-                      aria-pressed={selecionado}
-                      onClick={() => handleDayToggle(dia)}
+                      aria-pressed={selected}
+                      onClick={() => handleDayToggle(day)}
                       className={`rounded-lg border px-4 py-3 font-medium transition ${
-                        selecionado
+                        selected
                           ? 'border-blue-600 bg-blue-600 text-white'
                           : 'border-[#DCE4F0] bg-white text-[#526581] hover:border-blue-400 hover:bg-blue-50'
                       }`}
                     >
-                      {dia}
+                      {day}
                     </button>
                   );
                 })}
               </div>
 
               <p className={`mt-2 text-sm ${
-                erroDias ? 'text-red-600' : 'text-[#91A2BF]'
+                daysErr ? 'text-red-600' : 'text-[#91A2BF]'
               }`}>
-                {erroDias || 'Selecione ao menos um dia.'}
+                {daysErr || 'Selecione ao menos um dia.'}
               </p>
             </div>
 
             {/* Salvar */}
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex justify-end">
               <button
                 type="submit"
                 className="rounded-xl bg-[#2450DC] px-8 py-4 font-semibold text-white transition hover:bg-blue-700"
@@ -247,12 +339,12 @@ export function AdmClassesPage({
       <section className="overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white">
 
         <div className="border-b border-[#E7EDF5] px-7 py-5 text-lg text-[#71839F]">
-          {turmas.length} turma(s) cadastrada(s)
+          {classes.length} turma(s) cadastrada(s)
         </div>
 
-        {turmas.map((turma) => (
+        {classes.map((danceClass) =>  (
           <div
-            key={turma.id}
+            key={danceClass.id}
             className="flex items-center justify-between gap-4 border-b border-[#E7EDF5] px-6 py-5 last:border-b-0"
           >
 
@@ -266,16 +358,16 @@ export function AdmClassesPage({
               {/* Informações */}
               <div className="min-w-0">
                 <h3 className="font-semibold text-[#17233D]">
-                  {turma.nome}
+                  {danceClass.name}
                 </h3>
 
                 <div className="mt-1 flex flex-wrap gap-2">
-                  {turma.dias.map((dia) => (
+                  {danceClass.days.map((day) => (
                     <span
-                      key={dia}
+                      key={day}
                       className="rounded-md bg-[#F0F4F9] px-2 py-1 text-xs text-[#526581]"
                     >
-                      {dia}
+                      {day}
                     </span>
                   ))}
                 </div>
@@ -285,25 +377,36 @@ export function AdmClassesPage({
 
             <div className="flex shrink-0 items-center gap-3">
 
+              {/* Turno */}
               <span
                 className={`rounded-full px-4 py-1 text-sm font-medium ${
-                  turma.turno === 'Manhã'
+                  danceClass.turn === 'Manhã'
                     ? 'bg-[#FFF1C7] text-[#C65B00]'
-                    : turma.turno === 'Tarde'
+                    : danceClass.turn === 'Tarde'
                       ? 'bg-[#DCEAFF] text-[#2450DC]'
                       : 'bg-[#EDE3FF] text-[#7041B5]'
                 }`}
               >
-                {turma.turno}
+                {danceClass.turn}
               </span>
 
+              {/* Editar turma */}
               <button
                 type="button"
-                onClick={() => onRemove(turma.id)}
-                aria-label={`Remover turma ${turma.nome}`}
-                className="text-3xl leading-none text-[#9AACC5] transition hover:text-red-500"
+                onClick={() => handleEdit(danceClass)}
+                className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
               >
-                ×
+                Editar
+              </button>
+
+              {/* Excluir turma */}
+              <button
+                type="button"
+                onClick={() => handleRemove(danceClass)}
+                aria-label={`Remover turma ${danceClass.name}`}
+                className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+              >
+                Excluir
               </button>
 
             </div>
@@ -311,7 +414,7 @@ export function AdmClassesPage({
           </div>
         ))}
 
-        {turmas.length === 0 && (
+        {classes.length === 0 && (
           <p className="px-7 py-10 text-center text-[#71839F]">
             Nenhuma turma cadastrada.
           </p>
@@ -319,6 +422,228 @@ export function AdmClassesPage({
 
       </section>
 
+      {/* Diálogo de confirmação de exclusão */}
+      {danceClassToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setDanceClassToDelete(null);
+            }
+          }}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-dance-class-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+
+            <h2
+              id="delete-dance-class-title"
+              className="text-xl font-bold text-[#172957]"
+            >
+              Confirmar exclusão
+            </h2>
+
+            <p className="mt-3 text-sm leading-relaxed text-[#71839F]">
+              Tem certeza de que deseja excluir a turma{' '}
+              <strong className="text-[#172033]">
+                {danceClassToDelete.name}
+              </strong>
+              ?
+              Essa ação não poderá ser desfeita.
+            </p>
+
+            <div className="mt-7 flex justify-end gap-3">
+
+              {/* Cancelar exclusão */}
+              <button
+                type="button"
+                onClick={() => setDanceClassToDelete(null)}
+                className="rounded-lg border border-[#DCE4F0] px-5 py-2.5 text-sm font-semibold text-[#526581] transition hover:bg-[#F7F9FC]"
+              >
+                Cancelar
+              </button>
+
+              {/* Confirmar exclusão */}
+              <button
+                type="button"
+                onClick={confirmRemove}
+                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Excluir turma
+              </button>
+
+            </div>
+          </section>
+        </div>
+      )}
+      
+      {/* Diálogo de edição da turma */}
+      {editingDanceClass && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              handleCancelEdit();
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-dance-class-title"
+            className="my-auto w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl md:p-8"
+          >
+
+            {/* Cabeçalho */}
+            <div className="mb-7 flex items-center justify-between gap-4">
+
+              <div>
+                <h2
+                  id="edit-dance-class-title"
+                  className="text-xl font-bold text-[#172957]"
+                >
+                  Editar turma
+                </h2>
+
+                <p className="mt-1 text-sm text-[#71839F]">
+                  Atualize as informações e os horários da turma.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                aria-label="Fechar edição"
+                className="text-2xl text-[#91A2BF] transition hover:text-red-600"
+              >
+                ×
+              </button>
+
+            </div>
+
+            {/* Formulário de edição */}
+            <form onSubmit={handleUpdateDanceClass}>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                {/* Nome da turma */}
+                <div>
+                  <label
+                    htmlFor="edit-class-name"
+                    className="mb-2 block text-sm font-medium text-[#40516B]"
+                  >
+                    Nome da turma *
+                  </label>
+
+                  <input
+                    id="edit-class-name"
+                    type="text"
+                    name="name"
+                    value={editForm.name}
+                    onChange={handleEditChange}
+                    placeholder="Ex: Ballet Infantil A"
+                    required
+                    className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                {/* Turno */}
+                <div>
+                  <label
+                    htmlFor="edit-class-turn"
+                    className="mb-2 block text-sm font-medium text-[#40516B]"
+                  >
+                    Turno *
+                  </label>
+
+                  <select
+                    id="edit-class-turn"
+                    name="turn"
+                    value={editForm.turn}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full rounded-xl border border-[#DCE4F0] bg-white px-4 py-3 text-[#40516B] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="" disabled>
+                      Selecione o turno...
+                    </option>
+
+                    <option value="Manhã">Manhã</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Noite">Noite</option>
+                  </select>
+                </div>
+
+              </div>
+
+              {/* Dias da semana */}
+              <div className="mt-6">
+
+                <label className="mb-3 block text-sm font-medium text-[#40516B]">
+                  Dias da semana *
+                </label>
+
+                <div className="flex flex-wrap gap-2">
+
+                  {daysOfWeek.map((day) => {
+                    const selected = editForm.days.includes(day);
+
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => handleEditDayToggle(day)}
+                        className={`rounded-lg border px-4 py-3 text-sm font-medium transition ${
+                          selected
+                            ? 'border-blue-600 bg-blue-600 text-white'
+                            : 'border-[#DCE4F0] bg-white text-[#526581] hover:border-blue-400 hover:bg-blue-50'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+
+                </div>
+
+                <p
+                  className={`mt-2 text-sm ${
+                    editDaysErr ? 'text-red-600' : 'text-[#91A2BF]'
+                  }`}
+                >
+                  {editDaysErr || 'Selecione ao menos um dia.'}
+                </p>
+
+              </div>
+
+              {/* Botões */}
+              <div className="mt-8 flex justify-end gap-3">
+
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+                >
+                  Salvar alterações
+                </button>
+
+              </div>
+
+            </form>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

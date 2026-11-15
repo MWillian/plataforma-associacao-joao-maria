@@ -1,17 +1,17 @@
-export function AdmDashboardPage({ onNavigate, turmas, alunos, produtos }) {
+export function AdmDashboardPage({ onNavigate, classes, students, news= [], notices = [], products }) {
   
 
-const turmasComQuantidade = turmas.map((turma) => ({
-  ...turma,
-  alunos: alunos.filter(
-    (aluno) => Number(aluno.turmaId) === Number(turma.id)
+const classesWithStudents = classes.map((danceClass) => ({
+  ...danceClass,
+  students: students.filter(
+    (student) => Number(student.danceClassId) === Number(danceClass.id)
   ).length,
 }));
 
-const totalAlunos = alunos.length;
+const totalStudents = students.length;
 
-const turmasComAlunos = turmasComQuantidade.filter(
-  (turma) => turma.alunos > 0
+const classesWithStudentCount = classesWithStudents.filter(
+  (danceClass) => danceClass.students > 0
 ).length;
 
   const ActionButton = ({ children, page, className = '' }) => (
@@ -23,6 +23,14 @@ const turmasComAlunos = turmasComQuantidade.filter(
       {children}
     </button>
   );
+
+const getDanceClassName = (classId) => {
+  const danceClass = classes.find(
+    (danceClass) => Number(danceClass.id) === Number(classId)
+  );
+
+  return danceClass?.name || 'Turma não encontrada';
+};
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
@@ -48,7 +56,7 @@ const turmasComAlunos = turmasComQuantidade.filter(
             </p>
 
             <p className="mt-1 text-3xl font-bold text-blue-700">
-              {turmas.length}
+              {classes.length}
             </p>
 
             <p className="mt-1 text-xs text-[#7183A3]">
@@ -62,7 +70,7 @@ const turmasComAlunos = turmasComQuantidade.filter(
             </p>
 
             <p className="mt-1 text-3xl font-bold text-blue-700">
-              {totalAlunos}
+              {totalStudents}
             </p>
 
             <p className="mt-1 text-xs text-[#7183A3]">
@@ -76,11 +84,11 @@ const turmasComAlunos = turmasComQuantidade.filter(
             </p>
 
             <p className="mt-1 text-3xl font-bold text-blue-700">
-              {turmasComAlunos} de {turmas.length}
+              {classesWithStudentCount} de {classes.length}
             </p>
 
             <p className="mt-1 text-xs text-[#7183A3]">
-              {turmas.length - turmasComAlunos} turmas sem matrículas
+              {classes.length - classesWithStudentCount} turmas sem matrículas
             </p>
           </div>
 
@@ -117,43 +125,43 @@ const turmasComAlunos = turmasComQuantidade.filter(
             <span>ALUNOS MATRICULADOS</span>
           </div>
 
-          {turmasComQuantidade.map((turma) => (
+          {classesWithStudents.map((danceClass) => (
             <div
-              key={turma.id}
+              key={danceClass.id}
               className="flex justify-between border-t border-[#E5EAF2] px-6 py-4 text-sm"
             >
               <span className="font-semibold text-[#172957]">
-                {turma.nome}
+                {danceClass.name}
               </span>
 
               <span className="font-bold text-[#172957]">
-                {turma.alunos}
+                {danceClass.students}
               </span>
             </div>
           ))}
 
           <div className="flex justify-between border-t border-[#E5EAF2] px-6 py-4 text-sm font-bold">
             <span className="text-[#172957]">
-              Total nas {turmas.length} turmas
+              Total nas {classes.length} turmas
             </span>
 
             <span className="text-blue-700">
-              {totalAlunos} alunos
+              {totalStudents} alunos
             </span>
           </div>
         </section>
 
         <p className="mb-6 text-xs text-[#7183A3]">
           Distribuição atual de alunos entre as turmas cadastradas.
-          Total de {totalAlunos} alunos conforme o cadastro.
+          Total de {totalStudents} alunos conforme o cadastro.
         </p>
 
         {/* Última notícia */}
-        <section className="mb-6 rounded-xl border border-[#DCE4F0] bg-white p-6">
+        <section className="mb-8">
 
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="font-bold text-[#172957]">
-              Última notícia
+              Notícias
             </h2>
 
             <ActionButton page="adm-news">
@@ -161,54 +169,148 @@ const turmasComAlunos = turmasComQuantidade.filter(
             </ActionButton>
           </div>
 
-          <p className="mb-1 text-xs text-[#7183A3]">
-            14/09/2026
-          </p>
+          {news.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {news.map((newsItem) => (
+                <article
+                  key={newsItem.id}
+                  className="rounded-xl border border-[#DCE4F0] bg-white p-5"
+                >
 
-          <h3 className="mb-1 text-lg font-bold text-[#172957]">
-            Festival de Dança 2026
-          </h3>
+                  {/* Data */}
+                  <div className="mb-4">
+                    <span className="text-xs text-[#91A2BF]">
+                      {newsItem.date}
+                    </span>
+                  </div>
 
-          <p className="text-sm leading-relaxed text-[#7183A3]">
-            Nossa instituição realizará o Grande Festival de Dança no próximo mês. Inscrições abertas para todas as turmas!
-          </p>
+                  {/* Título */}
+                  <h3 className="mb-2 font-semibold text-[#172957]">
+                    {newsItem.title}
+                  </h3>
+
+                  {/* Descrição */}
+                  <p className="text-sm leading-relaxed text-[#7183A3]">
+                    {newsItem.description}
+                  </p>
+
+                  {/* Imagens */}
+                  {newsItem.images?.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {newsItem.images.map((image, index) => {
+                        const imageSource =
+                          typeof image === 'string' ? image : image?.url;
+
+                        const isImageFile =
+                          typeof imageSource === 'string' &&
+                          (
+                            imageSource.startsWith('data:image/') ||
+                            imageSource.startsWith('blob:') ||
+                            imageSource.startsWith('http')
+                          );
+
+                        return (
+                          <div
+                            key={index}
+                            className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-[#DCE4F0] bg-[#EDF4FD]"
+                          >
+                            {isImageFile ? (
+                              <img
+                                src={imageSource}
+                                alt={`Imagem da notícia ${index + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-2xl">
+                                {imageSource || '📷'}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-[#DCE4F0] bg-white p-8 text-center">
+              <p className="text-sm text-[#7183A3]">
+                Nenhuma notícia cadastrada.
+              </p>
+            </div>
+          )}
+
         </section>
 
         {/* Avisos */}
-        <section className="mb-6 rounded-xl border border-[#DCE4F0] bg-white p-6">
+        <section className="mb-8">
 
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="font-bold text-[#172957]">
               Avisos
             </h2>
 
-            <ActionButton page="adm-classNotices">
-              Ver Avisos
+            <ActionButton page="adm-class-notices">
+              Ver avisos
             </ActionButton>
           </div>
 
-          <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
-            <span className="rounded-md bg-blue-100 px-2 py-1 font-medium text-blue-700">
-              Informativo
-            </span>
+          {notices.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {notices.map((notice) => (
+                <article
+                  key={notice.id}
+                  className="rounded-xl border border-[#DCE4F0] bg-white p-5"
+                >
 
-            <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
-              Ballet Infantil - 3ª feira
-            </span>
+                  {/* Tipo, turma e data */}
+                  <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
 
-            <span className="text-[#91A2BF]">
-              21/09/2026
-            </span>
-          </div>
+                    <span
+                      className={`rounded-md px-2 py-1 font-medium ${
+                        notice.type === 'Cancelamento'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      {notice.type}
+                    </span>
 
-          <h3 className="mb-2 font-bold text-[#172957]">
-            Ensaio Extra
-          </h3>
+                    <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
+                      {getDanceClassName(notice.classId)}
+                    </span>
 
-          <p className="text-sm leading-relaxed text-[#526581]">
-            Informamos que haverá ensaio extra na próxima sexta-feira, dia 27/09, das 14h às 16h. Presença obrigatória.
-          </p>
+                    <span className="text-[#91A2BF]">
+                      {notice.date}
+                    </span>
+
+                  </div>
+
+                  {/* Assunto */}
+                  <h3 className="mb-2 font-semibold text-[#172957]">
+                    {notice.subject}
+                  </h3>
+
+                  {/* Mensagem */}
+                  <p className="text-sm leading-relaxed text-[#7183A3]">
+                    {notice.message}
+                  </p>
+
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-[#DCE4F0] bg-white p-8 text-center">
+              <p className="text-sm text-[#7183A3]">
+                Nenhum aviso cadastrado.
+              </p>
+            </div>
+          )}
+
         </section>
+
 
         {/* Produtos */}
         <section className="rounded-xl border border-[#DCE4F0] bg-white p-6">
@@ -225,30 +327,46 @@ const turmasComAlunos = turmasComQuantidade.filter(
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 
-            {produtos.map((produto) => (
+            {products.map((product) => (
               <article
-                key={produto.nome}
+                key={product.name}
                 className="overflow-hidden rounded-xl border border-[#DCE4F0] bg-white"
               >
                 <div className="flex h-24 items-center justify-center bg-[#EDF4FD]">
-                  <span className="text-5xl" role="img" aria-label={produto.nome}>
-                  </span>
+                  {product.images?.length > 0 ? (
+                    <img
+                      src={
+                        typeof product.images[0] === 'string'
+                          ? product.images[0]
+                          : product.images[0].url
+                      }
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-5xl" role="img" aria-label={product.name}>
+                      📦
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex min-h-41.25 flex-col justify-between p-4">
 
                   <div>
                     <h3 className="text-sm font-semibold text-[#172033]">
-                      {produto.nome}
+                      {product.name}
                     </h3>
 
                     <p className="mt-7 text-xs leading-relaxed text-[#7183A3]">
-                      {produto.descricao}
+                      {product.description}
                     </p>
                   </div>
 
                   <p className="mt-5 font-bold text-blue-700">
-                    {produto.preco}
+                    {Number(product.price).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}
                   </p>
                 </div>
               </article>
