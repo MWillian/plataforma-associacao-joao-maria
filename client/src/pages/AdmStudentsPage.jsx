@@ -21,7 +21,7 @@ function MedicalField({ name, label, value, onChange, placeholder }) {
         className="w-full resize-y rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
       />
     </div>
-  );
+  )
 }
 
 export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
@@ -149,7 +149,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
         ? { guardian: '', guardianEmail: '' }
         : {}),
     }));
-  };
+  }
 
   // Salva as alterações do aluno
   const handleUpdateStudent = (event) => {
@@ -608,7 +608,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
             </div>
           </section>
         </div>
-      )};
+      )}
 
       {/* Diálogo de edição do aluno */}
       {editingStudent && (
@@ -884,8 +884,8 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
             </form>
           </section>
         </div>
-      )};
+      )}
       </main>
     </>
-  );
+  )
 }
