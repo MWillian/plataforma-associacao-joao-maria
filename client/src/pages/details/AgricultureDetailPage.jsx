@@ -11,15 +11,9 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
   const defaultProduct = {
     id: 1,
     title: 'Tomates',
-    priceText: 'Consulte disponibilidade',
     badge: 'AGRICULTURA FAMILIAR',
     description:
       'Tomates frescos cultivados com técnicas agroecológicas de forma totalmente sustentável pelos pequenos produtores da nossa associação em Coruripe-AL. Livres de agrotóxicos agressivos e colhidos no ponto ideal para garantir sabor e nutrientes.',
-    specs: {
-      origin: 'Coruripe - AL',
-      cultivation: 'Agroecológico / Sem Agrotóxicos',
-      harvest: 'Disponível na safra local',
-    },
     images: [
       'Tomates Imagem Principal',
       'Foto no Pé 1',
@@ -36,41 +30,33 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
     {
       id: 201,
       title: 'Cebola',
-      priceText: 'Consulte disponibilidade',
       badge: 'AGRICULTURA FAMILIAR',
       description: 'Cultivadas de forma sustentável pelas famílias da associação.',
       category: 'Produtos',
-      specs: { origin: 'Coruripe - AL', cultivation: 'Orgânica/Familiar', harvest: 'Safra anual' },
       images: ['Cebola Principal', 'Foto 1', 'Foto 2', 'Foto 3']
     },
     {
       id: 202,
       title: 'Macaxeira',
-      priceText: 'Consulte disponibilidade',
       badge: 'AGRICULTURA FAMILIAR',
       description: 'Macaxeira fresca de alta qualidade, colhida diretamente da roça.',
       category: 'Produtos',
-      specs: { origin: 'Coruripe - AL', cultivation: 'Tradicional/Sem Químicos', harvest: 'Safra contínua' },
       images: ['Macaxeira Principal', 'Foto 1', 'Foto 2', 'Foto 3']
     },
     {
       id: 203,
       title: 'Batata doce',
-      priceText: 'Consulte disponibilidade',
       badge: 'AGRICULTURA FAMILIAR',
       description: 'Rica em nutrientes e cultivada com carinho pelas nossas famílias.',
       category: 'Produtos',
-      specs: { origin: 'Coruripe - AL', cultivation: 'Agroecológico', harvest: 'Safra local' },
       images: ['Batata Doce Principal', 'Foto 1', 'Foto 2', 'Foto 3']
     },
     {
       id: 204,
       title: 'Pimentão',
-      priceText: 'Consulte disponibilidade',
       badge: 'AGRICULTURA FAMILIAR',
       description: 'Pimentões coloridos e frescos, colhidos no momento certo.',
       category: 'Produtos',
-      specs: { origin: 'Coruripe - AL', cultivation: 'Horta Comunitária', harvest: 'Semanal' },
       images: ['Pimentão Principal', 'Foto 1', 'Foto 2', 'Foto 3']
     }
   ];
@@ -141,16 +127,11 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
               </span>
             </div>
 
-            {/* Título e Status de Preço */}
+            {/* Título do produto */}
             <div className="space-y-2">
               <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0b1b3d] tracking-tight leading-snug">
                 {currentProduct.title}
               </h1>
-              <div className="flex items-baseline gap-2">
-                <span className="text-base sm:text-xl font-bold text-emerald-800 font-roboto">
-                  {currentProduct.priceText || 'Consulte disponibilidade'}
-                </span>
-              </div>
             </div>
 
             <hr className="border-slate-100" />
@@ -162,22 +143,6 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
               </h3>
               <p className="text-slate-600 font-roboto text-xs sm:text-sm leading-relaxed">
                 {currentProduct.description}
-              </p>
-            </div>
-
-            {/* Especificações Técnicas */}
-            <div className="space-y-2 font-roboto text-xs sm:text-sm text-slate-700 pt-1">
-              <p>
-                <strong className="font-bold text-[#0b1b3d]">Origem:</strong>{' '}
-                {currentProduct.specs?.origin || 'Coruripe - AL'}
-              </p>
-              <p>
-                <strong className="font-bold text-[#0b1b3d]">Tipo de Cultivo:</strong>{' '}
-                {currentProduct.specs?.cultivation || 'Agroecológico / Sem agrotóxicos'}
-              </p>
-              <p>
-                <strong className="font-bold text-[#0b1b3d]">Disponibilidade:</strong>{' '}
-                {currentProduct.specs?.harvest || 'Conforme a época de colheita local'}
               </p>
             </div>
 
@@ -259,10 +224,7 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
                     </p>
                   </div>
 
-                  <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                    <span className="text-slate-400 text-[10px] sm:text-xs font-roboto uppercase tracking-wider font-medium">
-                      INSERIR O PREÇO
-                    </span>
+                  <div className="flex justify-end items-center pt-2 border-t border-slate-100">
                     <span className="text-[#3570FC] text-xs font-semibold flex items-center gap-1 group-hover:underline">
                       Ver Detalhes →
                     </span>

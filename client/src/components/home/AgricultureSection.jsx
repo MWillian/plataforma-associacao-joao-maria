@@ -9,19 +9,16 @@ export function AgricultureSection() {
       id: 1,
       tag: 'Produto',
       title: 'Tomates',
-      info: 'INSERIR O PREÇO',
     },
     {
       id: 2,
       tag: 'Produto',
       title: 'Batata doce',
-      info: 'INSERIR O PREÇO',
     },
     {
       id: 3,
       tag: 'Produto',
       title: 'Alface',
-      info: 'INSERIR O PREÇO',
     },
   ];
 
@@ -293,31 +290,6 @@ export function AgricultureSection() {
                   {item.title}
                 </h3>
 
-                <div
-                  className="
-                    pt-4
-                    border-t
-                    border-slate-100
-                  "
-                >
-                  <span
-                    className="
-                      text-slate-400
-                      font-roboto
-                      text-sm
-                      tracking-wide
-                      block
-                      font-medium
-
-                      transition-colors
-                      duration-300
-
-                      group-hover:text-slate-500
-                    "
-                  >
-                    {item.info}
-                  </span>
-                </div>
               </div>
             </div>
           ))}
