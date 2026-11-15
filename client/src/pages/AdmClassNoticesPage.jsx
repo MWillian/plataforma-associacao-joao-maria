@@ -11,26 +11,32 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
   const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
-    danceClassId: '',
+    danceClassIds: [],
     subject: '',
     type: 'Informativo',
     message: '',
   });
 
   const [error, setError] = useState('');
+  const [noticeToDelete, setNoticeToDelete] = useState(null);
+  const [noticeToSend, setNoticeToSend] = useState(null);
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value, checked } = event.target;
 
     setForm((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]: name === 'danceClassIds'
+        ? checked
+          ? [...prevState.danceClassIds, value]
+          : prevState.danceClassIds.filter((classId) => classId !== value)
+        : value,
     }));
   };
 
   const clearForm = () => {
     setForm({
-      danceClassId: '',
+      danceClassIds: [],
       subject: '',
       type: 'Informativo',
       message: '',
@@ -47,28 +53,27 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
       return;
     }
 
-    const selectedClass = classes.find(
-      (danceClass) => Number(danceClass.id) === Number(form.danceClassId)
+    const selectedClasses = classes.filter((danceClass) =>
+      form.danceClassIds.some(
+        (classId) => Number(classId) === Number(danceClass.id)
+      )
     );
 
-    if (!selectedClass) {
-      setError('Selecione uma turma válida.');
+    if (selectedClasses.length === 0) {
+      setError('Selecione pelo menos uma turma válida.');
       return;
     }
 
     const newNotice = {
       id: Date.now(),
-      classId: selectedClass.id,
+      classIds: selectedClasses.map((danceClass) => danceClass.id),
       subject: form.subject.trim(),
       type: form.type,
       message: form.message.trim(),
       date: getCurrentDate(),
     };
 
-    onCreate(newNotice);
-
-    clearForm();
-    setShowForm(false);
+    setNoticeToSend(newNotice);
   };
 
   const handleCancel = () => {
@@ -94,6 +99,26 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
     return days
       ? `${danceClass.name} – ${days}`
       : danceClass.name;
+  };
+
+  const getNoticeClassIds = (notice) => (
+    notice.classIds || (notice.classId != null ? [notice.classId] : [])
+  );
+
+  const confirmSend = () => {
+    if (!noticeToSend) return;
+
+    onCreate(noticeToSend);
+    setNoticeToSend(null);
+    clearForm();
+    setShowForm(false);
+  };
+
+  const confirmRemove = () => {
+    if (!noticeToDelete) return;
+
+    onRemove?.(noticeToDelete.id);
+    setNoticeToDelete(null);
   };
 
   return (
@@ -160,34 +185,38 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
                 {/* Turma destinatária */}
-                <div>
+                <fieldset className="md:col-span-1">
                   <label
-                    htmlFor="danceClassId"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
-                    Turma destinatária
+                    Turmas destinatárias
                   </label>
-
-                  <select
-                    id="danceClassId"
-                    name="danceClassId"
-                    value={form.danceClassId}
-                    onChange={handleChange}
-                    required
-                    disabled={classes.length === 0}
-                    className="w-full rounded-lg border border-[#DCE4F0] bg-white px-4 py-3 text-sm text-[#172033] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-100"
+                  <div
+                    className="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-[#DCE4F0] bg-white p-3"
+                    aria-label="Turmas destinatárias"
                   >
-                    <option value="" disabled>
-                      Selecione a turma...
-                    </option>
-
                     {classes.map((danceClass) => (
-                      <option key={danceClass.id} value={danceClass.id}>
-                        {danceClass.name}
-                      </option>
+                      <label key={danceClass.id} className="flex items-center gap-2 text-sm text-[#40516B]">
+                        <input
+                          type="checkbox"
+                          name="danceClassIds"
+                          value={danceClass.id}
+                          checked={form.danceClassIds.includes(String(danceClass.id))}
+                          onChange={handleChange}
+                          disabled={classes.length === 0}
+                          className="h-4 w-4 accent-blue-600"
+                        />
+                        <span>{danceClass.name}</span>
+                      </label>
                     ))}
-                  </select>
-                </div>
+                    {classes.length === 0 && (
+                      <p className="text-sm text-[#91A2BF]">Nenhuma turma cadastrada.</p>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-[#91A2BF]">
+                    Selecione uma ou mais turmas.
+                  </p>
+                </fieldset>
 
                 {/* Assunto */}
                 <div>
@@ -306,7 +335,9 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
                 </span>
 
                 <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
-                  {getClassName(notice.danceClassId ?? notice.classId)}
+                  {getNoticeClassIds(notice)
+                    .map((classId) => getClassName(classId))
+                    .join(', ')}
                 </span>
 
               </div>
@@ -323,7 +354,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
 
               <button
                 type="button"
-                onClick={() => onRemove?.(notice.id)}
+                onClick={() => setNoticeToDelete(notice)}
                 aria-label={`Excluir aviso ${notice.subject}`}
                 className="absolute right-4 top-5 rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
               >
@@ -347,6 +378,90 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
         </section>
 
       </div>
+
+      {noticeToSend && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setNoticeToSend(null);
+            }
+          }}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="send-notice-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <h2 id="send-notice-title" className="text-xl font-bold text-[#172957]">
+              Confirmar envio
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#71839F]">
+              Deseja enviar este aviso para {noticeToSend.classIds.length} turma(s)?
+            </p>
+            <div className="mt-7 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setNoticeToSend(null)}
+                className="rounded-lg border border-[#DCE4F0] px-5 py-2.5 text-sm font-semibold text-[#526581] transition hover:bg-[#F7F9FC]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmSend}
+                className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+              >
+                Confirmar envio
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {noticeToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setNoticeToDelete(null);
+            }
+          }}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-notice-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <h2 id="delete-notice-title" className="text-xl font-bold text-[#172957]">
+              Confirmar exclusão
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#71839F]">
+              Tem certeza de que deseja excluir o aviso{' '}
+              <strong className="text-[#172033]">{noticeToDelete.subject}</strong>?
+              Essa ação não poderá ser desfeita.
+            </p>
+            <div className="mt-7 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setNoticeToDelete(null)}
+                className="rounded-lg border border-[#DCE4F0] px-5 py-2.5 text-sm font-semibold text-[#526581] transition hover:bg-[#F7F9FC]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmRemove}
+                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Excluir aviso
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
