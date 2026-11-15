@@ -127,7 +127,11 @@ export function Navbar({ activePage, setActivePage }) {
                 ${scrolled ? 'w-[85px] h-[55px] scale-90' : 'w-[103px] h-[65px]'}
               `}
             >
-              Logo 103x85
+              <img
+                src="/logo-joao-maria.png"
+                alt="Associação Comunitária João Maria"
+                className="h-full w-full object-contain"
+              />
             </div>
           </button>
         </div>

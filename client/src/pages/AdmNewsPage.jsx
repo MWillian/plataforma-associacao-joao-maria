@@ -71,7 +71,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   const confirmRemove = () => {
     if (!newsToDelete) return;
 
-    onRemove(newsToDelete.id);
+    onRemove?.(newsToDelete.id);
 
     setNewsToDelete(null);
   };

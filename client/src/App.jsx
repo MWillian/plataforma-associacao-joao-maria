@@ -211,6 +211,12 @@ export default function App() {
     setClasses((previousClasses) =>
       previousClasses.filter((danceClass) => danceClass.id !== id)
     );
+    setStudents((previousStudents) =>
+      previousStudents.filter((student) => student.danceClassId !== id)
+    );
+    setNotices((previousNotices) =>
+      previousNotices.filter((notice) => (notice.classId ?? notice.danceClassId) !== id)
+    );
   };
 
   const handleCreateNotice = (newNotice) => {
@@ -284,7 +290,7 @@ export default function App() {
   };
 
   if (activePage === 'adm-login') {
-    return <AdmLoginPage />;
+    return <AdmLoginPage onLogin={() => navigate('adm-dashboard')} />;
   }
 
   if (activePage === 'adm-dashboard') {

@@ -350,6 +350,12 @@ const getDanceClassName = (classId) => {
                       alt={product.name}
                       className="h-full w-full object-cover"
                     />
+                  ) : product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name || product.title}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <span className="text-5xl" role="img" aria-label={product.name}>
                       📦
@@ -370,10 +376,12 @@ const getDanceClassName = (classId) => {
                   </div>
 
                   <p className="mt-5 font-bold text-blue-700">
-                    {Number(product.price).toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}
+                    {product.price == null
+                      ? 'Consulte disponibilidade'
+                      : Number(product.price).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
                   </p>
                 </div>
               </article>
