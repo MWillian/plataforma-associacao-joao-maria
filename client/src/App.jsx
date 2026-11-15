@@ -24,7 +24,7 @@ export default function App() {
     '/admin/painel': 'adm-dashboard',
     '/admin/alunos': 'adm-students',
     '/admin/turmas': 'adm-classes',
-    '/admin/avisos': 'adm-classNotices',
+    '/admin/avisos': 'adm-class-notices',
     '/admin/noticias': 'adm-news',
     '/admin/produtos': 'adm-products',
   };
@@ -88,7 +88,7 @@ export default function App() {
     },
   ]);
 
-  const [classes, setclasses] = useState([
+  const [classes, setClasses] = useState([
     {
       id: 1,
       name: 'Ballet Infantil A',
@@ -247,6 +247,17 @@ export default function App() {
     );
   };
 
+  // Atualiza uma turma existente
+  const handleUpdateDanceClass = (updatedClass) => {
+    setClasses((previousClasses) =>
+      previousClasses.map((danceClass) =>
+        danceClass.id === updatedClass.id
+          ? updatedClass
+          : danceClass
+      )
+    );
+  };
+
   if (activePage === 'adm-login') {
     return <AdmLoginPage />;
   }
@@ -257,6 +268,8 @@ export default function App() {
       onNavigate={navigate}
       classes={classes}
       students={students}
+      news={news}
+      notices={notices}
       products={products}
       />
     );
@@ -278,13 +291,14 @@ export default function App() {
       <AdmClassesPage
         classes={classes}
         onCreate={handleCreateDanceClass}
+        onUpdate={handleUpdateDanceClass}
         onRemove={handleRemoveDanceClass}
         onBack={() => navigate('adm-dashboard')}
       />
     );
   }
 
-  if (activePage === 'adm-classNotices') {
+  if (activePage === 'adm-class-notices') {
     return (
       <AdmClassNoticesPage
         classes={classes}

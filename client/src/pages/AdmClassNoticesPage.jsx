@@ -7,13 +7,7 @@ const getCurrentDate = () => {
   return today.toLocaleDateString('pt-BR');
 };
 
-export function AdmClassNoticesPage({
-  classes = [],
-  notices = [],
-  onCreate,
-  onRemove,
-  onBack,
-}) {
+export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRemove, onBack,}) {
   const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
@@ -326,18 +320,6 @@ export function AdmClassNoticesPage({
               <p className="text-sm leading-relaxed text-[#526581]">
                 {notice.message}
               </p>
-
-              {/* Remover aviso */}
-              <button
-                type="button"
-                onClick={() => onRemove(notice.id)}
-                aria-label={`Remover aviso ${notice.subject}`}
-                title="Remover aviso"
-                className="absolute right-4 top-5 text-2xl leading-none text-[#B3C1D4] transition hover:text-red-500"
-              >
-                ×
-              </button>
-
             </article>
           ))}
 

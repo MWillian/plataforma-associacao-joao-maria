@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 
-export function AdmStudentsPage({
-  onBack,
-  classes,
-  students,
-  setStudents,
-}) {
+export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
+
   const [showForm, setShowForm] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+  const [editingStudent, setEditingStudent] = useState(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -16,6 +14,17 @@ export function AdmStudentsPage({
     danceClassId: '',
     isMinor: false,
     guardian: '',
+    guardianEmail: '',
+  });
+
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    danceClassId: '',
+    isMinor: false,
+    guardian: '',
+    guardianEmail: '',
   });
 
   // Atualiza os campos do formulário
@@ -54,11 +63,77 @@ export function AdmStudentsPage({
     setShowForm(false);
   };
 
-  // Remove um aluno
-  const handleRemove = (id) => {
+  const handleRemove = (student) => {
+    setStudentToDelete(student);
+  };
+
+  // Confirma a exclusão do aluno
+  const confirmRemove = () => {
+    if (!studentToDelete) return;
+
     setStudents((previousStudents) =>
-      previousStudents.filter((student) => student.id !== id)
+      previousStudents.filter(
+        (student) => student.id !== studentToDelete.id
+      )
     );
+
+    setStudentToDelete(null);
+  };
+
+  // Abre o diálogo de edição
+  const handleEdit = (student) => {
+    setEditingStudent(student);
+
+    setEditForm({
+      name: student.name || '',
+      email: student.email || '',
+      phone: student.phone || '',
+      danceClassId: String(student.danceClassId ?? ''),
+      isMinor: student.isMinor ?? false,
+      guardian: student.guardian || '',
+      guardianEmail: student.guardianEmail || '',
+    });
+  };
+
+  // Atualiza os campos do formulário de edição
+  const handleEditChange = (event) => {
+    const { name, value, type, checked } = event.target;
+
+    setEditForm((previousState) => ({
+      ...previousState,
+      [name]: type === 'checkbox' ? checked : value,
+      ...(name === 'isMinor' && !checked
+        ? { guardian: '', guardianEmail: '' }
+        : {}),
+    }));
+  };
+
+  // Salva as alterações do aluno
+  const handleUpdateStudent = (event) => {
+    event.preventDefault();
+
+    if (!editingStudent) return;
+
+    const updatedStudent = {
+      ...editingStudent,
+      ...editForm,
+      name: editForm.name.trim(),
+      email: editForm.email.trim(),
+      phone: editForm.phone.trim(),
+      guardian: editForm.isMinor ? editForm.guardian.trim() : '',
+      guardianEmail: editForm.isMinor
+        ? editForm.guardianEmail.trim()
+        : '',
+    };
+
+    setStudents((previousStudents) =>
+      previousStudents.map((student) =>
+        student.id === editingStudent.id
+          ? updatedStudent
+          : student
+      )
+    );
+    setEditingStudent(null);
   };
 
   // Cancela o cadastro
@@ -74,6 +149,14 @@ export function AdmStudentsPage({
       guardian: '',
       guardianEmail: '',
     });
+  };
+
+  const getDanceClassName = (classId) => {
+    const danceClass = classes.find(
+      (danceClass) => Number(danceClass.id) === Number(classId)
+    );
+
+    return danceClass?.name || 'Turma não encontrada';
   };
 
   return (
@@ -316,6 +399,10 @@ export function AdmStudentsPage({
                   {student.email} · {student.phone}
                 </p>
 
+                <p className="text-[#9AACC5]">
+                  Turmas do aluno: {getDanceClassName(student.danceClassId)}
+                </p>
+
                 {student.isMinor && (
                   <p className="text-[#3978F6]">
                     Responsável: {student.guardian}
@@ -333,13 +420,23 @@ export function AdmStudentsPage({
                 </span>
               )}
 
+              {/* Editar aluno */}
               <button
                 type="button"
-                onClick={() => handleRemove(student.id)}
-                aria-label={`Remover ${student.name}`}
-                className="text-3xl leading-none text-[#9AACC5] transition hover:text-red-500"
+                onClick={() => handleEdit(student)}
+                className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
               >
-                ×
+                Editar
+              </button>
+
+              {/*Excluir aluno*/}
+              <button
+                type="button"
+                onClick={() => handleRemove(student)}
+                aria-label={`Remover ${student.name}`}
+                className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+              >
+                Excluir
               </button>
 
             </div>
@@ -355,6 +452,295 @@ export function AdmStudentsPage({
 
       </section>
 
+      {/* Diálogo de confirmação de exclusão */}
+      {studentToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setStudentToDelete(null);
+            }
+          }}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-student-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+
+            <h2
+              id="delete-student-title"
+              className="text-xl font-bold text-[#172957]"
+            >
+              Confirmar exclusão
+            </h2>
+
+            <p className="mt-3 text-sm leading-relaxed text-[#71839F]">
+              Tem certeza de que deseja excluir o aluno{' '}
+              <strong className="text-[#172033]">
+                {studentToDelete.name}
+              </strong>
+              ?
+              Essa ação não poderá ser desfeita.
+            </p>
+
+            <div className="mt-7 flex justify-end gap-3">
+
+              {/* Cancelar exclusão */}
+              <button
+                type="button"
+                onClick={() => setStudentToDelete(null)}
+                className="rounded-lg border border-[#DCE4F0] px-5 py-2.5 text-sm font-semibold text-[#526581] transition hover:bg-[#F7F9FC]"
+              >
+                Cancelar
+              </button>
+
+              {/* Confirmar exclusão */}
+              <button
+                type="button"
+                onClick={confirmRemove}
+                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Excluir aluno
+              </button>
+
+            </div>
+          </section>
+        </div>
+      )};
+
+      {/* Diálogo de edição do aluno */}
+      {editingStudent && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setEditingStudent(null);
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-student-title"
+            className="my-auto w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl md:p-8"
+          >
+
+            {/* Cabeçalho */}
+            <div className="mb-7 flex items-center justify-between gap-4">
+
+              <div>
+                <h2
+                  id="edit-student-title"
+                  className="text-xl font-bold text-[#172957]"
+                >
+                  Editar aluno
+                </h2>
+
+                <p className="mt-1 text-sm text-[#71839F]">
+                  Atualize as informações do aluno cadastrado.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEditingStudent(null)}
+                aria-label="Fechar edição"
+                className="text-2xl text-[#91A2BF] transition hover:text-red-600"
+              >
+                ×
+              </button>
+
+            </div>
+
+            {/* Formulário de edição */}
+            <form onSubmit={handleUpdateStudent}>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                {/* Nome */}
+                <div>
+                  <label
+                    htmlFor="edit-student-name"
+                    className="mb-2 block text-sm font-medium text-[#40516B]"
+                  >
+                    Nome completo *
+                  </label>
+
+                  <input
+                    id="edit-student-name"
+                    type="text"
+                    name="name"
+                    value={editForm.name}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                {/* E-mail */}
+                <div>
+                  <label
+                    htmlFor="edit-student-email"
+                    className="mb-2 block text-sm font-medium text-[#40516B]"
+                  >
+                    E-mail *
+                  </label>
+
+                  <input
+                    id="edit-student-email"
+                    type="email"
+                    name="email"
+                    value={editForm.email}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                {/* Telefone */}
+                <div>
+                  <label
+                    htmlFor="edit-student-phone"
+                    className="mb-2 block text-sm font-medium text-[#40516B]"
+                  >
+                    Telefone *
+                  </label>
+
+                  <input
+                    id="edit-student-phone"
+                    type="tel"
+                    name="phone"
+                    value={editForm.phone}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                {/* Turma */}
+                <div>
+                  <label
+                    htmlFor="edit-student-class"
+                    className="mb-2 block text-sm font-medium text-[#40516B]"
+                  >
+                    Turma *
+                  </label>
+
+                  <select
+                    id="edit-student-class"
+                    name="danceClassId"
+                    value={editForm.danceClassId}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full rounded-xl border border-[#DCE4F0] bg-white px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="" disabled>
+                      Selecione uma turma
+                    </option>
+
+                    {classes.map((danceClass) => (
+                      <option
+                        key={danceClass.id}
+                        value={danceClass.id}
+                      >
+                        {danceClass.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Menor de idade */}
+                <div className="flex items-center gap-3 md:col-span-2">
+                  <input
+                    id="edit-student-is-minor"
+                    type="checkbox"
+                    name="isMinor"
+                    checked={editForm.isMinor}
+                    onChange={handleEditChange}
+                    className="h-5 w-5 accent-blue-600"
+                  />
+
+                  <label
+                    htmlFor="edit-student-is-minor"
+                    className="font-medium text-[#40516B]"
+                  >
+                    É menor de idade (precisa de responsável)
+                  </label>
+                </div>
+
+                {/* Dados do responsável */}
+                {editForm.isMinor && (
+                  <>
+                    <div>
+                      <label
+                        htmlFor="edit-student-guardian"
+                        className="mb-2 block text-sm font-medium text-[#40516B]"
+                      >
+                        Nome do responsável *
+                      </label>
+
+                      <input
+                        id="edit-student-guardian"
+                        type="text"
+                        name="guardian"
+                        value={editForm.guardian}
+                        onChange={handleEditChange}
+                        required
+                        placeholder="Nome completo do responsável"
+                        className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="edit-student-guardian-email"
+                        className="mb-2 block text-sm font-medium text-[#40516B]"
+                      >
+                        E-mail do responsável *
+                      </label>
+
+                      <input
+                        id="edit-student-guardian-email"
+                        type="email"
+                        name="guardianEmail"
+                        value={editForm.guardianEmail}
+                        onChange={handleEditChange}
+                        required
+                        placeholder="responsavel@email.com"
+                        className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+                  </>
+                )}
+
+              </div>
+
+              {/* Botões de Cancelar e Salvar alterações */}
+              <div className="mt-8 flex justify-end gap-3">
+
+                <button
+                  type="button"
+                  onClick={() => setEditingStudent(null)}
+                  className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+                >
+                  Salvar alterações
+                </button>
+
+              </div>
+
+            </form>
+          </section>
+        </div>
+      )};
     </main>
   );
 }

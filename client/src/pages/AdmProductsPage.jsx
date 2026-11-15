@@ -72,6 +72,7 @@ export function AdmProductsPage({
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [productsToDelete, setProductsToDelete] = useState(null);
   const [form, setForm] = useState(initialForm);
 
   const [categoryFilter, setCategoryFilter] = useState('Todas');
@@ -212,6 +213,19 @@ export function AdmProductsPage({
       images: getProductImages(product),
       available: product.available ?? true,
     });
+  };
+
+  const handleRemove = (product) => {
+    setProductsToDelete(product);
+  };
+
+  // Confirma a exclusão da turma
+  const confirmRemove = () => {
+    if (!productsToDelete) return;
+
+    onRemove(productsToDelete.id);
+
+    setProductsToDelete(null);
   };
 
   return (
@@ -484,6 +498,7 @@ export function AdmProductsPage({
               >
                 <option value="name">Ordem alfabética</option>
                 <option value="price">Menor preço</option>
+                <option value="price">Maior preço</option>
                 <option value="category">Categoria</option>
               </select>
             </div>
@@ -543,11 +558,11 @@ export function AdmProductsPage({
 
                       <button
                         type="button"
-                        onClick={() => onRemove?.(product.id)}
+                        onClick={() => handleRemove(product)}
                         aria-label={`Excluir ${product.name}`}
-                        className="text-xl leading-none text-[#B7C5D8] hover:text-red-600"
+                        className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                       >
-                        ×
+                        Excluir
                       </button>
                     </div>
 
@@ -779,7 +794,7 @@ export function AdmProductsPage({
                 <button
                   type="button"
                   onClick={clearForm}
-                  className="rounded-lg border border-[#DCE4F0] px-5 py-2.5 text-sm font-semibold text-[#526581] hover:bg-[#F7F9FC]"
+                  className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
                 >
                   Cancelar
                 </button>
@@ -792,6 +807,64 @@ export function AdmProductsPage({
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {/* Diálogo de confirmação de exclusão */}
+      {productsToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setProductsToDelete(null);
+            }
+          }}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-product-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+
+            <h2
+              id="delete-product-title"
+              className="text-xl font-bold text-[#172957]"
+            >
+              Confirmar exclusão
+            </h2>
+
+            <p className="mt-3 text-sm leading-relaxed text-[#71839F]">
+              Tem certeza de que deseja excluir o produto{' '}
+              <strong className="text-[#172033]">
+                {productsToDelete.name}
+              </strong>
+              ?
+              Essa ação não poderá ser desfeita.
+            </p>
+
+            <div className="mt-7 flex justify-end gap-3">
+
+              {/* Cancelar exclusão */}
+              <button
+                type="button"
+                onClick={() => setProductsToDelete(null)}
+                className="rounded-lg border border-[#DCE4F0] px-5 py-2.5 text-sm font-semibold text-[#526581] transition hover:bg-[#F7F9FC]"
+              >
+                Cancelar
+              </button>
+
+              {/* Confirmar exclusão */}
+              <button
+                type="button"
+                onClick={confirmRemove}
+                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Excluir produto
+              </button>
+
+            </div>
           </section>
         </div>
       )}
