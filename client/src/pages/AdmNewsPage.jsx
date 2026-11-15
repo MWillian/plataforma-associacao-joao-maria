@@ -452,7 +452,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                           />
                         ) : (
                           <span className="text-2xl" role="img">
-                          {imageSource || '📷'}
+                          {imageSource || 'Sem imagem'}
                           </span>
                         )}
                       </div>

@@ -10,6 +10,21 @@ function ActionButton({ children, page, className = '', onNavigate }) {
   );
 }
 
+const publicationAreaLabels = {
+  studio: {
+    label: 'Estúdio Adágio',
+    className: 'bg-purple-100 text-purple-700',
+  },
+  crafts: {
+    label: 'Artesanato',
+    className: 'bg-amber-100 text-amber-700',
+  },
+  agriculture: {
+    label: 'Agricultura Familiar',
+    className: 'bg-green-100 text-green-700',
+  },
+};
+
 export function AdmDashboardPage({
   onNavigate,
   onLogout,
@@ -195,14 +210,22 @@ const getDanceClassName = (classId) => {
 
           {news.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {news.map((newsItem) => (
+              {news.slice(0, 2).map((newsItem) => (
                 <article
                   key={newsItem.id}
                   className="rounded-xl border border-[#DCE4F0] bg-white p-5"
                 >
 
-                  {/* Data */}
-                  <div className="mb-4">
+                  {/* Área e data */}
+                  <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
+                    {publicationAreaLabels[newsItem.publicationArea] && (
+                      <span
+                        className={`rounded-md px-2 py-1 font-medium ${publicationAreaLabels[newsItem.publicationArea].className}`}
+                      >
+                        {publicationAreaLabels[newsItem.publicationArea].label}
+                      </span>
+                    )}
+
                     <span className="text-xs text-[#91A2BF]">
                       {newsItem.date}
                     </span>
@@ -217,44 +240,6 @@ const getDanceClassName = (classId) => {
                   <p className="text-sm leading-relaxed text-[#7183A3]">
                     {newsItem.description}
                   </p>
-
-                  {/* Imagens */}
-                  {newsItem.images?.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {newsItem.images.map((image, index) => {
-                        const imageSource =
-                          typeof image === 'string' ? image : image?.url;
-
-                        const isImageFile =
-                          typeof imageSource === 'string' &&
-                          (
-                            imageSource.startsWith('data:image/') ||
-                            imageSource.startsWith('blob:') ||
-                            imageSource.startsWith('http')
-                          );
-
-                        return (
-                          <div
-                            key={index}
-                            className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-[#DCE4F0] bg-[#EDF4FD]"
-                          >
-                            {isImageFile ? (
-                              <img
-                                src={imageSource}
-                                alt={`Imagem da notícia ${index + 1}`}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-2xl">
-                                {imageSource || '📷'}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
                 </article>
               ))}
             </div>
@@ -283,7 +268,7 @@ const getDanceClassName = (classId) => {
 
           {notices.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {notices.map((notice) => (
+              {notices.slice(0, 2).map((notice) => (
                 <article
                   key={notice.id}
                   className="rounded-xl border border-[#DCE4F0] bg-white p-5"
@@ -376,8 +361,8 @@ const getDanceClassName = (classId) => {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <span className="text-5xl" role="img" aria-label={product.name}>
-                      📦
+                    <span className="text-xs text-slate-400">
+                      Sem imagem
                     </span>
                   )}
                 </div>

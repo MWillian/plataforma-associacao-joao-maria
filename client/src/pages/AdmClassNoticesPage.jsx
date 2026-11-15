@@ -262,11 +262,11 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
                     className="w-full rounded-lg border border-[#DCE4F0] bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   >
                     <option value="Informativo">
-                      🔵 Informativo
+                      Informativo
                     </option>
 
                     <option value="Cancelamento">
-                      🔴 Cancelamento
+                      Cancelamento
                     </option>
                   </select>
                 </div>
