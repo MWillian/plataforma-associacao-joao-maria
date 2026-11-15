@@ -379,24 +379,36 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                 {/* Fotos */}
                 {newsItem.images?.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {newsItem.images.map((image, index) => (
+                  {newsItem.images.map((image, index) => {
+                    const imageSource =
+                      typeof image === 'string' ? image : image?.url;
+                    const isImageFile =
+                      typeof imageSource === 'string' &&
+                      (
+                        imageSource.startsWith('data:image/') ||
+                        imageSource.startsWith('blob:') ||
+                        imageSource.startsWith('http')
+                      );
+
+                    return (
                       <div
                         key={index}
                         className="flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-lg border border-[#DCE4F0] bg-[#EDF4FD]"
                       >
-                        {image.startsWith('data:image/') ? (
+                      {isImageFile ? (
                           <img
-                            src={image}
+                          src={imageSource}
                             alt={`Imagem da notícia ${index + 1}`}
                             className="h-full w-full object-cover"
                           />
                         ) : (
                           <span className="text-2xl" role="img">
-                            {image}
+                          {imageSource || '📷'}
                           </span>
                         )}
                       </div>
-                    ))}
+                    );
+                  })}
                   </div>
                 )}
               </article>

@@ -58,6 +58,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       danceClassId: '',
       isMinor: false,
       guardian: '',
+      guardianEmail: '',
     });
 
     setShowForm(false);

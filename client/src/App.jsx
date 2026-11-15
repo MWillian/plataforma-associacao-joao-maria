@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { FooterSection } from './components/layout/FooterSection.jsx';
@@ -17,21 +17,36 @@ import { AdmClassNoticesPage } from './pages/AdmClassNoticesPage.jsx';
 import { AdmNewsPage } from './pages/AdmNewsPage.jsx';
 import { AdmProductsPage } from './pages/AdmProductsPage.jsx';
 
-export default function App() {
-  const routes = {
-    '/': 'home',
-    '/admin/login': 'adm-login',
-    '/admin/painel': 'adm-dashboard',
-    '/admin/alunos': 'adm-students',
-    '/admin/turmas': 'adm-classes',
-    '/admin/avisos': 'adm-class-notices',
-    '/admin/noticias': 'adm-news',
-    '/admin/produtos': 'adm-products',
-  };
+const routes = {
+  '/': 'home',
+  '/studio': 'studio',
+  '/artesanato': 'crafts',
+  '/agricultura': 'agriculture',
+  '/admin/login': 'adm-login',
+  '/admin/painel': 'adm-dashboard',
+  '/admin/alunos': 'adm-students',
+  '/admin/turmas': 'adm-classes',
+  '/admin/avisos': 'adm-class-notices',
+  '/admin/noticias': 'adm-news',
+  '/admin/produtos': 'adm-products',
+};
 
+export default function App() {
   const [activePage, setActivePage] = useState(() => {
     return routes[window.location.pathname] || 'home';
-})
+  });
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActivePage(routes[window.location.pathname] || 'home');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedNews, setSelectedNews] = useState(null);
@@ -163,7 +178,7 @@ export default function App() {
       price: 15.00,
       category: 'Agricultura Familiar',
       images: [],
-      avaliable: true,
+      available: true,
     },
     {
       id: 2,
@@ -172,7 +187,7 @@ export default function App() {
       price: 45.00,
       category: 'Artesanato',
       images: [],
-      avaliable: true,
+      available: true,
     },
     {
       id: 3,
@@ -181,7 +196,7 @@ export default function App() {
       price: 130.00,
       category: 'Artesanato',
       images: [],
-      avaliable: true,
+      available: true,
     },
   ]);
 
@@ -216,6 +231,16 @@ export default function App() {
       newNews,
       ...previousNews,
     ]);
+  };
+
+  const handleUpdateNews = (updatedNews) => {
+    setNews((previousNews) =>
+      previousNews.map((newsItem) =>
+        newsItem.id === updatedNews.id
+          ? updatedNews
+          : newsItem
+      )
+    );
   };
 
   const handleRemoveNews = (id) => {
@@ -315,6 +340,7 @@ export default function App() {
       <AdmNewsPage
         news={news}
         onCreate={handleCreateNews}
+        onUpdate={handleUpdateNews}
         onRemove={handleRemoveNews}
         onBack={() => navigate('adm-dashboard')}
       />
@@ -339,7 +365,7 @@ export default function App() {
         <Navbar
           activePage={activePage}
           setActivePage={(page) => {
-            setActivePage(page);
+            navigate(page);
             setSelectedProduct(null);
           }}
         />

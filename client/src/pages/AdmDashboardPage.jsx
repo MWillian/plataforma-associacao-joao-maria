@@ -1,4 +1,11 @@
-export function AdmDashboardPage({ onNavigate, classes, students, news= [], notices = [], products }) {
+export function AdmDashboardPage({
+  onNavigate,
+  classes,
+  students,
+  news = [],
+  notices = [],
+  products = [],
+}) {
   
 
 const classesWithStudents = classes.map((danceClass) => ({

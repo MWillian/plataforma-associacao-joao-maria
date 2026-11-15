@@ -11,7 +11,13 @@ const daysOfWeek = [
   'Domingo',
 ];
 
-export function AdmClassesPage({ classes, onCreate, onRemove, onBack,}) {
+export function AdmClassesPage({
+  classes,
+  onCreate,
+  onUpdate,
+  onRemove,
+  onBack,
+}) {
   const [showForm, setShowForm] = useState(false);
   const [danceClassToDelete, setDanceClassToDelete] = useState(null);
   const [editingDanceClass, setEditingDanceClass] = useState(null);

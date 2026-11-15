@@ -58,7 +58,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
 
     const newNotice = {
       id: Date.now(),
-      danceClassId: selectedClass.id,
+      classId: selectedClass.id,
       subject: form.subject.trim(),
       type: form.type,
       message: form.message.trim(),
@@ -306,7 +306,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
                 </span>
 
                 <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
-                  {getClassName(notice.danceClassId)}
+                  {getClassName(notice.danceClassId ?? notice.classId)}
                 </span>
 
               </div>
@@ -320,6 +320,15 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
               <p className="text-sm leading-relaxed text-[#526581]">
                 {notice.message}
               </p>
+
+              <button
+                type="button"
+                onClick={() => onRemove?.(notice.id)}
+                aria-label={`Excluir aviso ${notice.subject}`}
+                className="absolute right-4 top-5 rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+              >
+                Excluir
+              </button>
             </article>
           ))}
 
