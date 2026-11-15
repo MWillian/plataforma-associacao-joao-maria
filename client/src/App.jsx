@@ -130,7 +130,6 @@ export default function App() {
 
   useEffect(() => {
     if (!isAdminPage(initialLocation.activePage)) {
-      setIsAuthLoading(false);
       return undefined;
     }
 
@@ -225,7 +224,7 @@ export default function App() {
         : page;
 
     const route = Object.entries(routes).find(
-      ([path, pageName]) => pageName === targetPage
+      ([, pageName]) => pageName === targetPage
     )?.[0];
 
     if (route && window.location.pathname !== route) {

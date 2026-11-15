@@ -1,3 +1,15 @@
+function ActionButton({ children, page, className = '', onNavigate }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate?.(page)}
+      className={`rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function AdmDashboardPage({
   onNavigate,
   onLogout,
@@ -21,16 +33,6 @@ const totalStudents = students.length;
 const classesWithStudentCount = classesWithStudents.filter(
   (danceClass) => danceClass.students > 0
 ).length;
-
-  const ActionButton = ({ children, page, className = '' }) => (
-    <button
-      type="button"
-      onClick={() => onNavigate?.(page)}
-      className={`rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 ${className}`}
-    >
-      {children}
-    </button>
-  );
 
 const getDanceClassName = (classId) => {
   const danceClass = classes.find(
@@ -128,11 +130,11 @@ const getDanceClassName = (classId) => {
             </div>
 
             <div className="flex gap-3">
-              <ActionButton page="adm-students">
+              <ActionButton page="adm-students" onNavigate={onNavigate}>
                 Ver alunos
               </ActionButton>
 
-              <ActionButton page="adm-classes">
+              <ActionButton page="adm-classes" onNavigate={onNavigate}>
                 Ver turmas
               </ActionButton>
             </div>
@@ -182,7 +184,7 @@ const getDanceClassName = (classId) => {
               Notícias
             </h2>
 
-            <ActionButton page="adm-news">
+            <ActionButton page="adm-news" onNavigate={onNavigate}>
               Ver notícias
             </ActionButton>
           </div>
@@ -270,7 +272,7 @@ const getDanceClassName = (classId) => {
               Avisos
             </h2>
 
-            <ActionButton page="adm-class-notices">
+            <ActionButton page="adm-class-notices" onNavigate={onNavigate}>
               Ver avisos
             </ActionButton>
           </div>
@@ -338,7 +340,7 @@ const getDanceClassName = (classId) => {
               Produtos
             </h2>
 
-            <ActionButton page="adm-products">
+            <ActionButton page="adm-products" onNavigate={onNavigate}>
               Ver produtos
             </ActionButton>
           </div>

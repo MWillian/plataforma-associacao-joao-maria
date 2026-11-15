@@ -135,18 +135,7 @@ export function AdmLoginPage({ onLogin }) {
                 value={form.password}
                 onChange={handleChange}
                 required
-              >
-                <a
-                  href="/recuperar-senha"
-                  className="
-                    text-sm font-medium
-                    text-blue-600
-                    transition hover:text-blue-800
-                  "
-                >
-                  Esqueceu a senha?
-                </a>
-              </InputField>
+              />
 
               {/* Botão */}
               <button
@@ -181,17 +170,7 @@ export function AdmLoginPage({ onLogin }) {
             ">
 
               <p className="text-sm text-slate-500">
-                Não tem uma conta?{" "}
-                <a
-                  href="/cadastro"
-                  className="
-                    font-medium text-blue-600
-                    hover:text-blue-800
-                    transition
-                  "
-                >
-                  Cadastrar-se
-                </a>
+                Contas administrativas são criadas pelo responsável do sistema.
               </p>
 
             </footer>
