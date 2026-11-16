@@ -1,42 +1,67 @@
-name: CI - Testes e Qualidade
+name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  client:
+    name: Frontend
     runs-on: ubuntu-latest
+
     steps:
       - name: Baixar código do repositório
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js v22
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
 
-      - name: Testar Back-end (Server)
+      - name: Instalar dependências
+        working-directory: client
+        run: npm ci
+
+      - name: Executar lint
+        working-directory: client
+        run: npm run lint
+
+      - name: Gerar build
+        working-directory: client
+        run: npm run build
+
+  server:
+    name: Backend
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/association_ci?schema=public
+
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: 'server/package-lock.json'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
 
-      - name: Validar dependências do Back-end
-        run: |
-          cd server
-          npm ci
+      - name: Instalar dependências
+        working-directory: server
+        run: npm ci
 
-      - name: Configurar Node.js v22 (Client)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: 'client/package-lock.json'
+      - name: Validar schema do Prisma
+        working-directory: server
+        run: npx prisma validate
 
-      - name: Validar Build do Front-end
-        run: |
-          cd client
-          npm ci
-          npm run build
+      - name: Executar testes
+        working-directory: server
+        run: npm test
