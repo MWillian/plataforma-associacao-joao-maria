@@ -11,32 +11,38 @@ enum UserRole {
   ADMIN
 }
 
+enum NewsPublicationArea {
+  STUDIO
+  CRAFTS
+  AGRICULTURE
+}
+
 // LEMBRAR QUE passwordHash É OBRIGATÓRIO
 
 model User {
-  id               Int      @id @default(autoincrement())
-  email            String   @unique
+  id               Int       @id @default(autoincrement())
+  email            String    @unique
   name             String?
   passwordHash     String
-  role             UserRole @default(ADMIN)
-  active           Boolean  @default(true)
+  role             UserRole  @default(ADMIN)
+  active           Boolean   @default(true)
   refreshTokenHash String?
   sessionExpiresAt DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  emailsSent             EmailNotification[]
+  emailsSent EmailNotification[]
 
   @@map("user")
 }
 
 model Guardian {
-  id        String            @id @default(uuid())
-  name      String
-  cpf       String            @unique
-  phone     String
-  email     String            @unique
-  students  StudentGuardian[]
+  id       String            @id @default(uuid())
+  name     String
+  cpf      String            @unique
+  phone    String
+  email    String            @unique
+  students StudentGuardian[]
 
   @@map("guardian")
 }
@@ -54,13 +60,13 @@ model Student {
 }
 
 model StudentGuardian {
-  id           String   @id @default(uuid())
-  studentId    String   @map("student_id")
-  guardianId   String   @map("guardian_id")
+  id           String @id @default(uuid())
+  studentId    String @map("student_id")
+  guardianId   String @map("guardian_id")
   relationship String
 
-  student      Student  @relation(fields: [studentId], references: [id])
-  guardian     Guardian @relation(fields: [guardianId], references: [id])
+  student  Student  @relation(fields: [studentId], references: [id])
+  guardian Guardian @relation(fields: [guardianId], references: [id])
 
   @@map("student_guardian")
 }
@@ -68,7 +74,7 @@ model StudentGuardian {
 model Class {
   id            String              @id @default(uuid())
   name          String
-  modality      String              
+  modality      String
   schedule      String
   capacity      Int
   active        Boolean             @default(true)
@@ -85,46 +91,79 @@ model Enrollment {
   status     String
   enrolledAt DateTime @default(now()) @map("enrolled_at")
 
-  student    Student  @relation(fields: [studentId], references: [id])
-  class      Class    @relation(fields: [classId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
 
   @@map("enrollment")
 }
 
 model EmailNotification {
-  id       String   @id @default(uuid())
-  classId  String?  @map("class_id")
-  
-  senderId Int      @map("sender_id") 
-  
-  subject  String
-  content  String   @db.Text
-  sentAt   DateTime @default(now()) @map("sent_at")
+  id      String  @id @default(uuid())
+  classId String? @map("class_id")
 
-  class    Class?   @relation(fields: [classId], references: [id])
-  sender   User     @relation(fields: [senderId], references: [id])
+  senderId Int @map("sender_id")
+
+  subject String
+  content String   @db.Text
+  sentAt  DateTime @default(now()) @map("sent_at")
+
+  class  Class? @relation(fields: [classId], references: [id])
+  sender User   @relation(fields: [senderId], references: [id])
 
   @@map("email_notification")
 }
 
 model Product {
-  id          String  @id @default(uuid())
-  title       String  @unique
-  description String? @db.Text
+  id          String         @id @default(uuid())
+  title       String         @unique
+  description String?        @db.Text
   category    String
-  imageUrl    String? @map("image_url")
-  active      Boolean @default(true)
+  price       Decimal?       @db.Decimal(10, 2)
+  imageUrl    String?        @map("image_url")
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  images      ProductImage[]
 
   @@map("product")
 }
 
-model Event {
-  id          String   @id @default(uuid())
-  title       String
-  description String?  @db.Text
-  eventDate   DateTime @map("event_date")
-  imageUrl    String?  @map("image_url")
-  active      Boolean  @default(true)
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String   @map("product_id")
+  url       String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("event")
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
+  @@map("product_image")
+}
+
+model News {
+  id              String              @id @default(uuid())
+  title           String
+  description     String?             @db.Text
+  publicationArea NewsPublicationArea @map("publication_area")
+  published       Boolean             @default(true)
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  images          NewsImage[]
+
+  @@index([publicationArea, published, createdAt])
+  @@map("news")
+}
+
+model NewsImage {
+  id        String   @id @default(uuid())
+  newsId    String   @map("news_id")
+  url       String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  news News @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@index([newsId, sortOrder])
+  @@map("news_image")
 }
