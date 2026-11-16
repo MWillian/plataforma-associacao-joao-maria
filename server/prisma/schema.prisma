@@ -22,6 +22,18 @@ enum EnrollmentStatus {
   CANCELED
 }
 
+enum NoticeType {
+  INFORMATION
+  CANCELLATION
+}
+
+enum NoticeDeliveryStatus {
+  PENDING
+  SENT
+  SKIPPED
+  FAILED
+}
+
 // LEMBRAR QUE passwordHash É OBRIGATÓRIO
 
 model User {
@@ -36,18 +48,19 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  emailsSent EmailNotification[]
+  noticesSent Notice[]
 
   @@map("user")
 }
 
 model Guardian {
-  id       String            @id @default(uuid())
-  name     String
-  cpf      String?           @unique
-  phone    String?
-  email    String?           @unique
-  students StudentGuardian[]
+  id               String            @id @default(uuid())
+  name             String
+  cpf              String?           @unique
+  phone            String?
+  email            String?           @unique
+  students         StudentGuardian[]
+  noticeRecipients NoticeRecipient[]
 
   @@map("guardian")
 }
@@ -68,6 +81,7 @@ model Student {
   updatedAt            DateTime          @updatedAt @map("updated_at")
   guardians            StudentGuardian[]
   enrollments          Enrollment[]
+  noticeRecipients     NoticeRecipient[]
 
   @@map("student")
 }
@@ -86,16 +100,16 @@ model StudentGuardian {
 }
 
 model Class {
-  id            String              @id @default(uuid())
-  name          String
-  turn          String
-  days          String[]            @default([])
-  capacity      Int?
-  active        Boolean             @default(true)
-  createdAt     DateTime            @default(now()) @map("created_at")
-  updatedAt     DateTime            @updatedAt @map("updated_at")
-  enrollments   Enrollment[]
-  notifications EmailNotification[]
+  id          String        @id @default(uuid())
+  name        String
+  turn        String
+  days        String[]      @default([])
+  capacity    Int?
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  enrollments Enrollment[]
+  notices     NoticeClass[]
 
   @@map("class")
 }
@@ -117,20 +131,57 @@ model Enrollment {
   @@map("enrollment")
 }
 
-model EmailNotification {
-  id      String  @id @default(uuid())
-  classId String? @map("class_id")
+model Notice {
+  id              String     @id @default(uuid())
+  type            NoticeType
+  subject         String
+  message         String     @db.Text
+  senderId        Int        @map("sender_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  sentAt          DateTime?  @map("sent_at")
+  totalRecipients Int        @default(0) @map("total_recipients")
+  sentCount       Int        @default(0) @map("sent_count")
+  skippedCount    Int        @default(0) @map("skipped_count")
+  failedCount     Int        @default(0) @map("failed_count")
 
-  senderId Int @map("sender_id")
+  sender     User              @relation(fields: [senderId], references: [id])
+  classes    NoticeClass[]
+  recipients NoticeRecipient[]
 
-  subject String
-  content String   @db.Text
-  sentAt  DateTime @default(now()) @map("sent_at")
+  @@index([createdAt])
+  @@map("notice")
+}
 
-  class  Class? @relation(fields: [classId], references: [id])
-  sender User   @relation(fields: [senderId], references: [id])
+model NoticeClass {
+  id       String @id @default(uuid())
+  noticeId String @map("notice_id")
+  classId  String @map("class_id")
 
-  @@map("email_notification")
+  notice Notice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  class  Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([noticeId, classId])
+  @@map("notice_class")
+}
+
+model NoticeRecipient {
+  id            String               @id @default(uuid())
+  noticeId      String               @map("notice_id")
+  studentId     String?              @map("student_id")
+  guardianId    String?              @map("guardian_id")
+  email         String
+  name          String?
+  status        NoticeDeliveryStatus @default(PENDING)
+  failureReason String?              @map("failure_reason") @db.Text
+  sentAt        DateTime?            @map("sent_at")
+
+  notice   Notice    @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  student  Student?  @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  guardian Guardian? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+
+  @@unique([noticeId, email])
+  @@index([noticeId, status])
+  @@map("notice_recipient")
 }
 
 model Product {
