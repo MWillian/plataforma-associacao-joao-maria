@@ -505,6 +505,8 @@ export function AdmProductsPage({
           </section>
         )}
 
+        {!showForm && (
+        <>
         {/* Filtros e ordenação */}
         <section className="mb-6 rounded-xl border border-[#DCE4F0] bg-white p-5">
           <h2 className="mb-4 font-bold text-[#172957]">
@@ -694,6 +696,8 @@ export function AdmProductsPage({
               Tente alterar os filtros selecionados.
             </p>
           </div>
+        )}
+        </>
         )}
       </div>
 

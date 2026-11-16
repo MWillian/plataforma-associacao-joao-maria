@@ -200,7 +200,7 @@ const getDanceClassName = (classId) => {
 
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="font-bold text-[#172957]">
-              Notícias
+              Últimas Notícias
             </h2>
 
             <ActionButton page="adm-news" onNavigate={onNavigate}>
@@ -209,11 +209,11 @@ const getDanceClassName = (classId) => {
           </div>
 
           {news.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <ul className="divide-y divide-[#E7EDF5] rounded-xl border border-[#DCE4F0] bg-white">
               {news.slice(0, 2).map((newsItem) => (
-                <article
+                <li
                   key={newsItem.id}
-                  className="rounded-xl border border-[#DCE4F0] bg-white p-5"
+                  className="p-5"
                 >
 
                   {/* Área e data */}
@@ -226,7 +226,7 @@ const getDanceClassName = (classId) => {
                       </span>
                     )}
 
-                    <span className="text-xs text-[#91A2BF]">
+                    <span className="text-[#91A2BF]">
                       {newsItem.date}
                     </span>
                   </div>
@@ -240,9 +240,9 @@ const getDanceClassName = (classId) => {
                   <p className="text-sm leading-relaxed text-[#7183A3]">
                     {newsItem.description}
                   </p>
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
             <div className="rounded-xl border border-dashed border-[#DCE4F0] bg-white p-8 text-center">
               <p className="text-sm text-[#7183A3]">
@@ -258,7 +258,7 @@ const getDanceClassName = (classId) => {
 
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="font-bold text-[#172957]">
-              Avisos
+              Últimos Avisos
             </h2>
 
             <ActionButton page="adm-class-notices" onNavigate={onNavigate}>
@@ -267,11 +267,11 @@ const getDanceClassName = (classId) => {
           </div>
 
           {notices.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <ul className="divide-y divide-[#E7EDF5] rounded-xl border border-[#DCE4F0] bg-white">
               {notices.slice(0, 2).map((notice) => (
-                <article
+                <li
                   key={notice.id}
-                  className="rounded-xl border border-[#DCE4F0] bg-white p-5"
+                  className="p-5"
                 >
 
                   {/* Tipo, turma e data */}
@@ -309,9 +309,9 @@ const getDanceClassName = (classId) => {
                     {notice.message}
                   </p>
 
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
             <div className="rounded-xl border border-dashed border-[#DCE4F0] bg-white p-8 text-center">
               <p className="text-sm text-[#7183A3]">
@@ -328,7 +328,7 @@ const getDanceClassName = (classId) => {
 
           <div className="mb-5 flex items-center justify-between gap-3">
             <h2 className="font-bold text-[#172957]">
-              Produtos
+              Últimos produtos cadastrados
             </h2>
 
             <ActionButton page="adm-products" onNavigate={onNavigate}>
@@ -338,7 +338,7 @@ const getDanceClassName = (classId) => {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 
-            {products.map((product) => (
+            {products.slice(-2).reverse().map((product) => (
               <article
                 key={product.name}
                 className="overflow-hidden rounded-xl border border-[#DCE4F0] bg-white"

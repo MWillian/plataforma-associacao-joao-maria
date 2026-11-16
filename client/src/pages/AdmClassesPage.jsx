@@ -349,7 +349,7 @@ export function AdmClassesPage({
       )}
 
       {/* Lista de turmas */}
-      <section className="overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white">
+      {!showForm && <section className="overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white">
 
         <div className="border-b border-[#E7EDF5] px-7 py-5 text-lg text-[#71839F]">
           {classes.length} turma(s) cadastrada(s)
@@ -433,7 +433,7 @@ export function AdmClassesPage({
           </p>
         )}
 
-      </section>
+      </section>}
 
       {/* Diálogo de confirmação de exclusão */}
       {danceClassToDelete && (
