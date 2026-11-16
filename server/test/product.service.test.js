@@ -60,7 +60,7 @@ describe('ProductService.listHighlights', () => {
       category: ' AGRICULTURA ',
     });
 
-    assert.equal(receivedCategory, 'agricultura');
+    assert.equal(receivedCategory, 'AGRICULTURE');
     assert.deepEqual(result, {
       items,
       category: 'agricultura',
@@ -83,7 +83,7 @@ describe('ProductService.listHighlights', () => {
       category: 'artesanato',
     });
 
-    assert.equal(receivedCategory, 'artesanato');
+    assert.equal(receivedCategory, 'CRAFTS');
     assert.equal(result.category, 'artesanato');
     assert.equal(result.limit, 3);
   });
@@ -251,7 +251,7 @@ describe('ProductService.create', () => {
 
     assert.deepEqual(receivedData, {
       title: 'cesta de palha',
-      category: 'artesanato',
+      category: 'CRAFTS',
       description: 'Feita à mão.',
       imageUrl: 'https://example.com/cesta.jpg',
       active: true,
@@ -294,7 +294,7 @@ describe('ProductService.create', () => {
       () =>
         service.create({
           title: 'Milho',
-          category: 'agricultura',
+          category: 'AGRICULTURE',
           active: 'true',
         }),
       {
@@ -374,7 +374,7 @@ describe('ProductService.update', () => {
     assert.equal(receivedId, PRODUCT_ID);
     assert.deepEqual(receivedData, {
       title: 'mel orgânico',
-      category: 'agricultura',
+      category: 'AGRICULTURE',
       description: 'Produção local.',
       imageUrl: 'https://example.com/mel.jpg',
     });

@@ -3,17 +3,16 @@ import { prisma } from '../lib/prisma.js';
 import { AppError } from '../utils/app-error.js';
 import {
   createAccessToken,
-  createResetExpiration,
   createSessionExpiration,
   generateOpaqueToken,
   hashToken,
 } from '../utils/tokens.js';
-import { sendPasswordResetEmail } from './email.service.js';
 
 const PUBLIC_USER_SELECT = {
   id: true,
   name: true,
   email: true,
+  role: true,
 };
 
 function normalizeEmail(email) {
@@ -41,26 +40,16 @@ function validateLoginInput(email, password) {
   }
 }
 
-function validateNewPassword(password) {
-  if (typeof password !== 'string' || password.length < 8) {
-    throw new AppError(
-      400,
-      'VALIDATION_ERROR',
-      'A nova senha deve possuir pelo menos 8 caracteres.',
-      {
-        password: 'Informe uma senha com pelo menos 8 caracteres.',
-      },
-    );
-  }
-}
-
 export async function login({ email, password }) {
   const normalizedEmail = normalizeEmail(email);
 
   validateLoginInput(normalizedEmail, password);
 
   const user = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
+    where: {
+      email: normalizedEmail,
+      active: true,
+    },
   });
 
   const dummyHash = '$2a$12$R9h/cIPz0gi.URNNX3ch2OS0Fs0vnjO9D.N5Z.K9X.A5h.A.A.A.A';
@@ -159,84 +148,3 @@ export async function logout(refreshToken) {
   });
 }
 
-export async function forgotPassword(email) {
-  const normalizedEmail = normalizeEmail(email);
-
-  if (!normalizedEmail) {
-    throw new AppError(
-      400,
-      'VALIDATION_ERROR',
-      'E-mail é obrigatório.',
-      {
-        email: 'E-mail é obrigatório.',
-      },
-    );
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
-  });
-
-  // Evita revelar se determinado e-mail está cadastrado.
-  if (!user) {
-    return;
-  }
-
-  const resetToken = generateOpaqueToken();
-  const passwordResetExpiresAt = createResetExpiration();
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordResetTokenHash: hashToken(resetToken),
-      passwordResetExpiresAt,
-    },
-  });
-
-  await sendPasswordResetEmail({
-    email: normalizedEmail,
-    token: resetToken,
-  });
-}
-
-export async function resetPassword({ token, password }) {
-  if (!token) {
-    throw new AppError(
-      400,
-      'INVALID_OR_EXPIRED_RESET_TOKEN',
-      'O link de recuperação é inválido ou expirou.',
-    );
-  }
-
-  validateNewPassword(password);
-
-  const user = await prisma.user.findFirst({
-    where: {
-      passwordResetTokenHash: hashToken(token),
-      passwordResetExpiresAt: { gt: new Date() },
-    },
-  });
-
-  if (!user) {
-    throw new AppError(
-      400,
-      'INVALID_OR_EXPIRED_RESET_TOKEN',
-      'O link de recuperação é inválido ou expirou.',
-    );
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash,
-      passwordResetTokenHash: null,
-      passwordResetExpiresAt: null,
-
-      // Trocar a senha encerra qualquer sessão autenticada existente.
-      refreshTokenHash: null,
-      sessionExpiresAt: null,
-    },
-  });
-}

@@ -1,16 +1,23 @@
 import { env } from '../config/env.js';
 
-export async function sendPasswordResetEmail({ email, token }) {
-  const resetUrl =
-    `${env.frontendUrl}/redefinir-senha?token=${encodeURIComponent(token)}`;
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
 
-  // Em desenvolvimento, permite testar o fluxo sem depender de um domínio
-  // configurado no Resend. O link aparece apenas no terminal do Back-end.
+export async function sendNoticeEmail({
+  email,
+  subject,
+  message,
+}) {
   if (!env.resendApiKey) {
     console.warn(
       '[email] RESEND_API_KEY não configurada. E-mail não enviado.',
     );
-    console.info(`[email] Link de recuperação para ${email}: ${resetUrl}`);
     return;
   }
 
@@ -23,18 +30,13 @@ export async function sendPasswordResetEmail({ email, token }) {
     body: JSON.stringify({
       from: env.resendFrom,
       to: [email],
-      subject: 'Recuperação de senha - Studio Adágio',
-      html: `
-        <p>Recebemos uma solicitação para redefinir sua senha.</p>
-        <p><a href="${resetUrl}">Clique aqui para redefinir a senha</a>.</p>
-        <p>O link expira em ${env.resetTokenExpiresMinutes} minutos.</p>
-        <p>Se você não solicitou a alteração, ignore esta mensagem.</p>
-      `,
+      subject,
+      html: `<p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>`,
     }),
   });
 
   if (!response.ok) {
     const details = await response.text();
-    throw new Error(`Falha ao enviar e-mail de recuperação: ${details}`);
+    throw new Error(`Falha ao enviar aviso por e-mail: ${details}`);
   }
 }

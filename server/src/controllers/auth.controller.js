@@ -1,10 +1,8 @@
 import { env } from '../config/env.js';
 import {
-  forgotPassword,
   login,
   logout,
   refreshSession,
-  resetPassword,
 } from '../services/auth.service.js';
 
 const REFRESH_COOKIE = 'refresh_token';
@@ -101,27 +99,3 @@ export async function logoutController(req, res, next) {
   }
 }
 
-export async function forgotPasswordController(req, res, next) {
-  try {
-    await forgotPassword(req.body?.email);
-
-    return res.status(200).json({
-      message:
-        'Se o e-mail estiver cadastrado, enviaremos as instruções para recuperação da senha.',
-    });
-  } catch (error) {
-    return next(error);
-  }
-}
-
-export async function resetPasswordController(req, res, next) {
-  try {
-    await resetPassword(req.body ?? {});
-
-    return res.status(200).json({
-      message: 'Senha redefinida com sucesso.',
-    });
-  } catch (error) {
-    return next(error);
-  }
-}

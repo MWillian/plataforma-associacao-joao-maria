@@ -27,8 +27,3 @@ export function createSessionExpiration() {
   );
 }
 
-export function createResetExpiration() {
-  return new Date(
-    Date.now() + env.resetTokenExpiresMinutes * 60 * 1000,
-  );
-}

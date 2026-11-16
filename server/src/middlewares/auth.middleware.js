@@ -87,13 +87,15 @@ export async function requireAdmin(
       select: {
         id: true,
         email: true,
+        role: true,
+        active: true,
       },
     });
 
     if (
       !user ||
-      user.email.trim().toLowerCase() !==
-        env.adminEmail
+      !user.active ||
+      user.role !== 'ADMIN'
     ) {
       return next(
         new AppError(

@@ -7,121 +7,239 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+}
+
+enum NewsPublicationArea {
+  STUDIO
+  CRAFTS
+  AGRICULTURE
+}
+
+enum ProductCategory {
+  AGRICULTURE
+  CRAFTS
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  CANCELED
+}
+
+enum NoticeType {
+  INFORMATION
+  CANCELLATION
+}
+
+enum NoticeDeliveryStatus {
+  PENDING
+  SENT
+  SKIPPED
+  FAILED
+}
+
 // LEMBRAR QUE passwordHash É OBRIGATÓRIO
 
 model User {
-  id                     Int       @id @default(autoincrement())
-  email                  String    @unique
-  username               String?
-  name                   String?
-  passwordHash           String
-  refreshTokenHash       String?
-  sessionExpiresAt       DateTime?
-  passwordResetTokenHash String?
-  passwordResetExpiresAt DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @default(now()) @updatedAt
+  id               Int       @id @default(autoincrement())
+  email            String    @unique
+  name             String?
+  passwordHash     String
+  role             UserRole  @default(ADMIN)
+  active           Boolean   @default(true)
+  refreshTokenHash String?
+  sessionExpiresAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  emailsSent             EmailNotification[]
+  noticesSent Notice[]
 
   @@map("user")
 }
 
 model Guardian {
-  id        String            @id @default(uuid())
-  name      String
-  cpf       String            @unique
-  phone     String
-  email     String            @unique
-  students  StudentGuardian[]
+  id               String            @id @default(uuid())
+  name             String
+  cpf              String?           @unique
+  phone            String?
+  email            String?           @unique
+  students         StudentGuardian[]
+  noticeRecipients NoticeRecipient[]
 
   @@map("guardian")
 }
 
 model Student {
-  id          String            @id @default(uuid())
-  name        String
-  birthDate   DateTime          @map("birth_date") @db.Date
-  medicalInfo String?           @map("medical_info") @db.Text
-  active      Boolean           @default(true)
-  guardians   StudentGuardian[]
-  enrollments Enrollment[]
+  id                   String            @id @default(uuid())
+  name                 String
+  email                String?
+  phone                String
+  birthDate            DateTime?         @map("birth_date") @db.Date
+  isMinor              Boolean           @default(false) @map("is_minor")
+  allergies            String?           @db.Text
+  medicalConditions    String?           @map("medical_conditions") @db.Text
+  medications          String?           @db.Text
+  physicalRestrictions String?           @map("physical_restrictions") @db.Text
+  active               Boolean           @default(true)
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  guardians            StudentGuardian[]
+  enrollments          Enrollment[]
+  noticeRecipients     NoticeRecipient[]
 
   @@map("student")
 }
 
 model StudentGuardian {
-  id           String   @id @default(uuid())
-  studentId    String   @map("student_id")
-  guardianId   String   @map("guardian_id")
-  relationship String
+  id           String @id @default(uuid())
+  studentId    String @map("student_id")
+  guardianId   String @map("guardian_id")
+  relationship String @default("Responsável")
 
-  student      Student  @relation(fields: [studentId], references: [id])
-  guardian     Guardian @relation(fields: [guardianId], references: [id])
+  student  Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardian Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
 
+  @@unique([studentId, guardianId])
   @@map("student_guardian")
 }
 
 model Class {
-  id            String              @id @default(uuid())
-  name          String
-  modality      String              
-  schedule      String
-  capacity      Int
-  active        Boolean             @default(true)
-  enrollments   Enrollment[]
-  notifications EmailNotification[]
+  id          String        @id @default(uuid())
+  name        String
+  turn        String
+  days        String[]      @default([])
+  capacity    Int?
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  enrollments Enrollment[]
+  notices     NoticeClass[]
 
   @@map("class")
 }
 
 model Enrollment {
-  id         String   @id @default(uuid())
-  studentId  String   @map("student_id")
-  classId    String   @map("class_id")
-  status     String
-  enrolledAt DateTime @default(now()) @map("enrolled_at")
+  id         String           @id @default(uuid())
+  studentId  String           @map("student_id")
+  classId    String           @map("class_id")
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now()) @map("enrolled_at")
+  canceledAt DateTime?        @map("canceled_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
 
-  student    Student  @relation(fields: [studentId], references: [id])
-  class      Class    @relation(fields: [classId], references: [id])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
 
+  @@unique([studentId, classId])
   @@map("enrollment")
 }
 
-model EmailNotification {
-  id       String   @id @default(uuid())
-  classId  String?  @map("class_id")
-  
-  senderId Int      @map("sender_id") 
-  
-  subject  String
-  content  String   @db.Text
-  sentAt   DateTime @default(now()) @map("sent_at")
+model Notice {
+  id              String     @id @default(uuid())
+  type            NoticeType
+  subject         String
+  message         String     @db.Text
+  senderId        Int        @map("sender_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  sentAt          DateTime?  @map("sent_at")
+  totalRecipients Int        @default(0) @map("total_recipients")
+  sentCount       Int        @default(0) @map("sent_count")
+  skippedCount    Int        @default(0) @map("skipped_count")
+  failedCount     Int        @default(0) @map("failed_count")
 
-  class    Class?   @relation(fields: [classId], references: [id])
-  sender   User     @relation(fields: [senderId], references: [id])
+  sender     User              @relation(fields: [senderId], references: [id])
+  classes    NoticeClass[]
+  recipients NoticeRecipient[]
 
-  @@map("email_notification")
+  @@index([createdAt])
+  @@map("notice")
+}
+
+model NoticeClass {
+  id       String @id @default(uuid())
+  noticeId String @map("notice_id")
+  classId  String @map("class_id")
+
+  notice Notice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  class  Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([noticeId, classId])
+  @@map("notice_class")
+}
+
+model NoticeRecipient {
+  id            String               @id @default(uuid())
+  noticeId      String               @map("notice_id")
+  studentId     String?              @map("student_id")
+  guardianId    String?              @map("guardian_id")
+  email         String
+  name          String?
+  status        NoticeDeliveryStatus @default(PENDING)
+  failureReason String?              @map("failure_reason") @db.Text
+  sentAt        DateTime?            @map("sent_at")
+
+  notice   Notice    @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  student  Student?  @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  guardian Guardian? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+
+  @@unique([noticeId, email])
+  @@index([noticeId, status])
+  @@map("notice_recipient")
 }
 
 model Product {
-  id          String  @id @default(uuid())
-  title       String  @unique
-  description String? @db.Text
-  category    String
-  imageUrl    String? @map("image_url")
-  active      Boolean @default(true)
+  id          String          @id @default(uuid())
+  title       String          @unique
+  description String?         @db.Text
+  category    ProductCategory
+  price       Decimal?        @db.Decimal(10, 2)
+  imageUrl    String?         @map("image_url")
+  active      Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  images      ProductImage[]
 
   @@map("product")
 }
 
-model Event {
-  id          String   @id @default(uuid())
-  title       String
-  description String?  @db.Text
-  eventDate   DateTime @map("event_date")
-  imageUrl    String?  @map("image_url")
-  active      Boolean  @default(true)
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String   @map("product_id")
+  url       String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("event")
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
+  @@map("product_image")
+}
+
+model News {
+  id              String              @id @default(uuid())
+  title           String
+  description     String?             @db.Text
+  publicationArea NewsPublicationArea @map("publication_area")
+  published       Boolean             @default(true)
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  images          NewsImage[]
+
+  @@index([publicationArea, published, createdAt])
+  @@map("news")
+}
+
+model NewsImage {
+  id        String   @id @default(uuid())
+  newsId    String   @map("news_id")
+  url       String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  news News @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@index([newsId, sortOrder])
+  @@map("news_image")
 }
