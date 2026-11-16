@@ -95,11 +95,6 @@ export const env = {
     7,
   ),
 
-  resetTokenExpiresMinutes: numberEnv(
-    'RESET_TOKEN_EXPIRES_MINUTES',
-    30,
-  ),
-
   cookieSecure: booleanEnv(
     process.env.COOKIE_SECURE,
     nodeEnv === 'production',
@@ -115,8 +110,4 @@ export const env = {
   resendFrom:
     process.env.RESEND_FROM?.trim() ||
     'Studio Adágio <no-reply@example.com>',
-
-  // Conta autorizada a acessar as rotas administrativas.
-  adminEmail: required('ADMIN_EMAIL')
-    .toLowerCase(),
 };
