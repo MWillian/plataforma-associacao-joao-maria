@@ -40,6 +40,8 @@ jobs:
   server:
     name: Backend
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/association_ci?schema=public
 
     steps:
       - name: Baixar código do repositório
