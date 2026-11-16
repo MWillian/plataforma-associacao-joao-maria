@@ -1,38 +1,52 @@
 const CATEGORY_TO_API = {
-  'Agricultura Familiar': 'agricultura',
-  Artesanato: 'artesanato',
+  'Agricultura Familiar': 'AGRICULTURE',
+  Artesanato: 'CRAFTS',
 };
 
 const CATEGORY_FROM_API = {
+  AGRICULTURE: 'Agricultura Familiar',
   agricultura: 'Agricultura Familiar',
+  CRAFTS: 'Artesanato',
   artesanato: 'Artesanato',
 };
 
-function getImageUrl(product) {
-  if (product.imageUrl) {
-    return product.imageUrl;
-  }
-
-  const firstImage = product.images?.[0];
-  return typeof firstImage === 'string'
-    ? firstImage
-    : firstImage?.url || null;
+function getImageUrls(product) {
+  return (product.images || [])
+    .map((image) => (
+      typeof image === 'string' ? image : image?.url
+    ))
+    .filter(Boolean);
 }
 
 export function productToApi(product) {
+  const imageUrls = getImageUrls(product);
+
   return {
     title: product.name || product.title,
     description: product.description?.trim() || null,
     category:
       CATEGORY_TO_API[product.category] ||
       product.category?.trim().toLowerCase(),
-    imageUrl: getImageUrl(product),
+    imageUrl: imageUrls[0] || product.imageUrl || null,
+    images: imageUrls,
+    price:
+      product.price === '' ||
+      product.price === null ||
+      product.price === undefined
+        ? null
+        : Number(product.price),
     active: product.available ?? product.active ?? true,
   };
 }
 
 export function productFromApi(product, fallback = {}) {
-  const imageUrl = product.imageUrl || fallback.imageUrl || null;
+  const imageUrls = product.images?.length
+    ? product.images
+        .map((image) => (
+          typeof image === 'string' ? image : image?.url
+        ))
+        .filter(Boolean)
+    : [product.imageUrl || fallback.imageUrl].filter(Boolean);
 
   return {
     ...fallback,
@@ -44,9 +58,9 @@ export function productFromApi(product, fallback = {}) {
       fallback.category ||
       product.category ||
       'Outros',
-    price: fallback.price,
-    images: imageUrl
-      ? [{ url: imageUrl }]
+    price: product.price ?? fallback.price,
+    images: imageUrls.length
+      ? imageUrls.map((url) => ({ url }))
       : fallback.images || [],
     available: product.active ?? fallback.available ?? true,
   };

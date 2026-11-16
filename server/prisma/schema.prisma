@@ -17,6 +17,11 @@ enum NewsPublicationArea {
   AGRICULTURE
 }
 
+enum ProductCategory {
+  AGRICULTURE
+  CRAFTS
+}
+
 enum EnrollmentStatus {
   ACTIVE
   CANCELED
@@ -185,15 +190,15 @@ model NoticeRecipient {
 }
 
 model Product {
-  id          String         @id @default(uuid())
-  title       String         @unique
-  description String?        @db.Text
-  category    String
-  price       Decimal?       @db.Decimal(10, 2)
-  imageUrl    String?        @map("image_url")
-  active      Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id          String          @id @default(uuid())
+  title       String          @unique
+  description String?         @db.Text
+  category    ProductCategory
+  price       Decimal?        @db.Decimal(10, 2)
+  imageUrl    String?         @map("image_url")
+  active      Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   images      ProductImage[]
 
   @@map("product")

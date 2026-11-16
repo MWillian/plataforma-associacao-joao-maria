@@ -5,6 +5,11 @@ const PRODUCT_CATEGORIES = [
   'artesanato',
 ];
 
+const PRODUCT_CATEGORY_TO_DB = {
+  agricultura: 'AGRICULTURE',
+  artesanato: 'CRAFTS',
+};
+
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -43,7 +48,7 @@ export class ProductService {
 
     const items =
       await this.productRepository.listActiveHighlights(
-        normalizedCategory,
+        PRODUCT_CATEGORY_TO_DB[normalizedCategory],
       );
 
     return {
@@ -179,7 +184,7 @@ export class ProductService {
           typeof description === 'string'
             ? description.trim() || null
             : null,
-        category: normalizedCategory,
+        category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
         imageUrl:
           typeof imageUrl === 'string'
             ? imageUrl.trim() || null
@@ -371,7 +376,7 @@ export class ProductService {
             typeof description === 'string'
               ? description.trim() || null
               : null,
-          category: normalizedCategory,
+          category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
           imageUrl:
             typeof imageUrl === 'string'
               ? imageUrl.trim() || null
