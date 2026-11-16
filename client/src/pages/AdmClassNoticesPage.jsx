@@ -315,7 +315,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
         )}
 
         {/* Lista de notices */}
-        <section className="space-y-3">
+        {!showForm && <section className="space-y-3">
 
           {notices.map((notice) => (
             <article
@@ -381,7 +381,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
             </div>
           )}
 
-        </section>
+        </section>}
 
       </div>
 

@@ -107,6 +107,23 @@ function isAdminPage(page) {
   return page.startsWith('adm-');
 }
 
+const pageTitles = {
+  home: 'Início',
+  studio: 'Estúdio Adágio',
+  crafts: 'Artesanato',
+  agriculture: 'Agricultura Familiar',
+  'craft-detail': 'Detalhes do artesanato',
+  'agriculture-detail': 'Detalhes da agricultura',
+  'news-detail': 'Notícia',
+  'adm-login': 'Acesso administrativo',
+  'adm-dashboard': 'Painel administrativo',
+  'adm-students': 'Alunos',
+  'adm-classes': 'Turmas',
+  'adm-class-notices': 'Avisos',
+  'adm-news': 'Notícias',
+  'adm-products': 'Produtos',
+};
+
 export default function App() {
   const initialLocation = getLocationState();
   const [activePage, setActivePage] = useState(() => {
@@ -127,6 +144,11 @@ export default function App() {
   const [isAuthLoading, setIsAuthLoading] = useState(() =>
     isAdminPage(initialLocation.activePage)
   );
+
+  useEffect(() => {
+    const pageTitle = pageTitles[activePage] || 'Associação João Maria';
+    document.title = `${pageTitle} | Associação João Maria`;
+  }, [activePage]);
 
   useEffect(() => {
     if (!isAdminPage(initialLocation.activePage)) {

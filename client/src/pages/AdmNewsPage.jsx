@@ -362,7 +362,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
         )}
 
         {/* Listagem */}
-        {news.length === 0 ? (
+        {!showForm && (news.length === 0 ? (
           <div className="rounded-xl border border-[#DCE4F0] bg-white px-6 py-12 text-center">
             <p className="font-medium text-[#526581]">
               Nenhuma notícia cadastrada.
@@ -427,7 +427,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
               </article>
             ))}
           </section>
-        )}
+        ))}
       </div>
 
       {/* Diálogo de confirmação de exclusão */}
