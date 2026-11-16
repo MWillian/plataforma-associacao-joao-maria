@@ -17,6 +17,11 @@ enum NewsPublicationArea {
   AGRICULTURE
 }
 
+enum EnrollmentStatus {
+  ACTIVE
+  CANCELED
+}
+
 // LEMBRAR QUE passwordHash É OBRIGATÓRIO
 
 model User {
@@ -39,22 +44,30 @@ model User {
 model Guardian {
   id       String            @id @default(uuid())
   name     String
-  cpf      String            @unique
-  phone    String
-  email    String            @unique
+  cpf      String?           @unique
+  phone    String?
+  email    String?           @unique
   students StudentGuardian[]
 
   @@map("guardian")
 }
 
 model Student {
-  id          String            @id @default(uuid())
-  name        String
-  birthDate   DateTime          @map("birth_date") @db.Date
-  medicalInfo String?           @map("medical_info") @db.Text
-  active      Boolean           @default(true)
-  guardians   StudentGuardian[]
-  enrollments Enrollment[]
+  id                   String            @id @default(uuid())
+  name                 String
+  email                String?
+  phone                String
+  birthDate            DateTime?         @map("birth_date") @db.Date
+  isMinor              Boolean           @default(false) @map("is_minor")
+  allergies            String?           @db.Text
+  medicalConditions    String?           @map("medical_conditions") @db.Text
+  medications          String?           @db.Text
+  physicalRestrictions String?           @map("physical_restrictions") @db.Text
+  active               Boolean           @default(true)
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  guardians            StudentGuardian[]
+  enrollments          Enrollment[]
 
   @@map("student")
 }
@@ -63,21 +76,24 @@ model StudentGuardian {
   id           String @id @default(uuid())
   studentId    String @map("student_id")
   guardianId   String @map("guardian_id")
-  relationship String
+  relationship String @default("Responsável")
 
-  student  Student  @relation(fields: [studentId], references: [id])
-  guardian Guardian @relation(fields: [guardianId], references: [id])
+  student  Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardian Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
 
+  @@unique([studentId, guardianId])
   @@map("student_guardian")
 }
 
 model Class {
   id            String              @id @default(uuid())
   name          String
-  modality      String
-  schedule      String
-  capacity      Int
+  turn          String
+  days          String[]            @default([])
+  capacity      Int?
   active        Boolean             @default(true)
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
   enrollments   Enrollment[]
   notifications EmailNotification[]
 
@@ -85,15 +101,19 @@ model Class {
 }
 
 model Enrollment {
-  id         String   @id @default(uuid())
-  studentId  String   @map("student_id")
-  classId    String   @map("class_id")
-  status     String
-  enrolledAt DateTime @default(now()) @map("enrolled_at")
+  id         String           @id @default(uuid())
+  studentId  String           @map("student_id")
+  classId    String           @map("class_id")
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now()) @map("enrolled_at")
+  canceledAt DateTime?        @map("canceled_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
 
-  student Student @relation(fields: [studentId], references: [id])
-  class   Class   @relation(fields: [classId], references: [id])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
 
+  @@unique([studentId, classId])
   @@map("enrollment")
 }
 
