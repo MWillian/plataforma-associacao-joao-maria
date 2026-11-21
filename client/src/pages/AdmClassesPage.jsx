@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
+import { getApiErrorMessage } from '../services/apiError.js';
 
 const daysOfWeek = [
   'Segunda-feira',
@@ -25,6 +26,13 @@ export function AdmClassesPage({
   const [editDaysErr, setEditDaysErr] = useState('');
   const [daysErr, setDaysErr] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('success');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const showFeedback = (message, type = 'success') => {
+    setFeedbackType(type);
+    setFeedback(message);
+  };
 
   const [form, setForm] = useState({
     name: '',
@@ -74,27 +82,34 @@ export function AdmClassesPage({
     setDaysErr('');
   };
 
-  // Cadastra a turma
-  const handleSubmit = (event) => {
+  // Cadastra a turma no backend
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (isSaving) return;
 
     if (form.days.length === 0) {
       setDaysErr('Selecione pelo menos um dia da semana.');
       return;
     }
 
-    const newClass = {
-      id: Date.now(),
-      name: form.name.trim(),
-      turn: form.turn,
-      days: form.days,
-    };
+    setIsSaving(true);
 
-    onCreate(newClass);
+    try {
+      await onCreate({
+        name: form.name.trim(),
+        turn: form.turn,
+        days: form.days,
+      });
 
-    clearForm();
-    setShowForm(false);
-    setFeedback('Turma cadastrada com sucesso.');
+      clearForm();
+      setShowForm(false);
+      showFeedback('Turma cadastrada com sucesso.');
+    } catch (error) {
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -106,14 +121,24 @@ export function AdmClassesPage({
     setDanceClassToDelete(danceClass);
   };
 
-  // Confirma a exclusão da turma
-  const confirmRemove = () => {
-    if (!danceClassToDelete) return;
+  // Confirma a exclusão da turma (no backend ela é inativada, junto com
+  // os alunos matriculados nela)
+  const confirmRemove = async () => {
+    if (!danceClassToDelete || isSaving) return;
 
-    onRemove(danceClassToDelete.id);
+    setIsSaving(true);
 
-    setDanceClassToDelete(null);
-    setFeedback('Turma excluída com sucesso.');
+    try {
+      await onRemove(danceClassToDelete.id);
+
+      setDanceClassToDelete(null);
+      showFeedback('Turma excluída com sucesso.');
+    } catch (error) {
+      setDanceClassToDelete(null);
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Abre o diálogo de edição
@@ -170,9 +195,11 @@ export function AdmClassesPage({
     setEditDaysErr('');
   };
 
-  // Salva as alterações da turma
-  const handleUpdateDanceClass = (event) => {
+  // Salva as alterações da turma no backend
+  const handleUpdateDanceClass = async (event) => {
     event.preventDefault();
+
+    if (isSaving) return;
 
     if (editForm.days.length === 0) {
       setEditDaysErr('Selecione pelo menos um dia da semana.');
@@ -181,22 +208,28 @@ export function AdmClassesPage({
 
     if (!editingDanceClass) return;
 
-    const updatedClass = {
-      ...editingDanceClass,
-      name: editForm.name.trim(),
-      turn: editForm.turn,
-      days: [...editForm.days],
-    };
+    setIsSaving(true);
 
-    onUpdate?.(updatedClass);
-    setFeedback('Turma atualizada com sucesso.');
+    try {
+      await onUpdate({
+        ...editingDanceClass,
+        name: editForm.name.trim(),
+        turn: editForm.turn,
+        days: [...editForm.days],
+      });
 
-    handleCancelEdit();
+      showFeedback('Turma atualizada com sucesso.');
+      handleCancelEdit();
+    } catch (error) {
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <>
-      <FeedbackToast message={feedback} />
+      <FeedbackToast message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
 
       {/* Cabeçalho */}
@@ -338,6 +371,7 @@ export function AdmClassesPage({
             <div className="mt-6 flex justify-end">
               <button
                 type="submit"
+                disabled={isSaving}
                 className="rounded-xl bg-[#2450DC] px-8 py-4 font-semibold text-white transition hover:bg-blue-700"
               >
                 Salvar turma
@@ -646,6 +680,7 @@ export function AdmClassesPage({
 
                 <button
                   type="submit"
+                disabled={isSaving}
                   className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
                 >
                   Salvar alterações

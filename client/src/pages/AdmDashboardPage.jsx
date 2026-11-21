@@ -39,7 +39,7 @@ export function AdmDashboardPage({
 const classesWithStudents = classes.map((danceClass) => ({
   ...danceClass,
   students: students.filter(
-    (student) => Number(student.danceClassId) === Number(danceClass.id)
+    (student) => String(student.danceClassId) === String(danceClass.id)
   ).length,
 }));
 
@@ -55,7 +55,7 @@ const getDanceClassName = (classId) => {
   }
 
   const danceClass = classes.find(
-    (danceClass) => Number(danceClass.id) === Number(classId)
+    (danceClass) => String(danceClass.id) === String(classId)
   );
 
   return danceClass?.name || 'Turma não encontrada';

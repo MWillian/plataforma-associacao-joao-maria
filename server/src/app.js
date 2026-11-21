@@ -9,7 +9,9 @@ import {
 } from './middlewares/error.middleware.js';
 import { adminRouter } from './routes/admin.routes.js';
 import { authRouter } from './routes/auth.routes.js';
+import { classRouter } from './routes/class.routes.js';
 import { productRouter } from './routes/product.routes.js';
+import { studentRouter } from './routes/student.routes.js';
 
 export const app = express();
 
@@ -36,7 +38,9 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/classes', classRouter);
 app.use('/api/products', productRouter);
+app.use('/api/students', studentRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

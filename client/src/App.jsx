@@ -16,6 +16,14 @@ import { AdmClassesPage } from './pages/AdmClassesPage.jsx';
 import { AdmClassNoticesPage } from './pages/AdmClassNoticesPage.jsx';
 import { AdmNewsPage } from './pages/AdmNewsPage.jsx';
 import { AdmProductsPage } from './pages/AdmProductsPage.jsx';
+import { FeedbackToast } from './components/details/FeedbackToast.jsx';
+import {
+  createClass,
+  listClasses,
+  removeClass,
+  updateClass,
+} from './services/classes.js';
+import { listStudents } from './services/students.js';
 import {
   clearAccessToken,
   getAccessToken,
@@ -267,59 +275,40 @@ export default function App() {
       await logout();
     } finally {
       setIsAuthenticated(false);
+      setClasses([]);
+      setStudents([]);
+      setAdminDataStatus('idle');
       navigate('adm-login');
     }
   };
 
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      name: 'Lucas Ferreira',
-      email: 'lucas@email.com',
-      phone: '(11) 99234-5678',
-      danceClassId: 1,
-      isMinor: true,
-      guardian: 'Maria Ferreira (Mãe)',
-      guardianEmail: 'maria@email.com',
-    },
-    {
-      id: 2,
-      name: 'Carolina Mendes',
-      email: 'carol@email.com',
-      phone: '(21) 97654-3210',
-      danceClassId: 2,
-      isMinor: false,
-      guardian: '',
-      guardianEmail: '',
-    },
-  ]);
+  // Turmas e alunos vêm do backend (carregados após o login).
+  const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [adminDataStatus, setAdminDataStatus] = useState('idle');
 
-  const [classes, setClasses] = useState([
-    {
-      id: 1,
-      name: 'Ballet Infantil A',
-      turn: 'Tarde',
-      days: ['Terça-feira', 'Quinta-feira'],
-    },
-    {
-      id: 2,
-      name: 'Ballet Adolescente',
-      turn: 'Manhã',
-      days: ['Segunda-feira', 'Quarta-feira'],
-    },
-    {
-      id: 3,
-      name: 'Jazz Adolescente',
-      turn: 'Tarde',
-      days: ['Quinta-feira'],
-    },
-    {
-      id: 4,
-      name: 'Ballet Adulto',
-      turn: 'Manhã',
-      days: ['Sexta-feira'],
+  useEffect(() => {
+    if (
+      !isAuthenticated ||
+      isAuthLoading ||
+      !isAdminPage(activePage) ||
+      adminDataStatus !== 'idle'
+    ) {
+      return;
     }
-  ]);
+
+    setAdminDataStatus('loading');
+
+    Promise.all([listClasses(), listStudents()])
+      .then(([loadedClasses, loadedStudents]) => {
+        setClasses(loadedClasses);
+        setStudents(loadedStudents);
+        setAdminDataStatus('ready');
+      })
+      .catch(() => {
+        setAdminDataStatus('error');
+      });
+  }, [isAuthenticated, isAuthLoading, activePage, adminDataStatus]);
 
   const [notices, setNotices] = useState([
     {
@@ -393,19 +382,32 @@ export default function App() {
     },
   ]);
 
-  const handleCreateDanceClass = (newClass) => {
+  // As três funções abaixo falham (lançam erro) se o backend recusar; a
+  // página que chamou mostra a mensagem ao usuário.
+  const handleCreateDanceClass = async ({ name, turn, days }) => {
+    const createdClass = await createClass({ name, turn, days });
+
     setClasses((previousClasses) => [
       ...previousClasses,
-      newClass,
+      createdClass,
     ]);
+
+    return createdClass;
   };
 
-  const handleRemoveDanceClass = (id) => {
+  const handleRemoveDanceClass = async (id) => {
+    await removeClass(id);
+
     setClasses((previousClasses) =>
-      previousClasses.filter((danceClass) => danceClass.id !== id)
+      previousClasses.filter(
+        (danceClass) => String(danceClass.id) !== String(id)
+      )
     );
+    // O backend também inativa os alunos da turma; refletimos na tela.
     setStudents((previousStudents) =>
-      previousStudents.filter((student) => student.danceClassId !== id)
+      previousStudents.filter(
+        (student) => String(student.danceClassId) !== String(id)
+      )
     );
     setNotices((previousNotices) =>
       previousNotices.filter((notice) => {
@@ -413,7 +415,7 @@ export default function App() {
           || [notice.classId ?? notice.danceClassId];
 
         return !classIds.some(
-          (classId) => Number(classId) === Number(id)
+          (classId) => String(classId) === String(id)
         );
       })
     );
@@ -484,15 +486,32 @@ export default function App() {
   };
 
   // Atualiza uma turma existente
-  const handleUpdateDanceClass = (updatedClass) => {
+  const handleUpdateDanceClass = async (updatedClass) => {
+    const savedClass = await updateClass(updatedClass.id, {
+      name: updatedClass.name,
+      turn: updatedClass.turn,
+      days: updatedClass.days,
+      capacity: updatedClass.capacity ?? null,
+    });
+
     setClasses((previousClasses) =>
       previousClasses.map((danceClass) =>
-        danceClass.id === updatedClass.id
-          ? updatedClass
+        String(danceClass.id) === String(savedClass.id)
+          ? savedClass
           : danceClass
       )
     );
+
+    return savedClass;
   };
+
+  const loadErrorToast =
+    adminDataStatus === 'error' ? (
+      <FeedbackToast
+        type="error"
+        message="Não foi possível carregar turmas e alunos. Recarregue a página."
+      />
+    ) : null;
 
   if (isAuthLoading) {
     return (
@@ -512,7 +531,9 @@ export default function App() {
 
   if (activePage === 'adm-dashboard') {
     return (
-      <AdmDashboardPage 
+      <>
+        {loadErrorToast}
+        <AdmDashboardPage 
       onNavigate={navigate}
       onLogout={handleLogout}
       classes={classes}
@@ -521,41 +542,51 @@ export default function App() {
       notices={notices}
       products={products}
       />
+      </>
     );
   } 
 
   if (activePage === 'adm-students') {
     return (
-      <AdmStudentsPage 
+      <>
+        {loadErrorToast}
+        <AdmStudentsPage 
       classes={classes}
       students={students}
       setStudents={setStudents}
       onBack={() => navigate('adm-dashboard')}
       />
+      </>
     );
   }
 
   if (activePage === 'adm-classes') {
     return (
-      <AdmClassesPage
+      <>
+        {loadErrorToast}
+        <AdmClassesPage
         classes={classes}
         onCreate={handleCreateDanceClass}
         onUpdate={handleUpdateDanceClass}
         onRemove={handleRemoveDanceClass}
         onBack={() => navigate('adm-dashboard')}
       />
+      </>
     );
   }
 
   if (activePage === 'adm-class-notices') {
     return (
-      <AdmClassNoticesPage
+      <>
+        {loadErrorToast}
+        <AdmClassNoticesPage
         classes={classes}
         notices={notices}
         onCreate={handleCreateNotice}
         onRemove={handleRemoveNotice}
         onBack={() => navigate('adm-dashboard')}
       />
+      </>
     );
   } 
 

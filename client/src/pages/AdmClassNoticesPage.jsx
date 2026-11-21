@@ -57,7 +57,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
 
     const selectedClasses = classes.filter((danceClass) =>
       form.danceClassIds.some(
-        (classId) => Number(classId) === Number(danceClass.id)
+        (classId) => String(classId) === String(danceClass.id)
       )
     );
 
@@ -85,7 +85,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
 
   const getDanceClass = (danceClassId) => {
     return classes.find(
-      (danceClass) => Number(danceClass.id) === Number(danceClassId)
+      (danceClass) => String(danceClass.id) === String(danceClassId)
     );
   };
 
