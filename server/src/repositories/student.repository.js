@@ -52,6 +52,16 @@ export class StudentRepository {
     });
   }
 
+  async lockClassById(classId) {
+    if (typeof this.client.$executeRaw !== 'function') {
+      return;
+    }
+
+    await this.client.$executeRaw`
+      SELECT pg_advisory_xact_lock(hashtext(${classId}::text))
+    `;
+  }
+
   countActiveEnrollments(classId) {
     return this.client.enrollment.count({
       where: { classId, status: 'ACTIVE' },
@@ -62,14 +72,21 @@ export class StudentRepository {
     return this.client.guardian.findUnique({ where: { email } });
   }
 
-  createGuardian({ name, email }) {
-    return this.client.guardian.create({ data: { name, email } });
+  createGuardian({ name, email, phone }) {
+    return this.client.guardian.create({ data: { name, email, phone } });
   }
 
   updateGuardianName(id, name) {
     return this.client.guardian.update({
       where: { id },
       data: { name },
+    });
+  }
+
+  updateGuardian(id, data) {
+    return this.client.guardian.update({
+      where: { id },
+      data,
     });
   }
 
@@ -125,6 +142,33 @@ export class StudentRepository {
       update: { status: 'ACTIVE', canceledAt: null },
       create: { studentId, classId },
     });
+  }
+
+  async addActiveEnrollment(studentId, classId) {
+    await this.client.enrollment.upsert({
+      where: { studentId_classId: { studentId, classId } },
+      update: { status: 'ACTIVE', canceledAt: null },
+      create: { studentId, classId },
+    });
+  }
+
+  async setActiveEnrollments(studentId, classIds) {
+    await this.client.enrollment.updateMany({
+      where: {
+        studentId,
+        status: 'ACTIVE',
+        classId: { notIn: classIds },
+      },
+      data: { status: 'CANCELED', canceledAt: new Date() },
+    });
+
+    for (const classId of classIds) {
+      await this.client.enrollment.upsert({
+        where: { studentId_classId: { studentId, classId } },
+        update: { status: 'ACTIVE', canceledAt: null },
+        create: { studentId, classId },
+      });
+    }
   }
 
   async cancelEnrollment(studentId, classId) {

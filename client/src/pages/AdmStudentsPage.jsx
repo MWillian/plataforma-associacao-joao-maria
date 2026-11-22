@@ -48,7 +48,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     name: '',
     email: '',
     phone: '',
-    danceClassId: '',
+    danceClassIds: [],
     isMinor: false,
     guardian: '',
     guardianEmail: '',
@@ -62,7 +62,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     name: '',
     email: '',
     phone: '',
-    danceClassId: '',
+    danceClassIds: [],
     isMinor: false,
     guardian: '',
     guardianEmail: '',
@@ -82,11 +82,34 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     }));
   };
 
+  const handleClassToggle = (classId, isEdit = false) => {
+    if (isEdit) {
+      setEditForm((previousState) => ({
+        ...previousState,
+        danceClassIds: previousState.danceClassIds.includes(classId)
+          ? previousState.danceClassIds.filter((id) => id !== classId)
+          : [...previousState.danceClassIds, classId],
+      }));
+      return;
+    }
+
+    setForm((previousState) => ({
+      ...previousState,
+      danceClassIds: previousState.danceClassIds.includes(classId)
+        ? previousState.danceClassIds.filter((id) => id !== classId)
+        : [...previousState.danceClassIds, classId],
+    }));
+  };
+
   // Cadastra um novo aluno no backend
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (isSaving) return;
+    if (form.danceClassIds.length === 0) {
+      showFeedback('Selecione pelo menos uma turma.', 'error');
+      return;
+    }
 
     setIsSaving(true);
 
@@ -102,7 +125,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
         name: '',
         email: '',
         phone: '',
-        danceClassId: '',
+        danceClassIds: [],
         isMinor: false,
         guardian: '',
         guardianEmail: '',
@@ -158,7 +181,11 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       name: student.name || '',
       email: student.email || '',
       phone: student.phone || '',
-      danceClassId: String(student.danceClassId ?? ''),
+      danceClassIds: student.danceClassIds?.length
+        ? [...student.danceClassIds]
+        : student.danceClassId
+          ? [String(student.danceClassId)]
+          : [],
       isMinor: student.isMinor ?? false,
       guardian: student.guardian || '',
       guardianEmail: student.guardianEmail || '',
@@ -187,6 +214,10 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     event.preventDefault();
 
     if (!editingStudent || isSaving) return;
+    if (editForm.danceClassIds.length === 0) {
+      showFeedback('Selecione pelo menos uma turma.', 'error');
+      return;
+    }
 
     setIsSaving(true);
 
@@ -220,7 +251,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       name: '',
       email: '',
       phone: '',
-      danceClassId: '',
+      danceClassIds: [],
       isMinor: false,
       guardian: '',
       guardianEmail: '',
@@ -231,12 +262,18 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     });
   };
 
-  const getDanceClassName = (classId) => {
-    const danceClass = classes.find(
-      (danceClass) => String(danceClass.id) === String(classId)
-    );
+  const getDanceClassNames = (student) => {
+    const ids = student.danceClassIds?.length
+      ? student.danceClassIds
+      : student.danceClassId
+        ? [student.danceClassId]
+        : [];
 
-    return danceClass?.name || 'Turma não encontrada';
+    const names = ids.map((id) =>
+      classes.find((danceClass) => String(danceClass.id) === String(id))?.name
+    ).filter(Boolean);
+
+    return names.length ? names.join(', ') : 'Turma não encontrada';
   };
 
   return (
@@ -363,23 +400,30 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                   Turma <span className="text-blue-600">*</span>
                 </label>
 
-                <select
-                  name="danceClassId"
-                  value={form.danceClassId}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-xl border border-[#DCE4F0] bg-white px-5 py-4 text-[#40516B] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="" disabled>
-                    Selecione uma turma
-                  </option>
+                <div className="flex flex-wrap gap-2 rounded-xl border border-[#DCE4F0] p-3">
+                  {classes.map((danceClass) => {
+                    const selected = form.danceClassIds.includes(String(danceClass.id));
 
-                  {classes.map((danceClass) => (
-                    <option key={danceClass.id} value={danceClass.id}>
-                      {danceClass.name}
-                    </option>
-                  ))}
-                </select>
+                    return (
+                      <button
+                        key={danceClass.id}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => handleClassToggle(String(danceClass.id))}
+                        className={`rounded-lg border px-3 py-2 text-sm font-medium ${
+                          selected
+                            ? 'border-blue-600 bg-blue-600 text-white'
+                            : 'border-[#DCE4F0] bg-white text-[#526581]'
+                        }`}
+                      >
+                        {danceClass.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                {form.danceClassIds.length === 0 && (
+                  <p className="mt-2 text-sm text-red-600">Selecione pelo menos uma turma.</p>
+                )}
               </div>
 
                 {/* Menor de idade */}
@@ -529,7 +573,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                 </p>
 
                 <p className="text-[#9AACC5]">
-                  Turmas do aluno: {getDanceClassName(student.danceClassId)}
+                  Turmas do aluno: {getDanceClassNames(student)}
                 </p>
 
                 {student.isMinor && (
@@ -759,27 +803,27 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     Turma *
                   </label>
 
-                  <select
-                    id="edit-student-class"
-                    name="danceClassId"
-                    value={editForm.danceClassId}
-                    onChange={handleEditChange}
-                    required
-                    className="w-full rounded-xl border border-[#DCE4F0] bg-white px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="" disabled>
-                      Selecione uma turma
-                    </option>
+                  <div className="flex flex-wrap gap-2 rounded-xl border border-[#DCE4F0] p-3">
+                    {classes.map((danceClass) => {
+                      const selected = editForm.danceClassIds.includes(String(danceClass.id));
 
-                    {classes.map((danceClass) => (
-                      <option
-                        key={danceClass.id}
-                        value={danceClass.id}
-                      >
-                        {danceClass.name}
-                      </option>
-                    ))}
-                  </select>
+                      return (
+                        <button
+                          key={danceClass.id}
+                          type="button"
+                          aria-pressed={selected}
+                          onClick={() => handleClassToggle(String(danceClass.id), true)}
+                          className={`rounded-lg border px-3 py-2 text-sm ${
+                            selected
+                              ? 'border-blue-600 bg-blue-600 text-white'
+                              : 'border-[#DCE4F0] bg-white text-[#526581]'
+                          }`}
+                        >
+                          {danceClass.name}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Menor de idade */}

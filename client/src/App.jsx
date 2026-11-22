@@ -384,8 +384,8 @@ export default function App() {
 
   // As três funções abaixo falham (lançam erro) se o backend recusar; a
   // página que chamou mostra a mensagem ao usuário.
-  const handleCreateDanceClass = async ({ name, turn, days }) => {
-    const createdClass = await createClass({ name, turn, days });
+  const handleCreateDanceClass = async ({ name, turn, days, capacity }) => {
+    const createdClass = await createClass({ name, turn, days, capacity });
 
     setClasses((previousClasses) => [
       ...previousClasses,
@@ -405,9 +405,28 @@ export default function App() {
     );
     // O backend também inativa os alunos da turma; refletimos na tela.
     setStudents((previousStudents) =>
-      previousStudents.filter(
-        (student) => String(student.danceClassId) !== String(id)
-      )
+      previousStudents
+        .map((student) => {
+          const classIds = (student.danceClassIds?.length
+            ? student.danceClassIds
+            : student.danceClassId
+              ? [student.danceClassId]
+              : [])
+            .filter((classId) => String(classId) !== String(id));
+
+          if (classIds.length === (student.danceClassIds?.length
+            ? student.danceClassIds.length
+            : student.danceClassId ? 1 : 0)) {
+            return student;
+          }
+
+          return {
+            ...student,
+            danceClassIds: classIds,
+            danceClassId: classIds[0] ?? null,
+          };
+        })
+        .filter((student) => (student.danceClassIds?.length ?? 0) > 0)
     );
     setNotices((previousNotices) =>
       previousNotices.filter((notice) => {
