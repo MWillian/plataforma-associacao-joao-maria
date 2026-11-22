@@ -169,6 +169,18 @@ export default function App() {
     isAdminPage(initialLocation.activePage)
   );
 
+  // Dados do painel e do site vêm do backend. Os estados ficam aqui no
+  // topo porque os efeitos e handlers abaixo os usam.
+  const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [notices, setNotices] = useState([]);
+  const [news, setNews] = useState([]);
+  // Produtos do painel admin (todos). O site público usa `publicProducts`
+  // até o painel ser carregado.
+  const [products, setProducts] = useState([]);
+  const [publicProducts, setPublicProducts] = useState([]);
+  const [adminDataStatus, setAdminDataStatus] = useState('idle');
+
   useEffect(() => {
     const pageTitle = pageTitles[activePage] || 'Associação João Maria';
     document.title = `${pageTitle} | Associação João Maria`;
@@ -300,11 +312,6 @@ export default function App() {
     }
   };
 
-  // Turmas e alunos vêm do backend (carregados após o login).
-  const [students, setStudents] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [adminDataStatus, setAdminDataStatus] = useState('idle');
-
   useEffect(() => {
     if (
       !isAuthenticated ||
@@ -341,14 +348,6 @@ export default function App() {
         setAdminDataStatus('error');
       });
   }, [isAuthenticated, isAuthLoading, activePage, adminDataStatus]);
-
-  // Avisos, notícias e produtos também vêm do backend.
-  const [notices, setNotices] = useState([]);
-  const [news, setNews] = useState([]);
-  // Produtos do painel admin (todos). O site público usa `publicProducts`
-  // até o painel ser carregado.
-  const [products, setProducts] = useState([]);
-  const [publicProducts, setPublicProducts] = useState([]);
 
   // Conteúdo público: notícias e catálogo de produtos.
   useEffect(() => {
