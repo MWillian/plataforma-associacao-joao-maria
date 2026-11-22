@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { FooterSection } from './components/layout/FooterSection.jsx';
@@ -179,7 +179,10 @@ export default function App() {
   // até o painel ser carregado.
   const [products, setProducts] = useState([]);
   const [publicProducts, setPublicProducts] = useState([]);
+  // 'idle' | 'ready' | 'error'
   const [adminDataStatus, setAdminDataStatus] = useState('idle');
+  // Evita pedir os dados do painel mais de uma vez por sessão.
+  const adminDataRequestedRef = useRef(false);
 
   useEffect(() => {
     const pageTitle = pageTitles[activePage] || 'Associação João Maria';
@@ -307,6 +310,7 @@ export default function App() {
       setStudents([]);
       setNotices([]);
       setProducts([]);
+      adminDataRequestedRef.current = false;
       setAdminDataStatus('idle');
       navigate('adm-login');
     }
@@ -317,12 +321,12 @@ export default function App() {
       !isAuthenticated ||
       isAuthLoading ||
       !isAdminPage(activePage) ||
-      adminDataStatus !== 'idle'
+      adminDataRequestedRef.current
     ) {
       return;
     }
 
-    setAdminDataStatus('loading');
+    adminDataRequestedRef.current = true;
 
     Promise.all([
       listClasses(),
@@ -347,7 +351,7 @@ export default function App() {
       .catch(() => {
         setAdminDataStatus('error');
       });
-  }, [isAuthenticated, isAuthLoading, activePage, adminDataStatus]);
+  }, [isAuthenticated, isAuthLoading, activePage]);
 
   // Conteúdo público: notícias e catálogo de produtos.
   useEffect(() => {
