@@ -15,10 +15,9 @@ export async function sendNoticeEmail({
   message,
 }) {
   if (!env.resendApiKey) {
-    console.warn(
-      '[email] RESEND_API_KEY não configurada. E-mail não enviado.',
+    throw new Error(
+      'RESEND_API_KEY não configurada.',
     );
-    return;
   }
 
   const response = await fetch('https://api.resend.com/emails', {

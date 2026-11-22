@@ -30,10 +30,14 @@ import {
   logout,
   restoreSession,
 } from './services/auth.js';
+import { createNews, listNews, removeNews, updateNews } from './services/news.js';
+import { createNotice, listNotices, removeNotice, sendNotice } from './services/notices.js';
 import {
-  productFromApi,
-  productToApi,
-} from './services/productMapper.js';
+  createProduct,
+  listProducts,
+  removeProduct,
+  updateProduct,
+} from './services/products.js';
 
 const routes = {
   '/': 'home',
@@ -286,6 +290,21 @@ export default function App() {
   const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
   const [adminDataStatus, setAdminDataStatus] = useState('idle');
+  const [notices, setNotices] = useState([]);
+  const [news, setNews] = useState([]);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    Promise.all([listProducts(1), listNews({ page: 1 })])
+      .then(([productData, newsData]) => {
+        setProducts(productData.items);
+        setNews(newsData.items);
+      })
+      .catch(() => {
+        setProducts([]);
+        setNews([]);
+      });
+  }, []);
 
   useEffect(() => {
     if (
@@ -299,10 +318,19 @@ export default function App() {
 
     setAdminDataStatus('loading');
 
-    Promise.all([listClasses(), listStudents()])
-      .then(([loadedClasses, loadedStudents]) => {
+    Promise.all([
+      listClasses(),
+      listStudents(),
+      listNotices(),
+      listProducts(1),
+      listNews({ page: 1, includeInactive: true }),
+    ])
+      .then(([loadedClasses, loadedStudents, loadedNotices, loadedProducts, loadedNews]) => {
         setClasses(loadedClasses);
         setStudents(loadedStudents);
+        setNotices(loadedNotices);
+        setProducts(loadedProducts.items);
+        setNews(loadedNews.items);
         setAdminDataStatus('ready');
       })
       .catch(() => {
@@ -310,77 +338,6 @@ export default function App() {
       });
   }, [isAuthenticated, isAuthLoading, activePage, adminDataStatus]);
 
-  const [notices, setNotices] = useState([
-    {
-      id: 1,
-      classId: 1,
-      subject: 'Ensaio Extra',
-      type: 'Informativo',
-      message:
-        'Informamos que haverá ensaio extra na próxima sexta-feira, dia 27/09, das 14h às 16h. Presença obrigatória.',
-      date: '21/09/2026',
-    },
-    {
-      id: 2,
-      classId: 2,
-      subject: 'Aula Cancelada',
-      type: 'Cancelamento',
-      message:
-        'A aula da próxima quinta-feira, 26/09, está cancelada por motivo de saúde da professora. Retorno previsto para 03/10.',
-      date: '20/09/2026',
-    },
-  ]);
-
-  const [news, setNews] = useState([
-    {
-      id: 1,
-      title: 'Festival de Dança 2026',
-      description:
-        'Nossa instituição realizará o Grande Festival de Dança no próximo mês. Inscrições abertas para todas as turmas!',
-      date: '14/09/2026',
-      images: ['🎭', '📸'],
-      publicationArea: 'studio',
-    },
-    {
-      id: 2,
-      title: 'Encerramento do 2º Semestre',
-      description:
-        'Convocamos alunos e responsáveis para a festa de encerramento do semestre com apresentações especiais.',
-      date: '09/09/2026',
-      images: ['🎉'],
-      publicationArea: 'crafts',
-    },
-  ]);
-
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'Tomate (Kg)',
-      description: 'Tomates produzidos por associados da agricultura familiar.',
-      price: 15.00,
-      category: 'Agricultura Familiar',
-      images: [],
-      available: true,
-    },
-    {
-      id: 2,
-      name: 'Kit pulseiras de macramê',
-      description: 'Conjunto de pulseiras artesanais criadas por associados.',
-      price: 45.00,
-      category: 'Artesanato',
-      images: [],
-      available: true,
-    },
-    {
-      id: 3,
-      name: 'Sousplat de crochê',
-      description: 'Conjunto de 4 sousplat + 4 porta copos em crochê.',
-      price: 130.00,
-      category: 'Artesanato',
-      images: [],
-      available: true,
-    },
-  ]);
 
   // As três funções abaixo falham (lançam erro) se o backend recusar; a
   // página que chamou mostra a mensagem ao usuário.
@@ -421,65 +378,63 @@ export default function App() {
     );
   };
 
-  const handleCreateNotice = (newNotice) => {
+  const handleCreateNotice = async (newNotice) => {
+    const createdNotice = await createNotice(newNotice);
+    const sentNotice = await sendNotice(createdNotice.id);
+
     setNotices((previousNotices) => [
-      newNotice,
+      sentNotice,
       ...previousNotices,
     ]);
   };
 
-  const handleRemoveNotice = (id) => {
+  const handleRemoveNotice = async (id) => {
+    await removeNotice(id);
     setNotices((previousNotices) =>
       previousNotices.filter((notice) => notice.id !== id)
     );
   };
 
-  const handleCreateNews = (newNews) => {
-    setNews((previousNews) => [
-      newNews,
-      ...previousNews,
-    ]);
+  const handleCreateNews = async (newNews) => {
+    const createdNews = await createNews(newNews);
+    setNews((previousNews) => [createdNews, ...previousNews]);
   };
 
-  const handleUpdateNews = (updatedNews) => {
+  const handleUpdateNews = async (updatedNews) => {
+    const savedNews = await updateNews(updatedNews.id, updatedNews);
     setNews((previousNews) =>
       previousNews.map((newsItem) =>
-        newsItem.id === updatedNews.id
-          ? updatedNews
-          : newsItem
+        newsItem.id === savedNews.id ? savedNews : newsItem
       )
     );
   };
 
-  const handleRemoveNews = (id) => {
+  const handleRemoveNews = async (id) => {
+    await removeNews(id);
     setNews((previousNews) =>
       previousNews.filter((newsItem) => newsItem.id !== id)
     );
   };
 
-  const handleCreateProduct = (newProduct) => {
-    const apiProduct = productToApi(newProduct);
-
+  const handleCreateProduct = async (newProduct) => {
+    const createdProduct = await createProduct(newProduct);
     setProducts((previousProducts) => [
       ...previousProducts,
-      productFromApi(apiProduct, newProduct),
+      createdProduct,
     ]);
   };
 
-  const handleUpdateProduct = (updatedProduct) => {
-    const apiProduct = productToApi(updatedProduct);
-    const normalizedProduct = productFromApi(apiProduct, updatedProduct);
-
+  const handleUpdateProduct = async (updatedProduct) => {
+    const savedProduct = await updateProduct(updatedProduct.id, updatedProduct);
     setProducts((previousProducts) =>
       previousProducts.map((product) =>
-        product.id === updatedProduct.id
-          ? normalizedProduct
-          : product
+        product.id === savedProduct.id ? savedProduct : product
       )
     );
   };
 
-  const handleRemoveProduct = (id) => {
+  const handleRemoveProduct = async (id) => {
+    await removeProduct(id);
     setProducts((previousProducts) =>
       previousProducts.filter((product) => product.id !== id)
     );

@@ -2,14 +2,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
+import { getApiErrorMessage } from '../services/apiError.js';
 
 const availableCategories = [
   'Artesanato',
   'Agricultura Familiar',
-  'Vestuário',
-  'Calçados',
-  'Acessórios',
-  'Outros',
 ];
 
 const initialForm = {
@@ -231,7 +228,7 @@ export function AdmProductsPage({
     setFormError('');
   };
 
-  const saveProduct = (event) => {
+  const saveProduct = async (event) => {
     event.preventDefault();
 
     if (
@@ -254,21 +251,25 @@ export function AdmProductsPage({
       price: Number(form.price),
     };
 
-    if (editingProduct) {
-      onUpdate?.({
-        ...productData,
-        id: editingProduct.id,
-      });
-      setFeedback('Produto atualizado com sucesso.');
-    } else {
-      onCreate?.({
-        ...productData,
-        id: Date.now(),
-      });
-      setFeedback('Produto cadastrado com sucesso.');
-    }
+    try {
+      if (editingProduct) {
+        await onUpdate?.({
+          ...productData,
+          id: editingProduct.id,
+        });
+        setFeedback('Produto atualizado com sucesso.');
+      } else {
+        await onCreate?.({
+          ...productData,
+        });
+        setFeedback('Produto cadastrado com sucesso.');
+      }
 
-    clearForm(false);
+      clearForm(false);
+    } catch (error) {
+      setFormError(getApiErrorMessage(error));
+      setFeedback('');
+    }
   };
 
   const openEdit = (product) => {
@@ -291,13 +292,17 @@ export function AdmProductsPage({
   };
 
   // Confirma a exclusão da turma
-  const confirmRemove = () => {
+  const confirmRemove = async () => {
     if (!productsToDelete) return;
 
-    onRemove?.(productsToDelete.id);
-
-    setProductsToDelete(null);
-    setFeedback('Produto excluído com sucesso.');
+    try {
+      await onRemove?.(productsToDelete.id);
+      setProductsToDelete(null);
+      setFeedback('Produto excluído com sucesso.');
+    } catch (error) {
+      setProductsToDelete(null);
+      setFeedback(getApiErrorMessage(error));
+    }
   };
 
   return (
@@ -450,7 +455,7 @@ export function AdmProductsPage({
 
               <div className="mt-4">
                 <label className="mb-2 block text-sm font-medium text-[#344563]">
-                  Fotos do produto (máximo de 3)
+                  Fotos do produto (opcional, máximo de 3)
                 </label>
 
                 <div className="flex flex-wrap gap-3">
@@ -817,7 +822,7 @@ export function AdmProductsPage({
 
               <div className="mt-4">
                 <label className="mb-2 block text-sm font-medium text-[#344563]">
-                  Imagens do produto (máximo de 3)
+                  Imagens do produto (opcional, máximo de 3)
                 </label>
 
                 <div className="flex flex-wrap gap-3">

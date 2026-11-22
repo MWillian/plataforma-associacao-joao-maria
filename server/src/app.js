@@ -12,6 +12,8 @@ import { authRouter } from './routes/auth.routes.js';
 import { classRouter } from './routes/class.routes.js';
 import { productRouter } from './routes/product.routes.js';
 import { studentRouter } from './routes/student.routes.js';
+import { newsRouter } from './routes/news.routes.js';
+import { noticeRouter } from './routes/notice.routes.js';
 
 export const app = express();
 
@@ -41,6 +43,8 @@ app.use('/api/admin', adminRouter);
 app.use('/api/classes', classRouter);
 app.use('/api/products', productRouter);
 app.use('/api/students', studentRouter);
+app.use('/api/news', newsRouter);
+app.use('/api/notices', noticeRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

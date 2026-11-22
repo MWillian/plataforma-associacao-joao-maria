@@ -10,6 +10,27 @@ const PRODUCT_CATEGORY_TO_DB = {
   artesanato: 'CRAFTS',
 };
 
+const PRODUCT_CATEGORY_ALIASES = {
+  agricultura: 'agricultura',
+  'agricultura familiar': 'agricultura',
+  agriculture: 'agricultura',
+  AGRICULTURE: 'agricultura',
+  artesanato: 'artesanato',
+  crafts: 'artesanato',
+  CRAFTS: 'artesanato',
+};
+
+function normalizeProductCategory(category) {
+  if (typeof category !== 'string') return null;
+
+  const rawCategory = category.trim();
+  return (
+    PRODUCT_CATEGORY_ALIASES[rawCategory] ??
+    PRODUCT_CATEGORY_ALIASES[rawCategory.toLowerCase()] ??
+    null
+  );
+}
+
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -33,16 +54,14 @@ export class ProductService {
       );
     }
 
-    const normalizedCategory = category
-      .trim()
-      .toLowerCase();
+    const normalizedCategory = normalizeProductCategory(category);
 
-    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
+    if (!normalizedCategory) {
       throw new AppError(
         400,
         'VALIDATION_ERROR',
         'A categoria deve ser agricultura ou artesanato.',
-        { category: PRODUCT_CATEGORIES },
+        { category: 'Selecione Agricultura Familiar ou Artesanato.' },
       );
     }
 
@@ -119,7 +138,9 @@ export class ProductService {
       title,
       description,
       category,
+      price,
       imageUrl,
+      images,
       active,
     } = data;
 
@@ -143,16 +164,14 @@ export class ProductService {
     }
 
     const normalizedTitle = title.trim().toLowerCase();
-    const normalizedCategory = category
-      .trim()
-      .toLowerCase();
+    const normalizedCategory = normalizeProductCategory(category);
 
-    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
+    if (!normalizedCategory) {
       throw new AppError(
         400,
         'VALIDATION_ERROR',
         'A categoria deve ser agricultura ou artesanato.',
-        { category: PRODUCT_CATEGORIES },
+        { category: 'Selecione Agricultura Familiar ou Artesanato.' },
       );
     }
 
@@ -178,6 +197,22 @@ export class ProductService {
     }
 
     try {
+      const normalizedPrice =
+        price === undefined || price === null || price === ''
+          ? null
+          : Number(String(price).replace(',', '.'));
+
+      if (normalizedPrice !== null &&
+        (!Number.isFinite(normalizedPrice) || normalizedPrice < 0)) {
+        throw new AppError(400, 'VALIDATION_ERROR', 'O preço é inválido.');
+      }
+
+      const normalizedImages = Array.isArray(images)
+        ? images.filter((url) => typeof url === 'string' && url.trim()).map((url) => url.trim())
+        : typeof imageUrl === 'string' && imageUrl.trim()
+          ? [imageUrl.trim()]
+          : [];
+
       return await this.productRepository.create({
         title: normalizedTitle,
         description:
@@ -185,10 +220,12 @@ export class ProductService {
             ? description.trim() || null
             : null,
         category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
+        price: normalizedPrice,
         imageUrl:
           typeof imageUrl === 'string'
             ? imageUrl.trim() || null
             : null,
+        images: normalizedImages,
         active: active ?? true,
       });
     } catch (error) {
@@ -241,6 +278,29 @@ export class ProductService {
     }
 
     return inactiveProduct;
+  }
+
+  async remove(id) {
+    if (!UUID_PATTERN.test(id ?? '')) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'O identificador do produto é inválido.',
+      );
+    }
+
+    const removedProduct =
+      await this.productRepository.remove(id);
+
+    if (!removedProduct) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
+
+    return removedProduct;
   }
 
   async activate(id) {
@@ -307,7 +367,9 @@ export class ProductService {
       title,
       description,
       category,
+      price,
       imageUrl,
+      images,
       active,
     } = data;
 
@@ -339,16 +401,14 @@ export class ProductService {
     }
 
     const normalizedTitle = title.trim().toLowerCase();
-    const normalizedCategory = category
-      .trim()
-      .toLowerCase();
+    const normalizedCategory = normalizeProductCategory(category);
 
-    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
+    if (!normalizedCategory) {
       throw new AppError(
         400,
         'VALIDATION_ERROR',
         'A categoria deve ser agricultura ou artesanato.',
-        { category: PRODUCT_CATEGORIES },
+        { category: 'Selecione Agricultura Familiar ou Artesanato.' },
       );
     }
 
@@ -369,6 +429,22 @@ export class ProductService {
     }
 
     try {
+      const normalizedPrice =
+        price === undefined || price === null || price === ''
+          ? null
+          : Number(String(price).replace(',', '.'));
+
+      if (normalizedPrice !== null &&
+        (!Number.isFinite(normalizedPrice) || normalizedPrice < 0)) {
+        throw new AppError(400, 'VALIDATION_ERROR', 'O preço é inválido.');
+      }
+
+      const normalizedImages = Array.isArray(images)
+        ? images.filter((url) => typeof url === 'string' && url.trim()).map((url) => url.trim())
+        : typeof imageUrl === 'string' && imageUrl.trim()
+          ? [imageUrl.trim()]
+          : [];
+
       const updatedProduct =
         await this.productRepository.update(id, {
           title: normalizedTitle,
@@ -377,10 +453,12 @@ export class ProductService {
               ? description.trim() || null
               : null,
           category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
+          price: normalizedPrice,
           imageUrl:
             typeof imageUrl === 'string'
               ? imageUrl.trim() || null
               : null,
+          images: normalizedImages,
         });
 
       if (!updatedProduct) {

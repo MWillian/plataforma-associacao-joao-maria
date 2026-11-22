@@ -8,6 +8,7 @@ export class ProductController {
     this.inactivate = this.inactivate.bind(this);
     this.activate = this.activate.bind(this);
     this.update = this.update.bind(this);
+    this.remove = this.remove.bind(this);
   }
 
   async listHighlights(req, res, next) {
@@ -55,6 +56,15 @@ export class ProductController {
         );
 
       return res.status(200).json(product);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async remove(req, res, next) {
+    try {
+      await this.productService.remove(req.params.id);
+      return res.status(204).send();
     } catch (error) {
       return next(error);
     }

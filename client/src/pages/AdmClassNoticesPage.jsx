@@ -107,20 +107,20 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
     notice.classIds || (notice.classId != null ? [notice.classId] : [])
   );
 
-  const confirmSend = () => {
+  const confirmSend = async () => {
     if (!noticeToSend) return;
 
-    onCreate(noticeToSend);
+    await onCreate(noticeToSend);
     setNoticeToSend(null);
     clearForm();
     setShowForm(false);
     setFeedback('Aviso enviado com sucesso.');
   };
 
-  const confirmRemove = () => {
+  const confirmRemove = async () => {
     if (!noticeToDelete) return;
 
-    onRemove?.(noticeToDelete.id);
+    await onRemove?.(noticeToDelete.id);
     setNoticeToDelete(null);
     setFeedback('Aviso excluído com sucesso.');
   };

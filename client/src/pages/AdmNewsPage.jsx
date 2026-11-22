@@ -39,7 +39,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     event.target.value = '';
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!title.trim()) return;
@@ -53,7 +53,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
       publicationArea,
     };
 
-    onCreate?.(newNews);
+    await onCreate?.(newNews);
 
     setTitle('');
     setDescription('');
@@ -76,10 +76,10 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   };
 
   // Confirma a exclusão da turma
-  const confirmRemove = () => {
+  const confirmRemove = async () => {
     if (!newsToDelete) return;
 
-    onRemove?.(newsToDelete.id);
+    await onRemove?.(newsToDelete.id);
 
     setNewsToDelete(null);
     setFeedback('Notícia excluída com sucesso.');
@@ -152,7 +152,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   };
 
   // Salva as alterações da notícia
-  const handleUpdateNews = (event) => {
+  const handleUpdateNews = async (event) => {
     event.preventDefault();
 
     if (!editForm.title.trim() || !editingNews) return;
@@ -165,7 +165,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
       publicationArea: editForm.publicationArea,
     };
 
-    onUpdate?.(updatedNews);
+    await onUpdate?.(updatedNews);
     setFeedback('Notícia atualizada com sucesso.');
 
     handleCancelEdit();

@@ -50,3 +50,10 @@ productRouter.patch(
   requireAdmin,
   productController.activate,
 );
+
+productRouter.delete(
+  '/:id',
+  requireAuth,
+  requireAdmin,
+  productController.remove,
+);

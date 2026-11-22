@@ -15,6 +15,11 @@ function getImageUrls(product) {
     .map((image) => (
       typeof image === 'string' ? image : image?.url
     ))
+    .filter((url) =>
+      typeof url === 'string' &&
+      url.trim() !== '' &&
+      !url.startsWith('blob:')
+    )
     .filter(Boolean);
 }
 
