@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { getApiErrorMessage } from '../services/apiError.js';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
-import { getApiErrorMessage } from '../services/apiError.js';
 
 // Categorias que o backend e o site público suportam.
 const availableCategories = [
@@ -265,24 +264,6 @@ export function AdmProductsPage({
 
     try {
       if (editingProduct) {
-<<<<<<< HEAD
-        await onUpdate?.({
-          ...productData,
-          id: editingProduct.id,
-        });
-        setFeedback('Produto atualizado com sucesso.');
-      } else {
-        await onCreate?.({
-          ...productData,
-        });
-        setFeedback('Produto cadastrado com sucesso.');
-      }
-
-      clearForm(false);
-    } catch (error) {
-      setFormError(getApiErrorMessage(error));
-      setFeedback('');
-=======
         await onUpdate({ ...productData, id: editingProduct.id });
         showFeedback('Produto atualizado com sucesso.');
       } else {
@@ -295,7 +276,6 @@ export function AdmProductsPage({
       setFormError(getApiErrorMessage(error));
     } finally {
       setIsSaving(false);
->>>>>>> origin/main
     }
   };
 
@@ -318,19 +298,6 @@ export function AdmProductsPage({
     setProductsToDelete(product);
   };
 
-<<<<<<< HEAD
-  // Confirma a exclusão da turma
-  const confirmRemove = async () => {
-    if (!productsToDelete) return;
-
-    try {
-      await onRemove?.(productsToDelete.id);
-      setProductsToDelete(null);
-      setFeedback('Produto excluído com sucesso.');
-    } catch (error) {
-      setProductsToDelete(null);
-      setFeedback(getApiErrorMessage(error));
-=======
   // Confirma a exclusão do produto (remove de vez no backend)
   const confirmRemove = async () => {
     if (!productsToDelete || isSaving) return;
@@ -347,7 +314,6 @@ export function AdmProductsPage({
       showFeedback(getApiErrorMessage(error), 'error');
     } finally {
       setIsSaving(false);
->>>>>>> origin/main
     }
   };
 
@@ -501,7 +467,7 @@ export function AdmProductsPage({
 
               <div className="mt-4">
                 <label className="mb-2 block text-sm font-medium text-[#344563]">
-                  Fotos do produto (opcional, máximo de 3)
+                  Fotos do produto (máximo de 3)
                 </label>
 
                 <div className="flex flex-wrap gap-3">
@@ -869,7 +835,7 @@ export function AdmProductsPage({
 
               <div className="mt-4">
                 <label className="mb-2 block text-sm font-medium text-[#344563]">
-                  Imagens do produto (opcional, máximo de 3)
+                  Imagens do produto (máximo de 3)
                 </label>
 
                 <div className="flex flex-wrap gap-3">

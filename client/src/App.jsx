@@ -49,18 +49,7 @@ import {
   logout,
   restoreSession,
 } from './services/auth.js';
-<<<<<<< HEAD
-import { createNews, listNews, removeNews, updateNews } from './services/news.js';
-import { createNotice, listNotices, removeNotice, sendNotice } from './services/notices.js';
-import {
-  createProduct,
-  listProducts,
-  removeProduct,
-  updateProduct,
-} from './services/products.js';
-=======
 import { productToPublic } from './services/productMapper.js';
->>>>>>> origin/main
 
 const routes = {
   '/': 'home',
@@ -327,29 +316,6 @@ export default function App() {
     }
   };
 
-<<<<<<< HEAD
-  // Turmas e alunos vêm do backend (carregados após o login).
-  const [students, setStudents] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [adminDataStatus, setAdminDataStatus] = useState('idle');
-  const [notices, setNotices] = useState([]);
-  const [news, setNews] = useState([]);
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    Promise.all([listProducts(1), listNews({ page: 1 })])
-      .then(([productData, newsData]) => {
-        setProducts(productData.items);
-        setNews(newsData.items);
-      })
-      .catch(() => {
-        setProducts([]);
-        setNews([]);
-      });
-  }, []);
-
-=======
->>>>>>> origin/main
   useEffect(() => {
     if (
       !isAuthenticated ||
@@ -366,19 +332,6 @@ export default function App() {
       listClasses(),
       listStudents(),
       listNotices(),
-<<<<<<< HEAD
-      listProducts(1),
-      listNews({ page: 1, includeInactive: true }),
-    ])
-      .then(([loadedClasses, loadedStudents, loadedNotices, loadedProducts, loadedNews]) => {
-        setClasses(loadedClasses);
-        setStudents(loadedStudents);
-        setNotices(loadedNotices);
-        setProducts(loadedProducts.items);
-        setNews(loadedNews.items);
-        setAdminDataStatus('ready');
-      })
-=======
       listAdminProducts(),
     ])
       .then(
@@ -395,14 +348,11 @@ export default function App() {
           setAdminDataStatus('ready');
         }
       )
->>>>>>> origin/main
       .catch(() => {
         setAdminDataStatus('error');
       });
   }, [isAuthenticated, isAuthLoading, activePage]);
 
-<<<<<<< HEAD
-=======
   // Conteúdo público: notícias e catálogo de produtos.
   useEffect(() => {
     let cancelled = false;
@@ -422,7 +372,6 @@ export default function App() {
       cancelled = true;
     };
   }, []);
->>>>>>> origin/main
 
   // As três funções abaixo falham (lançam erro) se o backend recusar; a
   // página que chamou mostra a mensagem ao usuário.
@@ -482,14 +431,6 @@ export default function App() {
     );
   };
 
-<<<<<<< HEAD
-  const handleCreateNotice = async (newNotice) => {
-    const createdNotice = await createNotice(newNotice);
-    const sentNotice = await sendNotice(createdNotice.id);
-
-    setNotices((previousNotices) => [
-      sentNotice,
-=======
   // Os handlers abaixo lançam erro se o backend recusar; a página que
   // chamou mostra a mensagem ao usuário.
   const handleCreateNotice = async ({ classIds, subject, type, message }) => {
@@ -502,7 +443,6 @@ export default function App() {
 
     setNotices((previousNotices) => [
       createdNotice,
->>>>>>> origin/main
       ...previousNotices,
     ]);
 
@@ -511,10 +451,7 @@ export default function App() {
 
   const handleRemoveNotice = async (id) => {
     await removeNotice(id);
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/main
     setNotices((previousNotices) =>
       previousNotices.filter(
         (notice) => String(notice.id) !== String(id)
@@ -524,30 +461,20 @@ export default function App() {
 
   const handleCreateNews = async (newNews) => {
     const createdNews = await createNews(newNews);
-<<<<<<< HEAD
-    setNews((previousNews) => [createdNews, ...previousNews]);
-=======
 
     setNews((previousNews) => [createdNews, ...previousNews]);
 
     return createdNews;
->>>>>>> origin/main
   };
 
   const handleUpdateNews = async (updatedNews) => {
     const savedNews = await updateNews(updatedNews.id, updatedNews);
-<<<<<<< HEAD
-    setNews((previousNews) =>
-      previousNews.map((newsItem) =>
-        newsItem.id === savedNews.id ? savedNews : newsItem
-=======
 
     setNews((previousNews) =>
       previousNews.map((newsItem) =>
         String(newsItem.id) === String(savedNews.id)
           ? savedNews
           : newsItem
->>>>>>> origin/main
       )
     );
 
@@ -556,39 +483,14 @@ export default function App() {
 
   const handleRemoveNews = async (id) => {
     await removeNews(id);
-<<<<<<< HEAD
-    setNews((previousNews) =>
-      previousNews.filter((newsItem) => newsItem.id !== id)
-    );
-  };
-
-  const handleCreateProduct = async (newProduct) => {
-    const createdProduct = await createProduct(newProduct);
-    setProducts((previousProducts) => [
-      ...previousProducts,
-      createdProduct,
-    ]);
-  };
-
-  const handleUpdateProduct = async (updatedProduct) => {
-    const savedProduct = await updateProduct(updatedProduct.id, updatedProduct);
-    setProducts((previousProducts) =>
-      previousProducts.map((product) =>
-        product.id === savedProduct.id ? savedProduct : product
-=======
 
     setNews((previousNews) =>
       previousNews.filter(
         (newsItem) => String(newsItem.id) !== String(id)
->>>>>>> origin/main
       )
     );
   };
 
-<<<<<<< HEAD
-  const handleRemoveProduct = async (id) => {
-    await removeProduct(id);
-=======
   const handleCreateProduct = async (form) => {
     const createdProduct = await createProduct(form);
 
@@ -620,7 +522,6 @@ export default function App() {
       );
     }
 
->>>>>>> origin/main
     setProducts((previousProducts) =>
       previousProducts.map((product) =>
         String(product.id) === String(savedProduct.id)

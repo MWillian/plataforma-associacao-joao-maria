@@ -23,7 +23,6 @@ export class ProductRepository {
         { title: 'asc' },
         { id: 'asc' },
       ],
-      include: { images: { orderBy: { sortOrder: 'asc' } } },
     });
   }
 
@@ -44,7 +43,6 @@ export class ProductRepository {
             { title: 'asc' },
             { id: 'asc' },
           ],
-          include: { images: { orderBy: { sortOrder: 'asc' } } },
         }),
         prisma.product.count({
           where,
@@ -65,18 +63,6 @@ export class ProductRepository {
     });
   }
 
-<<<<<<< HEAD
-  async create(data) {
-    const { images = [], ...product } = data;
-    return prisma.product.create({
-      data: {
-        ...product,
-        images: {
-          create: images.map((url, index) => ({ url, sortOrder: index })),
-        },
-      },
-      include: { images: { orderBy: { sortOrder: 'asc' } } },
-=======
   // Título é único sem diferenciar maiúsculas de minúsculas.
   async findByTitle(title) {
     return prisma.product.findFirst({
@@ -91,18 +77,13 @@ export class ProductRepository {
         ...(images && { images: toImagesCreate(images) }),
       },
       include: PRODUCT_INCLUDE,
->>>>>>> origin/main
     });
   }
 
   async findById(id) {
     return prisma.product.findUnique({
       where: { id },
-<<<<<<< HEAD
-      include: { images: { orderBy: { sortOrder: 'asc' } } },
-=======
       include: PRODUCT_INCLUDE,
->>>>>>> origin/main
     });
   }
 
@@ -124,20 +105,11 @@ export class ProductRepository {
     }
   }
 
-<<<<<<< HEAD
-  async remove(id) {
-    try {
-      return await prisma.product.delete({
-        where: { id },
-        include: { images: true },
-      });
-=======
   // Exclusão definitiva (produto não tem histórico vinculado). Imagens saem
   // em cascata. Retorna null se o produto não existir.
   async remove(id) {
     try {
       return await prisma.product.delete({ where: { id } });
->>>>>>> origin/main
     } catch (error) {
       if (error?.code === 'P2025') {
         return null;
@@ -168,31 +140,6 @@ export class ProductRepository {
   // `images` (lista de URLs) só é alterado quando enviado: substitui as atuais.
   async update(id, { images, ...data }) {
     try {
-<<<<<<< HEAD
-      const { images, ...product } = data;
-      return await prisma.$transaction(async (tx) => {
-        await tx.product.update({
-          where: { id },
-          data: product,
-        });
-
-        if (images !== undefined) {
-          await tx.productImage.deleteMany({ where: { productId: id } });
-          if (images.length > 0) {
-            await tx.productImage.createMany({
-              data: images.map((url, index) => ({
-                productId: id,
-                url,
-                sortOrder: index,
-              })),
-            });
-          }
-        }
-
-        return tx.product.findUnique({
-          where: { id },
-          include: { images: { orderBy: { sortOrder: 'asc' } } },
-=======
       return await prisma.$transaction(async (tx) => {
         if (images) {
           await tx.productImage.deleteMany({
@@ -207,7 +154,6 @@ export class ProductRepository {
             ...(images && { images: toImagesCreate(images) }),
           },
           include: PRODUCT_INCLUDE,
->>>>>>> origin/main
         });
       });
     } catch (error) {

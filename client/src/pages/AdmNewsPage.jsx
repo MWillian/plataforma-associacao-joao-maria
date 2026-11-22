@@ -52,9 +52,6 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
 
     setIsSaving(true);
 
-<<<<<<< HEAD
-    await onCreate?.(newNews);
-=======
     try {
       await onCreate({
         title: title.trim(),
@@ -62,7 +59,6 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
         images,
         publicationArea,
       });
->>>>>>> origin/main
 
       setTitle('');
       setDescription('');
@@ -89,19 +85,11 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     setNewsToDelete(danceClass);
   };
 
-<<<<<<< HEAD
-  // Confirma a exclusão da turma
-  const confirmRemove = async () => {
-    if (!newsToDelete) return;
-
-    await onRemove?.(newsToDelete.id);
-=======
   // Confirma a exclusão da notícia (no backend ela é despublicada)
   const confirmRemove = async () => {
     if (!newsToDelete || isSaving) return;
 
     setIsSaving(true);
->>>>>>> origin/main
 
     try {
       await onRemove(newsToDelete.id);
@@ -190,10 +178,6 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
 
     setIsSaving(true);
 
-<<<<<<< HEAD
-    await onUpdate?.(updatedNews);
-    setFeedback('Notícia atualizada com sucesso.');
-=======
     try {
       await onUpdate({
         ...editingNews,
@@ -202,7 +186,6 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
         images: editForm.images,
         publicationArea: editForm.publicationArea,
       });
->>>>>>> origin/main
 
       showFeedback('Notícia atualizada com sucesso.');
       handleCancelEdit();

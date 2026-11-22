@@ -29,9 +29,6 @@ function createRepository(overrides = {}) {
       id: PRODUCT_ID,
       active: true,
     }),
-    remove: async () => ({
-      id: PRODUCT_ID,
-    }),
     update: async (id, data) => ({
       id,
       active: true,
@@ -236,46 +233,6 @@ describe('ProductService.list', () => {
 });
 
 describe('ProductService.create', () => {
-  it('aceita categoria enviada pelo mapper como enum Prisma', async () => {
-    let receivedData;
-    const service = new ProductService(
-      createRepository({
-        create: async (data) => {
-          receivedData = data;
-          return { id: PRODUCT_ID, ...data };
-        },
-      }),
-    );
-
-    await service.create({
-      title: 'Tomates',
-      category: 'AGRICULTURE',
-    });
-
-    assert.equal(receivedData.category, 'AGRICULTURE');
-  });
-
-  it('cadastra produto sem imagens', async () => {
-    let receivedData;
-    const service = new ProductService(
-      createRepository({
-        create: async (data) => {
-          receivedData = data;
-          return { id: PRODUCT_ID, ...data };
-        },
-      }),
-    );
-
-    await service.create({
-      title: 'Produto sem foto',
-      category: 'Artesanato',
-      description: 'Cadastro opcional de imagens.',
-    });
-
-    assert.equal(receivedData.imageUrl, null);
-    assert.deepEqual(receivedData.images, []);
-  });
-
   it('normaliza e cadastra um produto', async () => {
     let receivedData;
     const service = new ProductService(
@@ -300,8 +257,6 @@ describe('ProductService.create', () => {
       description: 'Feita à mão.',
       price: null,
       imageUrl: 'https://example.com/cesta.jpg',
-      price: null,
-      images: ['https://example.com/cesta.jpg'],
       active: true,
     });
     assert.equal(result.id, PRODUCT_ID);
@@ -426,8 +381,6 @@ describe('ProductService.update', () => {
       description: 'Produção local.',
       price: null,
       imageUrl: 'https://example.com/mel.jpg',
-      price: null,
-      images: ['https://example.com/mel.jpg'],
     });
     assert.equal(result.title, 'MEL ORGÂNICO');
   });
@@ -691,49 +644,6 @@ describe('ProductService.inactivate', () => {
       {
         statusCode: 404,
         code: 'PRODUCT_NOT_FOUND',
-      },
-    );
-  });
-});
-
-describe('ProductService.remove', () => {
-  it('remove o produto existente do banco', async () => {
-    let receivedId;
-    const service = new ProductService(
-      createRepository({
-        remove: async (id) => {
-          receivedId = id;
-          return { id };
-        },
-      }),
-    );
-
-    await service.remove(PRODUCT_ID);
-    assert.equal(receivedId, PRODUCT_ID);
-  });
-
-  it('rejeita identificador inválido na remoção', async () => {
-    const service = new ProductService(createRepository());
-
-    await assert.rejects(
-      service.remove('123'),
-      (error) => error.statusCode === 400,
-    );
-  });
-
-  it('retorna 404 quando o produto não existe', async () => {
-    const service = new ProductService(
-      createRepository({
-        remove: async () => null,
-      }),
-    );
-
-    await assert.rejects(
-      service.remove(PRODUCT_ID),
-      (error) => {
-        assert.equal(error.statusCode, 404);
-        assert.equal(error.code, 'PRODUCT_NOT_FOUND');
-        return true;
       },
     );
   });

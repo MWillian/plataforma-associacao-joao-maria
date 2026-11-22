@@ -11,27 +11,6 @@ const PRODUCT_CATEGORY_TO_DB = {
   artesanato: 'CRAFTS',
 };
 
-const PRODUCT_CATEGORY_ALIASES = {
-  agricultura: 'agricultura',
-  'agricultura familiar': 'agricultura',
-  agriculture: 'agricultura',
-  AGRICULTURE: 'agricultura',
-  artesanato: 'artesanato',
-  crafts: 'artesanato',
-  CRAFTS: 'artesanato',
-};
-
-function normalizeProductCategory(category) {
-  if (typeof category !== 'string') return null;
-
-  const rawCategory = category.trim();
-  return (
-    PRODUCT_CATEGORY_ALIASES[rawCategory] ??
-    PRODUCT_CATEGORY_ALIASES[rawCategory.toLowerCase()] ??
-    null
-  );
-}
-
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -127,18 +106,14 @@ export class ProductService {
       );
     }
 
-<<<<<<< HEAD
-    const normalizedCategory = normalizeProductCategory(category);
-=======
     const normalizedCategory = normalizeCategory(category);
->>>>>>> origin/main
 
-    if (!normalizedCategory) {
+    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
       throw new AppError(
         400,
         'VALIDATION_ERROR',
         'A categoria deve ser agricultura ou artesanato.',
-        { category: 'Selecione Agricultura Familiar ou Artesanato.' },
+        { category: PRODUCT_CATEGORIES },
       );
     }
 
@@ -262,9 +237,7 @@ export class ProductService {
       title,
       description,
       category,
-      price,
       imageUrl,
-      images,
       active,
       price,
       images,
@@ -289,20 +262,15 @@ export class ProductService {
       );
     }
 
-<<<<<<< HEAD
-    const normalizedTitle = title.trim().toLowerCase();
-    const normalizedCategory = normalizeProductCategory(category);
-=======
     const normalizedTitle = title.trim();
     const normalizedCategory = normalizeCategory(category);
->>>>>>> origin/main
 
-    if (!normalizedCategory) {
+    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
       throw new AppError(
         400,
         'VALIDATION_ERROR',
         'A categoria deve ser agricultura ou artesanato.',
-        { category: 'Selecione Agricultura Familiar ou Artesanato.' },
+        { category: PRODUCT_CATEGORIES },
       );
     }
 
@@ -331,39 +299,6 @@ export class ProductService {
     }
 
     try {
-<<<<<<< HEAD
-      const normalizedPrice =
-        price === undefined || price === null || price === ''
-          ? null
-          : Number(String(price).replace(',', '.'));
-
-      if (normalizedPrice !== null &&
-        (!Number.isFinite(normalizedPrice) || normalizedPrice < 0)) {
-        throw new AppError(400, 'VALIDATION_ERROR', 'O preço é inválido.');
-      }
-
-      const normalizedImages = Array.isArray(images)
-        ? images.filter((url) => typeof url === 'string' && url.trim()).map((url) => url.trim())
-        : typeof imageUrl === 'string' && imageUrl.trim()
-          ? [imageUrl.trim()]
-          : [];
-
-      return await this.productRepository.create({
-        title: normalizedTitle,
-        description:
-          typeof description === 'string'
-            ? description.trim() || null
-            : null,
-        category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
-        price: normalizedPrice,
-        imageUrl:
-          typeof imageUrl === 'string'
-            ? imageUrl.trim() || null
-            : null,
-        images: normalizedImages,
-        active: active ?? true,
-      });
-=======
       return toProductResponse(
         await this.productRepository.create({
           title: normalizedTitle,
@@ -382,7 +317,6 @@ export class ProductService {
           active: active ?? true,
         }),
       );
->>>>>>> origin/main
     } catch (error) {
       if (error?.code === 'P2002') {
         throw new AppError(
@@ -456,29 +390,6 @@ export class ProductService {
     }
   }
 
-  async remove(id) {
-    if (!UUID_PATTERN.test(id ?? '')) {
-      throw new AppError(
-        400,
-        'VALIDATION_ERROR',
-        'O identificador do produto é inválido.',
-      );
-    }
-
-    const removedProduct =
-      await this.productRepository.remove(id);
-
-    if (!removedProduct) {
-      throw new AppError(
-        404,
-        'PRODUCT_NOT_FOUND',
-        'Produto não encontrado.',
-      );
-    }
-
-    return removedProduct;
-  }
-
   async activate(id) {
     if (!UUID_PATTERN.test(id ?? '')) {
       throw new AppError(
@@ -543,9 +454,7 @@ export class ProductService {
       title,
       description,
       category,
-      price,
       imageUrl,
-      images,
       active,
       price,
       images,
@@ -578,20 +487,15 @@ export class ProductService {
       );
     }
 
-<<<<<<< HEAD
-    const normalizedTitle = title.trim().toLowerCase();
-    const normalizedCategory = normalizeProductCategory(category);
-=======
     const normalizedTitle = title.trim();
     const normalizedCategory = normalizeCategory(category);
->>>>>>> origin/main
 
-    if (!normalizedCategory) {
+    if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
       throw new AppError(
         400,
         'VALIDATION_ERROR',
         'A categoria deve ser agricultura ou artesanato.',
-        { category: 'Selecione Agricultura Familiar ou Artesanato.' },
+        { category: PRODUCT_CATEGORIES },
       );
     }
 
@@ -615,22 +519,6 @@ export class ProductService {
     }
 
     try {
-      const normalizedPrice =
-        price === undefined || price === null || price === ''
-          ? null
-          : Number(String(price).replace(',', '.'));
-
-      if (normalizedPrice !== null &&
-        (!Number.isFinite(normalizedPrice) || normalizedPrice < 0)) {
-        throw new AppError(400, 'VALIDATION_ERROR', 'O preço é inválido.');
-      }
-
-      const normalizedImages = Array.isArray(images)
-        ? images.filter((url) => typeof url === 'string' && url.trim()).map((url) => url.trim())
-        : typeof imageUrl === 'string' && imageUrl.trim()
-          ? [imageUrl.trim()]
-          : [];
-
       const updatedProduct =
         await this.productRepository.update(id, {
           title: normalizedTitle,
@@ -644,13 +532,8 @@ export class ProductService {
             imageUrls?.[0] ??
             (typeof imageUrl === 'string'
               ? imageUrl.trim() || null
-<<<<<<< HEAD
-              : null,
-          images: normalizedImages,
-=======
               : null),
           ...(imageUrls && { images: imageUrls }),
->>>>>>> origin/main
         });
 
       if (!updatedProduct) {

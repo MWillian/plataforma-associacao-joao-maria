@@ -115,24 +115,6 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
     notice.classIds || (notice.classId != null ? [notice.classId] : [])
   );
 
-<<<<<<< HEAD
-  const confirmSend = async () => {
-    if (!noticeToSend) return;
-
-    await onCreate(noticeToSend);
-    setNoticeToSend(null);
-    clearForm();
-    setShowForm(false);
-    setFeedback('Aviso enviado com sucesso.');
-  };
-
-  const confirmRemove = async () => {
-    if (!noticeToDelete) return;
-
-    await onRemove?.(noticeToDelete.id);
-    setNoticeToDelete(null);
-    setFeedback('Aviso excluído com sucesso.');
-=======
   // Cria o aviso no backend, que envia o e-mail aos responsáveis
   // (alunos menores) ou aos próprios alunos das turmas escolhidas.
   const confirmSend = async () => {
@@ -198,7 +180,6 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
     } finally {
       setIsSaving(false);
     }
->>>>>>> origin/main
   };
 
   return (
