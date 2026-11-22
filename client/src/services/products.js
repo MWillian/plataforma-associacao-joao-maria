@@ -50,6 +50,13 @@ export async function listAdminProducts() {
   return data.map((item) => productFromApi(item));
 }
 
+export async function listProductHighlights(category) {
+  const { data } = await api.get('/products/highlights', {
+    params: { category },
+  });
+  return data.items.map((item) => productFromApi(item));
+}
+
 export async function createProduct(form) {
   const { data } = await api.post('/products', await toPayload(form));
   return productFromApi(data);

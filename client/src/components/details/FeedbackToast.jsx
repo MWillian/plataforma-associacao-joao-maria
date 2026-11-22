@@ -1,5 +1,21 @@
-export function FeedbackToast({ message, type = 'success' }) {
-  if (!message) return null;
+import { useEffect, useState } from 'react';
+
+export function FeedbackToast({ message, type = 'success', duration = 7000 }) {
+  const [hiddenMessage, setHiddenMessage] = useState(null);
+
+  useEffect(() => {
+    if (!message) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setHiddenMessage(message);
+    }, duration);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [message, duration]);
+
+  if (!message || hiddenMessage === message) return null;
 
   const styles = type === 'error'
     ? 'border-red-200 bg-red-50 text-red-700'

@@ -20,6 +20,7 @@ import { FeedbackToast } from './components/details/FeedbackToast.jsx';
 import {
   createClass,
   listClasses,
+  listPublicClasses,
   removeClass,
   updateClass,
 } from './services/classes.js';
@@ -40,6 +41,7 @@ import {
   deleteProduct,
   listAdminProducts,
   listPublicProducts,
+  listProductHighlights,
   setProductAvailability,
   updateProduct,
 } from './services/products.js';
@@ -179,6 +181,8 @@ export default function App() {
   // até o painel ser carregado.
   const [products, setProducts] = useState([]);
   const [publicProducts, setPublicProducts] = useState([]);
+  const [latestCraftProducts, setLatestCraftProducts] = useState([]);
+  const [latestAgricultureProducts, setLatestAgricultureProducts] = useState([]);
   // 'idle' | 'ready' | 'error'
   const [adminDataStatus, setAdminDataStatus] = useState('idle');
   // Evita pedir os dados do painel mais de uma vez por sessão.
@@ -357,12 +361,29 @@ export default function App() {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([listNews(), listPublicProducts()])
-      .then(([loadedNews, loadedProducts]) => {
+    Promise.all([
+      listNews(),
+      listPublicProducts(),
+      listPublicClasses(),
+      listProductHighlights('artesanato'),
+      listProductHighlights('agricultura'),
+    ])
+      .then((
+        [
+          loadedNews,
+          loadedProducts,
+          loadedClasses,
+          loadedCraftProducts,
+          loadedAgricultureProducts,
+        ]
+      ) => {
         if (cancelled) return;
 
         setNews(loadedNews);
         setPublicProducts(loadedProducts);
+        setClasses(loadedClasses);
+        setLatestCraftProducts(loadedCraftProducts.map(productToPublic));
+        setLatestAgricultureProducts(loadedAgricultureProducts.map(productToPublic));
       })
       .catch(() => {
         // O site continua funcionando sem notícias/produtos.
@@ -698,6 +719,8 @@ export default function App() {
         {activePage === 'home' && (
           <HomePage
             news={news}
+            craftProducts={latestCraftProducts}
+            agricultureProducts={latestAgricultureProducts}
             onSelectNews={(newsItem) => handleSelectNews(
               newsItem,
               newsItem.publicationArea || 'studio'
@@ -726,6 +749,7 @@ export default function App() {
         {activePage === 'studio' && (
           <StudioPage
             news={news}
+            classes={classes}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'studio')}
           />
         )}

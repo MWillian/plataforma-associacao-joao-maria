@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Search, ChevronRight, Users, Clock } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 
-export function StudioPage({ news = [], onSelectNews }) {
+export function StudioPage({ news = [], classes = [], onSelectNews }) {
   // Referência para controlar a rolagem da seção do mural
   const newsSectionRef = useRef(null);
 
@@ -21,41 +21,7 @@ export function StudioPage({ news = [], onSelectNews }) {
     }
   };
 
-  // Grade de Turmas do Estúdio
-  const danceClasses = [
-    {
-      id: 'c1',
-      title: 'Ballet Baby & Infantil',
-      age: '3 a 8 anos',
-      schedule: 'Terças e Quintas - 14h às 15h',
-      description: 'Introdução à dança, expressão corporal, postura e coordenação motora de forma lúdica.',
-      tag: 'Turma',
-    },
-    {
-      id: 'c2',
-      title: 'Ballet Juvenil',
-      age: '9 a 15 anos',
-      schedule: 'Segundas e Quartas - 15h às 16h30',
-      description: 'Técnica clássica de ballet, sapatilhas de ponta e preparação para apresentações.',
-      tag: 'Turma',
-    },
-    {
-      id: 'c3',
-      title: 'Jazz Dance',
-      age: '7 a 16 anos',
-      schedule: 'Terças e Quintas - 15h30 às 16h30',
-      description: 'Dança vibrante com ritmos modernos, foco em ritmo, flexibilidade e energia.',
-      tag: 'Turma',
-    },
-    {
-      id: 'c4',
-      title: 'Sapateado',
-      age: '8 a 16 anos',
-      schedule: 'Sábados - 09h às 10h30',
-      description: 'Desenvolvimento de musicalidade, percussão com os pés e coordenação corporal.',
-      tag: 'Turma',
-    },
-  ];
+  const danceClasses = classes;
 
   const filteredNews = news.filter((item) => {
     const matchesSearch =
@@ -68,6 +34,7 @@ export function StudioPage({ news = [], onSelectNews }) {
   const totalPages = Math.ceil(filteredNews.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentNews = filteredNews.slice(startIndex, startIndex + itemsPerPage);
+  const latestNews = filteredNews[0];
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen page-reveal-fade">
@@ -92,50 +59,54 @@ export function StudioPage({ news = [], onSelectNews }) {
         </div>
       </div>
 
-      {/* Destaque do Evento Recente */}
-      <section className="py-16 px-6 max-w-7xl mx-auto border-b border-slate-100">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 flex justify-center">
-            <div
-              style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
-              className="w-full h-80 sm:h-96 lg:h-[320px] bg-red-900/90 rounded-2xl shadow-xl flex items-center justify-center p-6 relative overflow-hidden text-center border border-red-800"
+      {latestNews && (
+        <section className="py-16 px-6 max-w-7xl mx-auto border-b border-slate-100">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <button
+              type="button"
+              onClick={() => onSelectNews?.(latestNews)}
+              className="lg:col-span-7 flex justify-center"
+              aria-label={`Ler notícia: ${latestNews.title}`}
             >
-              <div className="text-white space-y-2">
-                <span className="text-xs uppercase tracking-widest text-amber-300 block font-bold">
-                  1º Festival de Dança da Economia Solidária
-                </span>
-                <h3 className="text-xl sm:text-2xl font-bold">
-                  Associação Comunitária do Bairro João Maria e Adágio Estúdio de Dança
-                </h3>
-                <h4 className="text-2xl sm:text-3xl font-extrabold text-amber-200">
-                  Apresentam: Um Conto de Natal
-                </h4>
+              <div
+                style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
+                className="w-full h-80 sm:h-96 lg:h-[320px] bg-red-900/90 rounded-2xl shadow-xl flex items-center justify-center overflow-hidden border border-red-800"
+              >
+                {latestNews.images?.[0] ? (
+                  <img
+                    src={latestNews.images[0]}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white text-sm font-medium">
+                    Sem imagem
+                  </span>
+                )}
               </div>
-            </div>
-          </div>
+            </button>
 
-          <div className="lg:col-span-5 space-y-6">
-            <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
-              Evento: Apresentação da turma de ballet
-            </h3>
-
-            <p className="text-slate-600 font-roboto text-base leading-relaxed">
-              Venha assistir nossas crianças em uma apresentação temática natalina inesquecível.
-            </p>
-
-            <div className="pt-2">
-              <a
-                href="https://wa.me/5582998989898"
-                target="_blank"
-                rel="noopener noreferrer"
+            <div className="lg:col-span-5 space-y-6">
+              <span className="text-xs uppercase tracking-widest text-[#3570FC] font-bold">
+                Última notícia
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
+                {latestNews.title}
+              </h3>
+              <p className="text-slate-600 font-roboto text-base leading-relaxed">
+                {latestNews.description}
+              </p>
+              <button
+                type="button"
+                onClick={() => onSelectNews?.(latestNews)}
                 className="inline-flex items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
               >
-                Saiba Mais / Ingressos <span>→</span>
-              </a>
+                Ler notícia completa <span>→</span>
+              </button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* SEÇÃO 1: Turmas Abertas e Atividades */}
       <section className="py-16 px-6 max-w-7xl mx-auto">
@@ -151,6 +122,7 @@ export function StudioPage({ news = [], onSelectNews }) {
           </p>
         </div>
 
+        {danceClasses.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {danceClasses.map((item) => (
             <div
@@ -159,26 +131,27 @@ export function StudioPage({ news = [], onSelectNews }) {
             >
               <div className="space-y-4">
                 <span className="inline-block bg-[#0b1b3d] text-white text-[10px] font-bold px-3 py-1 rounded shadow-sm uppercase tracking-wider">
-                  {item.tag || 'Notícia'}
+                  Turma
                 </span>
 
                 <h3 className="text-xl font-bold text-[#142D59] leading-snug">
-                  {item.title}
+                  {item.name}
                 </h3>
-
-                <p className="text-slate-600 font-roboto text-xs leading-relaxed">
-                  {item.description}
-                </p>
 
                 <div className="space-y-2 pt-2 border-t border-slate-200/60 font-roboto text-xs text-slate-700">
                   <div className="flex items-center gap-2 text-slate-600">
                     <Users size={14} className="text-[#3570FC]" />
-                    <span><strong>Idade:</strong> {item.age}</span>
+                    <span><strong>Turno:</strong> {item.turn}</span>
                   </div>
                   <div className="flex items-start gap-2 text-slate-600">
                     <Clock size={14} className="text-[#3570FC]" />
-                    <span><strong>Horário:</strong> {item.schedule}</span>
+                    <span><strong>Dias:</strong> {(item.days || []).join(', ') || 'Não informado'}</span>
                   </div>
+                  {item.capacity !== null && item.capacity !== undefined && (
+                    <div className="text-slate-600">
+                      <strong>Capacidade:</strong> {item.capacity} aluno(s)
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -193,6 +166,11 @@ export function StudioPage({ news = [], onSelectNews }) {
             </div>
           ))}
         </div>
+        ) : (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 py-12 text-center text-slate-500">
+            Nenhuma turma cadastrada no momento.
+          </div>
+        )}
       </section>
 
       {/* SEÇÃO 2: Notícias e Publicações da Proprietária */}

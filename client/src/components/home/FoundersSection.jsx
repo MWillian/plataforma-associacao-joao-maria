@@ -5,11 +5,6 @@ export function FoundersSection() {
       name: 'Nome do Fundador',
       description: 'Breve histórico sobre a trajetória, dedicação e o papel fundamental na criação e fortalecimento dos projetos da instituição.',
     },
-    {
-      id: 2,
-      name: 'Nome do Fundador',
-      description: 'Breve histórico sobre a trajetória, dedicação e o papel fundamental na criação e fortalecimento dos projetos da instituição.',
-    },
   ];
 
   return (

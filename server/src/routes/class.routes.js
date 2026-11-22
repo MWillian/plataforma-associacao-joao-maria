@@ -11,6 +11,9 @@ import {
 
 export const classRouter = Router();
 
+// Turmas públicas para a página do Estúdio.
+classRouter.get('/public', classController.list);
+
 // Todas as rotas de turmas exigem administrador autenticado.
 classRouter.use(requireAuth, requireAdmin);
 
