@@ -144,6 +144,7 @@ model Notice {
   senderId        Int        @map("sender_id")
   createdAt       DateTime   @default(now()) @map("created_at")
   sentAt          DateTime?  @map("sent_at")
+  archivedAt      DateTime?  @map("archived_at")
   totalRecipients Int        @default(0) @map("total_recipients")
   sentCount       Int        @default(0) @map("sent_count")
   skippedCount    Int        @default(0) @map("skipped_count")

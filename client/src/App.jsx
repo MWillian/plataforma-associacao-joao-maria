@@ -25,15 +25,31 @@ import {
 } from './services/classes.js';
 import { listStudents } from './services/students.js';
 import {
+  createNews,
+  listNews,
+  removeNews,
+  updateNews,
+} from './services/news.js';
+import {
+  createNotice,
+  listNotices,
+  removeNotice,
+} from './services/notices.js';
+import {
+  createProduct,
+  deleteProduct,
+  listAdminProducts,
+  listPublicProducts,
+  setProductAvailability,
+  updateProduct,
+} from './services/products.js';
+import {
   clearAccessToken,
   getAccessToken,
   logout,
   restoreSession,
 } from './services/auth.js';
-import {
-  productFromApi,
-  productToApi,
-} from './services/productMapper.js';
+import { productToPublic } from './services/productMapper.js';
 
 const routes = {
   '/': 'home',
@@ -277,6 +293,8 @@ export default function App() {
       setIsAuthenticated(false);
       setClasses([]);
       setStudents([]);
+      setNotices([]);
+      setProducts([]);
       setAdminDataStatus('idle');
       navigate('adm-login');
     }
@@ -299,88 +317,58 @@ export default function App() {
 
     setAdminDataStatus('loading');
 
-    Promise.all([listClasses(), listStudents()])
-      .then(([loadedClasses, loadedStudents]) => {
-        setClasses(loadedClasses);
-        setStudents(loadedStudents);
-        setAdminDataStatus('ready');
-      })
+    Promise.all([
+      listClasses(),
+      listStudents(),
+      listNotices(),
+      listAdminProducts(),
+    ])
+      .then(
+        ([
+          loadedClasses,
+          loadedStudents,
+          loadedNotices,
+          loadedProducts,
+        ]) => {
+          setClasses(loadedClasses);
+          setStudents(loadedStudents);
+          setNotices(loadedNotices);
+          setProducts(loadedProducts);
+          setAdminDataStatus('ready');
+        }
+      )
       .catch(() => {
         setAdminDataStatus('error');
       });
   }, [isAuthenticated, isAuthLoading, activePage, adminDataStatus]);
 
-  const [notices, setNotices] = useState([
-    {
-      id: 1,
-      classId: 1,
-      subject: 'Ensaio Extra',
-      type: 'Informativo',
-      message:
-        'Informamos que haverá ensaio extra na próxima sexta-feira, dia 27/09, das 14h às 16h. Presença obrigatória.',
-      date: '21/09/2026',
-    },
-    {
-      id: 2,
-      classId: 2,
-      subject: 'Aula Cancelada',
-      type: 'Cancelamento',
-      message:
-        'A aula da próxima quinta-feira, 26/09, está cancelada por motivo de saúde da professora. Retorno previsto para 03/10.',
-      date: '20/09/2026',
-    },
-  ]);
+  // Avisos, notícias e produtos também vêm do backend.
+  const [notices, setNotices] = useState([]);
+  const [news, setNews] = useState([]);
+  // Produtos do painel admin (todos). O site público usa `publicProducts`
+  // até o painel ser carregado.
+  const [products, setProducts] = useState([]);
+  const [publicProducts, setPublicProducts] = useState([]);
 
-  const [news, setNews] = useState([
-    {
-      id: 1,
-      title: 'Festival de Dança 2026',
-      description:
-        'Nossa instituição realizará o Grande Festival de Dança no próximo mês. Inscrições abertas para todas as turmas!',
-      date: '14/09/2026',
-      images: ['🎭', '📸'],
-      publicationArea: 'studio',
-    },
-    {
-      id: 2,
-      title: 'Encerramento do 2º Semestre',
-      description:
-        'Convocamos alunos e responsáveis para a festa de encerramento do semestre com apresentações especiais.',
-      date: '09/09/2026',
-      images: ['🎉'],
-      publicationArea: 'crafts',
-    },
-  ]);
+  // Conteúdo público: notícias e catálogo de produtos.
+  useEffect(() => {
+    let cancelled = false;
 
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'Tomate (Kg)',
-      description: 'Tomates produzidos por associados da agricultura familiar.',
-      price: 15.00,
-      category: 'Agricultura Familiar',
-      images: [],
-      available: true,
-    },
-    {
-      id: 2,
-      name: 'Kit pulseiras de macramê',
-      description: 'Conjunto de pulseiras artesanais criadas por associados.',
-      price: 45.00,
-      category: 'Artesanato',
-      images: [],
-      available: true,
-    },
-    {
-      id: 3,
-      name: 'Sousplat de crochê',
-      description: 'Conjunto de 4 sousplat + 4 porta copos em crochê.',
-      price: 130.00,
-      category: 'Artesanato',
-      images: [],
-      available: true,
-    },
-  ]);
+    Promise.all([listNews(), listPublicProducts()])
+      .then(([loadedNews, loadedProducts]) => {
+        if (cancelled) return;
+
+        setNews(loadedNews);
+        setPublicProducts(loadedProducts);
+      })
+      .catch(() => {
+        // O site continua funcionando sem notícias/produtos.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // As três funções abaixo falham (lançam erro) se o backend recusar; a
   // página que chamou mostra a mensagem ao usuário.
@@ -421,67 +409,115 @@ export default function App() {
     );
   };
 
-  const handleCreateNotice = (newNotice) => {
+  // Os handlers abaixo lançam erro se o backend recusar; a página que
+  // chamou mostra a mensagem ao usuário.
+  const handleCreateNotice = async ({ classIds, subject, type, message }) => {
+    const createdNotice = await createNotice({
+      classIds,
+      subject,
+      type,
+      message,
+    });
+
     setNotices((previousNotices) => [
-      newNotice,
+      createdNotice,
       ...previousNotices,
     ]);
+
+    return createdNotice;
   };
 
-  const handleRemoveNotice = (id) => {
+  const handleRemoveNotice = async (id) => {
+    await removeNotice(id);
+
     setNotices((previousNotices) =>
-      previousNotices.filter((notice) => notice.id !== id)
+      previousNotices.filter(
+        (notice) => String(notice.id) !== String(id)
+      )
     );
   };
 
-  const handleCreateNews = (newNews) => {
-    setNews((previousNews) => [
-      newNews,
-      ...previousNews,
-    ]);
+  const handleCreateNews = async (newNews) => {
+    const createdNews = await createNews(newNews);
+
+    setNews((previousNews) => [createdNews, ...previousNews]);
+
+    return createdNews;
   };
 
-  const handleUpdateNews = (updatedNews) => {
+  const handleUpdateNews = async (updatedNews) => {
+    const savedNews = await updateNews(updatedNews.id, updatedNews);
+
     setNews((previousNews) =>
       previousNews.map((newsItem) =>
-        newsItem.id === updatedNews.id
-          ? updatedNews
+        String(newsItem.id) === String(savedNews.id)
+          ? savedNews
           : newsItem
       )
     );
+
+    return savedNews;
   };
 
-  const handleRemoveNews = (id) => {
+  const handleRemoveNews = async (id) => {
+    await removeNews(id);
+
     setNews((previousNews) =>
-      previousNews.filter((newsItem) => newsItem.id !== id)
-    );
-  };
-
-  const handleCreateProduct = (newProduct) => {
-    const apiProduct = productToApi(newProduct);
-
-    setProducts((previousProducts) => [
-      ...previousProducts,
-      productFromApi(apiProduct, newProduct),
-    ]);
-  };
-
-  const handleUpdateProduct = (updatedProduct) => {
-    const apiProduct = productToApi(updatedProduct);
-    const normalizedProduct = productFromApi(apiProduct, updatedProduct);
-
-    setProducts((previousProducts) =>
-      previousProducts.map((product) =>
-        product.id === updatedProduct.id
-          ? normalizedProduct
-          : product
+      previousNews.filter(
+        (newsItem) => String(newsItem.id) !== String(id)
       )
     );
   };
 
-  const handleRemoveProduct = (id) => {
+  const handleCreateProduct = async (form) => {
+    const createdProduct = await createProduct(form);
+
+    setProducts((previousProducts) => [
+      ...previousProducts,
+      createdProduct,
+    ]);
+
+    return createdProduct;
+  };
+
+  const handleUpdateProduct = async (form) => {
+    const currentProduct = products.find(
+      (product) => String(product.id) === String(form.id)
+    );
+
+    let savedProduct = await updateProduct(form.id, form);
+
+    // O PUT não altera a disponibilidade; isso é feito à parte.
+    const wantsAvailable = form.available !== false;
+
+    if (
+      currentProduct &&
+      Boolean(currentProduct.available) !== wantsAvailable
+    ) {
+      savedProduct = await setProductAvailability(
+        form.id,
+        wantsAvailable
+      );
+    }
+
     setProducts((previousProducts) =>
-      previousProducts.filter((product) => product.id !== id)
+      previousProducts.map((product) =>
+        String(product.id) === String(savedProduct.id)
+          ? savedProduct
+          : product
+      )
+    );
+
+    return savedProduct;
+  };
+
+  const handleRemoveProduct = async (id) => {
+    await deleteProduct(id);
+
+    setProducts((previousProducts) =>
+      previousProducts.filter(
+        (product) => String(product.id) !== String(id)
+      )
     );
   };
 
@@ -505,11 +541,23 @@ export default function App() {
     return savedClass;
   };
 
+  // Catálogo do site: usa o painel (se carregado) ou a lista pública.
+  const catalogProducts =
+    adminDataStatus === 'ready'
+      ? products.filter((product) => product.available)
+      : publicProducts;
+  const craftCatalog = catalogProducts
+    .filter((product) => product.category === 'Artesanato')
+    .map(productToPublic);
+  const agricultureCatalog = catalogProducts
+    .filter((product) => product.category === 'Agricultura Familiar')
+    .map(productToPublic);
+
   const loadErrorToast =
     adminDataStatus === 'error' ? (
       <FeedbackToast
         type="error"
-        message="Não foi possível carregar turmas e alunos. Recarregue a página."
+        message="Não foi possível carregar os dados do painel. Recarregue a página."
       />
     ) : null;
 
@@ -638,6 +686,7 @@ export default function App() {
         {activePage === 'crafts' && (
           <CraftsPage
             news={news}
+            products={craftCatalog}
             onSelectProduct={handleSelectCraftProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'crafts')}
           />
@@ -646,6 +695,7 @@ export default function App() {
         {activePage === 'agriculture' && (
           <AgriculturePage
             news={news}
+            products={agricultureCatalog}
             onSelectProduct={handleSelectAgricultureProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'agriculture')}
           />
@@ -661,6 +711,7 @@ export default function App() {
         {activePage === 'craft-detail' && (
           <CraftDetailPage
             product={selectedProduct}
+            products={craftCatalog}
             onBack={() => navigate('crafts')}
             onGoHome={() => navigate('home')}
             onSelectProduct={handleSelectCraftProduct}

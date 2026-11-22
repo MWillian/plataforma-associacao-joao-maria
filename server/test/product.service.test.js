@@ -14,6 +14,8 @@ function createRepository(overrides = {}) {
       totalItems: 0,
     }),
     findByTitle: async () => null,
+    remove: async (id) => ({ id }),
+    listAll: async () => [],
     create: async (data) => ({ id: PRODUCT_ID, ...data }),
     findById: async () => ({
       id: PRODUCT_ID,
@@ -250,9 +252,10 @@ describe('ProductService.create', () => {
     });
 
     assert.deepEqual(receivedData, {
-      title: 'cesta de palha',
+      title: 'CESTA DE PALHA',
       category: 'CRAFTS',
       description: 'Feita à mão.',
+      price: null,
       imageUrl: 'https://example.com/cesta.jpg',
       active: true,
     });
@@ -373,12 +376,13 @@ describe('ProductService.update', () => {
 
     assert.equal(receivedId, PRODUCT_ID);
     assert.deepEqual(receivedData, {
-      title: 'mel orgânico',
+      title: 'MEL ORGÂNICO',
       category: 'AGRICULTURE',
       description: 'Produção local.',
+      price: null,
       imageUrl: 'https://example.com/mel.jpg',
     });
-    assert.equal(result.title, 'mel orgânico');
+    assert.equal(result.title, 'MEL ORGÂNICO');
   });
 
   it('rejeita identificador inválido na atualização', async () => {
@@ -485,7 +489,7 @@ describe('ProductService.update', () => {
       category: 'agricultura',
     });
 
-    assert.equal(result.title, 'mel');
+    assert.equal(result.title, 'Mel');
   });
 
   it('rejeita título usado por outro produto', async () => {
@@ -740,5 +744,227 @@ describe('ProductService.activate', () => {
         code: 'PRODUCT_NOT_FOUND',
       },
     );
+  });
+});
+
+describe('ProductService — preço, imagens e categorias do front', () => {
+  const DATA_URL = 'data:image/png;base64,iVBORw0KGgo=';
+
+  function captureCreate() {
+    const captured = {};
+    const service = new ProductService(
+      createRepository({
+        create: async (data) => {
+          captured.data = data;
+          return { id: PRODUCT_ID, active: true, ...data };
+        },
+        update: async (id, data) => {
+          captured.data = data;
+          return { id, active: true, ...data };
+        },
+      }),
+    );
+
+    return { service, captured };
+  }
+
+  it('aceita as categorias AGRICULTURE e CRAFTS enviadas pelo front', async () => {
+    const { service, captured } = captureCreate();
+
+    await service.create({ title: 'Tomate', category: 'AGRICULTURE' });
+    assert.equal(captured.data.category, 'AGRICULTURE');
+
+    await service.create({ title: 'Bolsa', category: 'CRAFTS' });
+    assert.equal(captured.data.category, 'CRAFTS');
+
+    await service.create({ title: 'Cesta', category: 'Agricultura Familiar' });
+    assert.equal(captured.data.category, 'AGRICULTURE');
+  });
+
+  it('grava o preço e o devolve como número', async () => {
+    const service = new ProductService(
+      createRepository({
+        create: async (data) => ({ id: PRODUCT_ID, ...data, price: '15.5' }),
+      }),
+    );
+
+    const result = await service.create({
+      title: 'Tomate',
+      category: 'agricultura',
+      price: 15.5,
+    });
+
+    assert.equal(result.price, 15.5);
+  });
+
+  for (const invalidPrice of [-1, 'abc', '10', NaN, 1.234, 1e12]) {
+    it(`rejeita preço inválido: ${String(invalidPrice)}`, async () => {
+      const { service } = captureCreate();
+
+      await assert.rejects(
+        () =>
+          service.create({
+            title: 'Tomate',
+            category: 'agricultura',
+            price: invalidPrice,
+          }),
+        { statusCode: 400, code: 'VALIDATION_ERROR' },
+      );
+    });
+  }
+
+  it('aceita preço zero e ausente', async () => {
+    const { service, captured } = captureCreate();
+
+    await service.create({ title: 'Brinde', category: 'artesanato', price: 0 });
+    assert.equal(captured.data.price, 0);
+
+    await service.create({ title: 'Sem preço', category: 'artesanato' });
+    assert.equal(captured.data.price, null);
+  });
+
+  it('grava imagens e usa a primeira como imageUrl', async () => {
+    const { service, captured } = captureCreate();
+
+    await service.create({
+      title: 'Bolsa',
+      category: 'artesanato',
+      images: [DATA_URL, 'https://example.com/b.jpg'],
+    });
+
+    assert.deepEqual(captured.data.images, [
+      DATA_URL,
+      'https://example.com/b.jpg',
+    ]);
+    assert.equal(captured.data.imageUrl, DATA_URL);
+  });
+
+  it('rejeita mais de 3 imagens e imagens inválidas', async () => {
+    const { service } = captureCreate();
+
+    for (const images of [
+      [DATA_URL, DATA_URL, DATA_URL, DATA_URL],
+      ['arquivo.exe'],
+      [123],
+      'não-é-lista',
+      ['data:text/html;base64,AAAA'],
+    ]) {
+      await assert.rejects(
+        () => service.create({ title: 'X', category: 'artesanato', images }),
+        { statusCode: 400, code: 'VALIDATION_ERROR' },
+      );
+    }
+  });
+
+  it('na atualização, só troca as imagens quando elas são enviadas', async () => {
+    const { service, captured } = captureCreate();
+
+    await service.update(PRODUCT_ID, {
+      title: 'Mel',
+      category: 'agricultura',
+    });
+    assert.equal('images' in captured.data, false);
+
+    await service.update(PRODUCT_ID, {
+      title: 'Mel',
+      category: 'agricultura',
+      images: [],
+      price: 20,
+    });
+    assert.deepEqual(captured.data.images, []);
+    assert.equal(captured.data.price, 20);
+  });
+
+  it('lista com limit e category', async () => {
+    let received;
+    const service = new ProductService(
+      createRepository({
+        listActive: async (args) => {
+          received = args;
+          return { items: [{ id: 'a', price: '10' }], totalItems: 1 };
+        },
+      }),
+    );
+
+    const result = await service.list({ limit: '100', category: 'CRAFTS' });
+
+    assert.deepEqual(received, { skip: 0, take: 100, category: 'CRAFTS' });
+    assert.equal(result.pagination.limit, 100);
+    assert.equal(result.items[0].price, 10);
+  });
+
+  it('rejeita limit e category inválidos na listagem', async () => {
+    const service = new ProductService(createRepository());
+
+    for (const query of [{ limit: '0' }, { limit: '101' }, { limit: 'x' }, { category: 'outros' }]) {
+      await assert.rejects(() => service.list(query), {
+        statusCode: 400,
+      });
+    }
+  });
+
+  it('listAll devolve todos os produtos com preço numérico', async () => {
+    const service = new ProductService(
+      createRepository({
+        listAll: async () => [
+          { id: 'a', active: true, price: '5.00' },
+          { id: 'b', active: false, price: null },
+        ],
+      }),
+    );
+
+    const result = await service.listAll();
+
+    assert.equal(result.length, 2);
+    assert.equal(result[0].price, 5);
+    assert.equal(result[1].price, null);
+  });
+});
+
+describe('ProductService.remove', () => {
+  it('exclui o produto', async () => {
+    let removedId;
+    const service = new ProductService(
+      createRepository({
+        remove: async (id) => {
+          removedId = id;
+          return { id };
+        },
+      }),
+    );
+
+    await service.remove(PRODUCT_ID);
+
+    assert.equal(removedId, PRODUCT_ID);
+  });
+
+  it('rejeita identificador inválido sem chamar o repository', async () => {
+    let called = false;
+    const service = new ProductService(
+      createRepository({
+        remove: async () => {
+          called = true;
+        },
+      }),
+    );
+
+    for (const id of [undefined, '', '123', 'abc']) {
+      await assert.rejects(() => service.remove(id), {
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      });
+    }
+    assert.equal(called, false);
+  });
+
+  it('retorna 404 quando o produto não existe', async () => {
+    const service = new ProductService(
+      createRepository({ remove: async () => null }),
+    );
+
+    await assert.rejects(() => service.remove(PRODUCT_ID), {
+      statusCode: 404,
+      code: 'PRODUCT_NOT_FOUND',
+    });
   });
 });

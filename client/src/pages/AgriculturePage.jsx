@@ -1,8 +1,9 @@
 import { useRef } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
+import { ProductImage } from '../components/details/ProductImage.jsx';
 
-export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
+export function AgriculturePage({ news = [], products = [], onSelectProduct, onSelectNews }) {
   // Referências para controlar a rolagem exata das seções
   const productsSectionRef = useRef(null);
   const newsSectionRef = useRef(null);
@@ -38,58 +39,8 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
     }
   };
 
-  // 1. Catálogo de Cultivos e Produtos Agrícolas
-  const agricultureProducts = [
-    {
-      id: 1,
-      tag: 'Produto',
-      title: 'Tomates',
-      description: 'Cultivados de forma agroecológica e sem agrotóxicos pelas famílias associadas.',
-      category: 'Produtos',
-    },
-    {
-      id: 2,
-      tag: 'Produto',
-      title: 'Cebola',
-      description: 'Cebolas frescas e selecionadas, colhidas no tempo certo de maturação.',
-      category: 'Produtos',
-    },
-    {
-      id: 3,
-      tag: 'Produto',
-      title: 'Macaxeira',
-      description: 'Macaxeira macia de altíssima qualidade, colhida diretamente da roça local.',
-      category: 'Produtos',
-    },
-    {
-      id: 4,
-      tag: 'Produto',
-      title: 'Batata inglesa',
-      description: 'Alimento nutritivo cultivado de forma sustentável pelos pequenos produtores.',
-      category: 'Produtos',
-    },
-    {
-      id: 5,
-      tag: 'Produto',
-      title: 'Batata doce',
-      description: 'Rica em fibras e nutrientes, cultivada com carinho na região de Coruripe.',
-      category: 'Produtos',
-    },
-    {
-      id: 6,
-      tag: 'Produto',
-      title: 'Pimentão',
-      description: 'Pimentões coloridos e frescos colhidos semanalmente na horta comunitária.',
-      category: 'Produtos',
-    },
-    {
-      id: 9,
-      tag: 'Produto',
-      title: 'Cenoura fresca',
-      description: 'Cultivada com técnicas de manejo orgânico pelas famílias da comunidade.',
-      category: 'Produtos',
-    },
-  ];
+  // Catálogo vem do backend (via App).
+  const agricultureProducts = products;
 
   // Filtro do Catálogo de Alimentos
   const filteredProducts = agricultureProducts.filter((item) =>
@@ -239,9 +190,11 @@ export function AgriculturePage({ news = [], onSelectProduct, onSelectNews }) {
               >
                 {/* Imagem Placeholder */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
-                  <span className="text-slate-400 text-xs font-roboto">
-                    Placeholder Imagem ({item.title})
-                  </span>
+                  <ProductImage src={item.images?.[0]} alt={item.title}>
+                    <span className="text-slate-400 text-xs font-roboto">
+                      Placeholder Imagem ({item.title})
+                    </span>
+                  </ProductImage>
                 </div>
 
                 {/* Conteúdo do Card */}

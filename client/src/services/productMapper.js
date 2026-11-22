@@ -65,3 +65,33 @@ export function productFromApi(product, fallback = {}) {
     available: product.active ?? fallback.available ?? true,
   };
 }
+
+const BRL = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+});
+
+// Formato usado pelas páginas públicas (catálogo e detalhe).
+export function productToPublic(product) {
+  const images = (product.images || [])
+    .map((image) => (typeof image === 'string' ? image : image?.url))
+    .filter(Boolean);
+
+  return {
+    id: product.id,
+    tag: 'Produto',
+    title: product.name,
+    description: product.description || '',
+    price:
+      product.price === null || product.price === undefined
+        ? 'Sob consulta'
+        : BRL.format(Number(product.price)),
+    unit: '/ unidade',
+    badge:
+      product.category === 'Artesanato'
+        ? 'PRODUTO COOPERATIVO'
+        : 'AGRICULTURA FAMILIAR',
+    category: 'Produtos',
+    images,
+  };
+}

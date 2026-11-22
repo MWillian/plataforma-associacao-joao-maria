@@ -1,8 +1,9 @@
 import { useRef } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
+import { ProductImage } from '../components/details/ProductImage.jsx';
 
-export function CraftsPage({ news = [], onSelectProduct, onSelectNews }) {
+export function CraftsPage({ news = [], products = [], onSelectProduct, onSelectNews }) {
   // Referências para controlar a rolagem exata das seções
   const productsSectionRef = useRef(null);
   const newsSectionRef = useRef(null);
@@ -38,73 +39,8 @@ export function CraftsPage({ news = [], onSelectProduct, onSelectNews }) {
     }
   };
 
-  // 1. Catálogo de Produtos Artesanais
-  const craftProducts = [
-    {
-      id: 1,
-      tag: 'Produto',
-      price: 'R$ 35,00',
-      title: 'Kit 3 pulseiras de macramê',
-      description: 'Pulseiras artesanais feitas à mão com fios duráveis e fecho regulável em diversas cores.',
-      category: 'Produtos',
-    },
-    {
-      id: 2,
-      tag: 'Produto',
-      price: 'R$ 35,00',
-      title: 'Sousplat de crochê',
-      description: 'Sousplat artesanal feito inteiramente à mão em crochê com fios selecionados de 100% algodão natural.',
-      category: 'Produtos',
-    },
-    {
-      id: 4,
-      tag: 'Produto',
-      price: 'R$ 15,00',
-      title: 'Chaveiros em crochê',
-      description: 'Lembrancinhas delicadas e coloridas tecidas à mão pelas artesãs da associação.',
-      category: 'Produtos',
-    },
-    {
-      id: 5,
-      tag: 'Produto',
-      price: 'R$ 45,00',
-      title: 'Caminho de mesa em fuxico',
-      description: 'Trabalho tradicional em fuxico com retalhos coloridos, unindo tradição e aconchego.',
-      category: 'Produtos',
-    },
-    {
-      id: 6,
-      tag: 'Produto',
-      price: 'R$ 60,00',
-      title: 'Pano com bordado de filé',
-      description: 'Autêntico bordado filé de Alagoas com tramas e cores vibrantes da nossa região.',
-      category: 'Produtos',
-    },
-    {
-      id: 8,
-      tag: 'Produto',
-      price: 'R$ 25,00',
-      title: 'Colar em macramê',
-      description: 'Acessório exclusivo com pedras naturais e nós trançados com acabamento impecável.',
-      category: 'Produtos',
-    },
-    {
-      id: 9,
-      tag: 'Produto',
-      price: 'R$ 80,00',
-      title: 'Bolsa em crochê',
-      description: 'Bolsa tiracolo artesanal reforçada, ideal para o dia a dia com estilo regional.',
-      category: 'Produtos',
-    },
-    {
-      id: 10,
-      tag: 'Produto',
-      price: 'R$ 50,00',
-      title: 'Tapete redondo em barbante',
-      description: 'Tapete macio e resistente para compor a decoração de salas e quartos.',
-      category: 'Produtos',
-    },
-  ];
+  // Catálogo vem do backend (via App).
+  const craftProducts = products;
 
   // Filtro de Produtos
   const filteredProducts = craftProducts.filter((item) =>
@@ -253,9 +189,11 @@ export function CraftsPage({ news = [], onSelectProduct, onSelectNews }) {
               >
                 {/* Imagem Placeholder */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
-                  <span className="text-slate-400 text-xs font-roboto">
-                    Placeholder Imagem ({item.title})
-                  </span>
+                  <ProductImage src={item.images?.[0]} alt={item.title}>
+                    <span className="text-slate-400 text-xs font-roboto">
+                      Placeholder Imagem ({item.title})
+                    </span>
+                  </ProductImage>
                 </div>
 
                 {/* Conteúdo do Card */}
