@@ -270,7 +270,13 @@ export class StudentService {
         await this.assertClassHasRoom(repo, danceClass);
       }
 
-      const created = await repo.createStudent(student);
+      let created;
+
+      try {
+        created = await repo.createStudent(student);
+      } catch (error) {
+        throw this.studentUniqueConflict(error);
+      }
 
       await this.syncGuardian(repo, created.id, guardian);
       await this.setActiveEnrollments(repo, created.id, danceClassIds);
@@ -310,7 +316,13 @@ export class StudentService {
         }
       }
 
-      const updated = await repo.updateStudent(id, student);
+      let updated;
+
+      try {
+        updated = await repo.updateStudent(id, student);
+      } catch (error) {
+        throw this.studentUniqueConflict(error);
+      }
 
       if (!updated) {
         throw studentNotFound();
@@ -430,17 +442,88 @@ export class StudentService {
     try {
       return await this.studentRepository.transaction(callback);
     } catch (error) {
-      // Corrida: outro cadastro criou o mesmo e-mail de responsável.
       if (error?.code === 'P2002') {
+        const target = this.getPrismaUniqueTarget(error);
+
+        if (
+          target.includes('guardian') ||
+          target.includes('email') && error.guardianConflict
+        ) {
+          throw new AppError(
+            409,
+            'GUARDIAN_CONFLICT',
+            'Já existe um responsável com estes dados.',
+            { guardianEmail: 'Este e-mail de responsável já está cadastrado.' },
+          );
+        }
+
+        if (target.includes('student') && target.includes('class')) {
+          throw new AppError(
+            409,
+            'ENROLLMENT_CONFLICT',
+            'Esta matrícula já está cadastrada.',
+          );
+        }
+
+        if (target.includes('student') && target.includes('guardian')) {
+          throw new AppError(
+            409,
+            'STUDENT_GUARDIAN_CONFLICT',
+            'Este vínculo entre aluno e responsável já existe.',
+          );
+        }
+
+        if (target.includes('student') && target.includes('email')) {
+          throw new AppError(
+            409,
+            'STUDENT_EMAIL_CONFLICT',
+            'Já existe um aluno com este e-mail.',
+            { email: 'Este e-mail já está cadastrado.' },
+          );
+        }
+
         throw new AppError(
           409,
-          'GUARDIAN_CONFLICT',
-          'Já existe um responsável com este e-mail. Tente novamente.',
+          'UNIQUE_CONSTRAINT_CONFLICT',
+          'Os dados informados já estão vinculados a outro registro.',
         );
       }
 
       throw error;
     }
+  }
+
+  getPrismaUniqueTarget(error) {
+    const target = error?.meta?.target;
+
+    if (Array.isArray(target)) {
+      return target.join('_').toLowerCase();
+    }
+
+    return String(target ?? '').toLowerCase();
+  }
+
+  studentUniqueConflict(error) {
+    if (error?.code !== 'P2002') {
+      return error;
+    }
+
+    const target = this.getPrismaUniqueTarget(error);
+
+    if (target.includes('email')) {
+      return new AppError(
+        409,
+        'STUDENT_EMAIL_CONFLICT',
+        'Já existe um aluno com este e-mail.',
+        { email: 'Este e-mail já está cadastrado.' },
+      );
+    }
+
+    return new AppError(
+      409,
+      'STUDENT_CONFLICT',
+      'Os dados informados já estão vinculados a outro aluno.',
+    );
   }
 
   async findClassOrFail(repo, danceClassId) {
@@ -508,31 +591,55 @@ export class StudentService {
       return;
     }
 
-    let guardianId;
-    const existing = guardian.email
-      ? await repo.findGuardianByEmail(guardian.email)
-      : null;
+    try {
+      let guardianId;
+      const existing = guardian.email
+        ? await repo.findGuardianByEmail(guardian.email)
+        : null;
 
-    if (existing) {
-      guardianId = existing.id;
+      if (existing) {
+        guardianId = existing.id;
 
-      if (
-        existing.name !== guardian.name ||
-        existing.phone !== guardian.phone
-      ) {
-        if (typeof repo.updateGuardian === 'function') {
-          await repo.updateGuardian(existing.id, {
-            name: guardian.name,
-            phone: guardian.phone,
-          });
-        } else {
-          await repo.updateGuardianName(existing.id, guardian.name);
+        if (
+          existing.name !== guardian.name ||
+          existing.phone !== guardian.phone
+        ) {
+          if (typeof repo.updateGuardian === 'function') {
+            await repo.updateGuardian(existing.id, {
+              name: guardian.name,
+              phone: guardian.phone,
+            });
+          } else {
+            await repo.updateGuardianName(existing.id, guardian.name);
+          }
         }
+      } else {
+        guardianId = (await repo.createGuardian(guardian)).id;
       }
-    } else {
-      guardianId = (await repo.createGuardian(guardian)).id;
-    }
 
-    await repo.setGuardian(studentId, guardianId);
+      await repo.setGuardian(studentId, guardianId);
+    } catch (error) {
+      if (error?.code === 'P2002') {
+        throw new AppError(
+          409,
+          'GUARDIAN_CONFLICT',
+          'Já existe um responsável com estes dados.',
+          {
+            guardianEmail:
+              guardian.email
+                ? 'Este e-mail de responsável já está cadastrado.'
+                : 'Os dados informados já estão vinculados a outro responsável.',
+            ...(this.getPrismaUniqueTarget(error).includes('cpf')
+              ? {
+                  guardianCpf:
+                    'Este CPF de responsável já está cadastrado.',
+                }
+              : {}),
+          },
+        );
+      }
+
+      throw error;
+    }
   }
 }

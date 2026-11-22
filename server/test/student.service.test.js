@@ -479,14 +479,52 @@ describe('StudentService.create', () => {
     repo.createGuardian = async () => {
       const error = new Error('Unique constraint failed');
       error.code = 'P2002';
+      error.meta = { target: ['email'] };
       throw error;
     };
 
     await assert.rejects(service.create(minorData()), (error) => {
       assert.equal(error.statusCode, 409);
       assert.equal(error.code, 'GUARDIAN_CONFLICT');
+      assert.equal(
+        error.fields.guardianEmail,
+        'Este e-mail de responsável já está cadastrado.',
+      );
       return true;
     });
+  });
+
+  it('não atribui conflito do aluno ao responsável', async () => {
+    repo.createStudent = async () => {
+      const error = new Error('Unique constraint failed');
+      error.code = 'P2002';
+      error.meta = { target: ['email'] };
+      throw error;
+    };
+
+    await assert.rejects(service.create(validData()), (error) => {
+      assert.equal(error.statusCode, 409);
+      assert.equal(error.code, 'STUDENT_EMAIL_CONFLICT');
+      return true;
+    });
+  });
+
+  it('converte conflito de matrícula em código específico', async () => {
+    repo.setActiveEnrollments = async () => {
+      const error = new Error('Unique constraint failed');
+      error.code = 'P2002';
+      error.meta = { target: ['studentId', 'classId'] };
+      throw error;
+    };
+
+    await assert.rejects(
+      service.create(validData({ danceClassIds: [CLASS_A, CLASS_B] })),
+      (error) => {
+        assert.equal(error.statusCode, 409);
+        assert.equal(error.code, 'ENROLLMENT_CONFLICT');
+        return true;
+      },
+    );
   });
 
   it('propaga erros inesperados', async () => {
