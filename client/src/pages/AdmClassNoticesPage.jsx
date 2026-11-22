@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
+import { getApiErrorMessage } from '../services/apiError.js';
 
 const getCurrentDate = () => {
   const today = new Date();
@@ -22,6 +23,13 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
   const [noticeToDelete, setNoticeToDelete] = useState(null);
   const [noticeToSend, setNoticeToSend] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('success');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const showFeedback = (message, type = 'success') => {
+    setFeedbackType(type);
+    setFeedback(message);
+  };
 
   const handleChange = (event) => {
     const { name, value, checked } = event.target;
@@ -107,27 +115,76 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
     notice.classIds || (notice.classId != null ? [notice.classId] : [])
   );
 
-  const confirmSend = () => {
-    if (!noticeToSend) return;
+  // Cria o aviso no backend, que envia o e-mail aos responsáveis
+  // (alunos menores) ou aos próprios alunos das turmas escolhidas.
+  const confirmSend = async () => {
+    if (!noticeToSend || isSaving) return;
 
-    onCreate(noticeToSend);
-    setNoticeToSend(null);
-    clearForm();
-    setShowForm(false);
-    setFeedback('Aviso enviado com sucesso.');
+    setIsSaving(true);
+
+    try {
+      const created = await onCreate(noticeToSend);
+
+      setNoticeToSend(null);
+      clearForm();
+      setShowForm(false);
+
+      if (created.totalRecipients === 0) {
+        showFeedback(
+          'Aviso registrado, mas nenhum aluno ou responsável das turmas escolhidas tem e-mail cadastrado.',
+          'error'
+        );
+      } else if (created.sentCount === 0) {
+        showFeedback(
+          'Aviso registrado, mas nenhum e-mail foi enviado. Verifique a configuração de e-mail do servidor.',
+          'error'
+        );
+      } else {
+        const parts = [
+          `Aviso enviado para ${created.sentCount} destinatário(s).`,
+        ];
+
+        if (created.failedCount > 0) {
+          parts.push(`${created.failedCount} envio(s) falharam.`);
+        }
+
+        if (created.skippedCount > 0) {
+          parts.push(
+            `${created.skippedCount} aluno(s) sem e-mail cadastrado.`
+          );
+        }
+
+        showFeedback(parts.join(' '));
+      }
+    } catch (error) {
+      setNoticeToSend(null);
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const confirmRemove = () => {
-    if (!noticeToDelete) return;
+  const confirmRemove = async () => {
+    if (!noticeToDelete || isSaving) return;
 
-    onRemove?.(noticeToDelete.id);
-    setNoticeToDelete(null);
-    setFeedback('Aviso excluído com sucesso.');
+    setIsSaving(true);
+
+    try {
+      await onRemove(noticeToDelete.id);
+
+      setNoticeToDelete(null);
+      showFeedback('Aviso excluído com sucesso.');
+    } catch (error) {
+      setNoticeToDelete(null);
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <>
-      <FeedbackToast message={feedback} />
+      <FeedbackToast message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
 
       <div className="mx-auto max-w-360">

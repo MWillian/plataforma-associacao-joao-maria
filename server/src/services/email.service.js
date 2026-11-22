@@ -9,6 +9,10 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
+export function isEmailConfigured() {
+  return Boolean(env.resendApiKey);
+}
+
 export async function sendNoticeEmail({
   email,
   subject,

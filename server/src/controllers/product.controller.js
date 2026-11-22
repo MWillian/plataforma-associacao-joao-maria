@@ -4,6 +4,8 @@ export class ProductController {
     this.listHighlights =
       this.listHighlights.bind(this);
     this.list = this.list.bind(this);
+    this.listAll = this.listAll.bind(this);
+    this.remove = this.remove.bind(this);
     this.create = this.create.bind(this);
     this.inactivate = this.inactivate.bind(this);
     this.activate = this.activate.bind(this);
@@ -30,6 +32,26 @@ export class ProductController {
       );
 
       return res.status(200).json(result);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async listAll(_req, res, next) {
+    try {
+      const products = await this.productService.listAll();
+
+      return res.status(200).json(products);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async remove(req, res, next) {
+    try {
+      await this.productService.remove(req.params.id);
+
+      return res.status(204).send();
     } catch (error) {
       return next(error);
     }

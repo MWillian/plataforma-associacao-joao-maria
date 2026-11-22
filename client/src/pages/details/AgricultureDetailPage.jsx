@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sprout } from 'lucide-react';
+import { ProductImage } from '../../components/details/ProductImage.jsx';
 
 export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProduct }) {
   // Rola suavemente para o topo ao carregar a página ou trocar o produto
@@ -93,9 +94,14 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
           <div className="lg:col-span-7 space-y-3 sm:space-y-4 page-reveal-fade">
             {/* Imagem Principal */}
             <div className="w-full h-64 sm:h-96 md:h-[420px] bg-emerald-50/60 rounded-2xl sm:rounded-3xl border border-emerald-200/50 flex items-center justify-center overflow-hidden shadow-sm relative">
-              <span className="text-emerald-800/60 font-roboto text-xs sm:text-base font-medium px-4 text-center">
-                {currentProduct.images?.[selectedImageIndex] || `Imagem de ${currentProduct.title}`}
-              </span>
+              <ProductImage
+                src={currentProduct.images?.[selectedImageIndex]}
+                alt={currentProduct.title}
+              >
+                <span className="text-emerald-800/60 font-roboto text-xs sm:text-base font-medium px-4 text-center">
+                  {currentProduct.images?.[selectedImageIndex] || `Imagem de ${currentProduct.title}`}
+                </span>
+              </ProductImage>
             </div>
 
             {/* Miniaturas */}
@@ -110,9 +116,14 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
                       : 'border-slate-200 hover:border-emerald-400'
                   }`}
                 >
-                  <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
-                    {currentProduct.images?.[idx + 1] || `Foto ${idx + 1}`}
-                  </span>
+                  <ProductImage
+                    src={currentProduct.images?.[idx + 1]}
+                    alt={`${currentProduct.title} (foto ${idx + 2})`}
+                  >
+                    <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
+                      {currentProduct.images?.[idx + 1] || `Foto ${idx + 1}`}
+                    </span>
+                  </ProductImage>
                 </button>
               ))}
             </div>

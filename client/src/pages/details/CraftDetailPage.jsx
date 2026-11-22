@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { HeartHandshake } from 'lucide-react';
+import { ProductImage } from '../../components/details/ProductImage.jsx';
 
-export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) {
+export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSelectProduct }) {
   // Rola suavemente para o topo assim que o componente é montado ou o produto muda
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -27,49 +28,10 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
   const currentProduct = product || defaultProduct;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  // Lista de produtos semelhantes para exibir no rodapé
-  const similarProducts = [
-    {
-      id: 101,
-      title: 'Caminho de mesa em crochê',
-      price: 'R$ 85,00',
-      unit: '/ unidade',
-      badge: 'ARTESANATO',
-      description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
-      category: 'Produtos',
-      images: ['Caminho de Mesa Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
-    },
-    {
-      id: 102,
-      title: 'Jogo americano de crochê',
-      price: 'R$ 60,00',
-      unit: '/ jogo (4 peças)',
-      badge: 'ARTESANATO',
-      description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
-      category: 'Produtos',
-      images: ['Jogo Americano Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
-    },
-    {
-      id: 103,
-      title: 'Porta-copos de crochê',
-      price: 'R$ 15,00',
-      unit: '/ kit (4 peças)',
-      badge: 'ARTESANATO',
-      description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
-      category: 'Produtos',
-      images: ['Porta-copos Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
-    },
-    {
-      id: 104,
-      title: 'Toalha de mesa bordada',
-      price: 'R$ 120,00',
-      unit: '/ unidade',
-      badge: 'ARTESANATO',
-      description: 'Peça artesanal feita à mão com amor pelas famílias da comunidade.',
-      category: 'Produtos',
-      images: ['Toalha Principal', 'Detalhe 1', 'Detalhe 2', 'Detalhe 3']
-    }
-  ];
+  // Produtos semelhantes: outros itens do catálogo.
+  const similarProducts = products
+    .filter((item) => String(item.id) !== String(currentProduct.id))
+    .slice(0, 4);
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8 page-reveal-fade">
@@ -103,9 +65,14 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
           <div className="lg:col-span-7 space-y-3 sm:space-y-4 page-reveal-fade">
             {/* Imagem Principal */}
             <div className="w-full h-64 sm:h-96 md:h-[420px] bg-amber-50/60 rounded-2xl sm:rounded-3xl border border-amber-200/50 flex items-center justify-center overflow-hidden shadow-sm relative">
-              <span className="text-amber-800/60 font-roboto text-xs sm:text-base font-medium px-4 text-center">
-                {currentProduct.images?.[selectedImageIndex] || 'Imagem do Produto'}
-              </span>
+              <ProductImage
+                src={currentProduct.images?.[selectedImageIndex]}
+                alt={currentProduct.title}
+              >
+                <span className="text-amber-800/60 font-roboto text-xs sm:text-base font-medium px-4 text-center">
+                  {currentProduct.images?.[selectedImageIndex] || 'Imagem do Produto'}
+                </span>
+              </ProductImage>
             </div>
 
             {/* Miniaturas */}
@@ -120,9 +87,14 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
                       : 'border-slate-200 hover:border-amber-400'
                   }`}
                 >
-                  <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
-                    {currentProduct.images?.[idx + 1] || `Foto ${idx + 1}`}
-                  </span>
+                  <ProductImage
+                    src={currentProduct.images?.[idx + 1]}
+                    alt={`${currentProduct.title} (foto ${idx + 2})`}
+                  >
+                    <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
+                      {currentProduct.images?.[idx + 1] || `Foto ${idx + 1}`}
+                    </span>
+                  </ProductImage>
                 </button>
               ))}
             </div>
@@ -200,7 +172,13 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
         </div>
 
         {/* Seção de Produtos Semelhantes */}
-        <div className="mt-16 sm:mt-24 pt-12 sm:pt-16 border-t border-slate-200 space-y-6 sm:space-y-8">
+        <div
+          className={
+            similarProducts.length === 0
+              ? 'hidden'
+              : 'mt-16 sm:mt-24 pt-12 sm:pt-16 border-t border-slate-200 space-y-6 sm:space-y-8'
+          }
+        >
           <div>
             <h2 className="text-xl sm:text-3xl font-extrabold text-[#0b1b3d] tracking-tight">
               Produtos Semelhantes
@@ -232,9 +210,11 @@ export function CraftDetailPage({ product, onBack, onGoHome, onSelectProduct }) 
               >
                 {/* Imagem do Card */}
                 <div className="w-full h-44 sm:h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
-                  <span className="text-slate-400 text-xs font-roboto text-center px-2">
-                    {item.title}
-                  </span>
+                  <ProductImage src={item.images?.[0]} alt={item.title}>
+                    <span className="text-slate-400 text-xs font-roboto text-center px-2">
+                      {item.title}
+                    </span>
+                  </ProductImage>
                 </div>
 
                 {/* Conteúdo do Card */}

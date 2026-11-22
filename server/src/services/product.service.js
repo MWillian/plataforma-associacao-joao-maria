@@ -1,4 +1,5 @@
 import { AppError } from '../utils/app-error.js';
+import { validateImages } from '../utils/images.js';
 
 const PRODUCT_CATEGORIES = [
   'agricultura',
@@ -14,6 +15,78 @@ const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const PRODUCT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 100;
+const MAX_PRODUCT_IMAGES = 3;
+const MAX_PRICE = 99999999.99;
+
+// O front envia AGRICULTURE/CRAFTS; a API também aceita os nomes em português.
+const CATEGORY_ALIASES = {
+  agricultura: 'agricultura',
+  agriculture: 'agricultura',
+  'agricultura familiar': 'agricultura',
+  artesanato: 'artesanato',
+  crafts: 'artesanato',
+};
+
+function normalizeCategory(value) {
+  return (
+    CATEGORY_ALIASES[String(value).trim().toLowerCase()] ??
+    String(value).trim().toLowerCase()
+  );
+}
+
+// Preço opcional: número >= 0 com no máximo 2 casas decimais.
+function validatePrice(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    value < 0 ||
+    value > MAX_PRICE ||
+    Math.round(value * 100) / 100 !== value
+  ) {
+    throw new AppError(
+      400,
+      'VALIDATION_ERROR',
+      'O preço deve ser um número maior ou igual a zero, com até 2 casas decimais.',
+      { price: 'Preço inválido.' },
+    );
+  }
+
+  return value;
+}
+
+function validateProductImages(images) {
+  const fields = {};
+  const urls = validateImages(
+    images,
+    { max: MAX_PRODUCT_IMAGES },
+    fields,
+  );
+
+  if (Object.keys(fields).length > 0) {
+    throw new AppError(
+      400,
+      'VALIDATION_ERROR',
+      'Imagens do produto inválidas.',
+      fields,
+    );
+  }
+
+  return urls;
+}
+
+// Preço (Decimal) sai como número no JSON.
+function toProductResponse(product) {
+  if (!product || product.price === null || product.price === undefined) {
+    return product;
+  }
+
+  return { ...product, price: Number(product.price) };
+}
 
 export class ProductService {
   constructor(productRepository) {
@@ -33,9 +106,7 @@ export class ProductService {
       );
     }
 
-    const normalizedCategory = category
-      .trim()
-      .toLowerCase();
+    const normalizedCategory = normalizeCategory(category);
 
     if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
       throw new AppError(
@@ -46,10 +117,11 @@ export class ProductService {
       );
     }
 
-    const items =
+    const items = (
       await this.productRepository.listActiveHighlights(
         PRODUCT_CATEGORY_TO_DB[normalizedCategory],
-      );
+      )
+    ).map(toProductResponse);
 
     return {
       items,
@@ -58,7 +130,7 @@ export class ProductService {
     };
   }
 
-  async list({ page: rawPage } = {}) {
+  async list({ page: rawPage, limit: rawLimit, category: rawCategory } = {}) {
     const pageValue =
       rawPage === undefined
         ? '1'
@@ -85,7 +157,47 @@ export class ProductService {
       );
     }
 
-    const skip = (page - 1) * PRODUCT_PAGE_SIZE;
+    let pageSize = PRODUCT_PAGE_SIZE;
+
+    if (rawLimit !== undefined) {
+      const limitValue = String(rawLimit).trim();
+
+      if (
+        Array.isArray(rawLimit) ||
+        !/^[1-9]\d*$/.test(limitValue) ||
+        Number(limitValue) > MAX_PAGE_SIZE
+      ) {
+        throw new AppError(
+          400,
+          'VALIDATION_ERROR',
+          `O limite deve ser um inteiro entre 1 e ${MAX_PAGE_SIZE}.`,
+        );
+      }
+
+      pageSize = Number(limitValue);
+    }
+
+    let category;
+
+    if (rawCategory !== undefined) {
+      const normalizedCategory =
+        typeof rawCategory === 'string'
+          ? normalizeCategory(rawCategory)
+          : null;
+
+      if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
+        throw new AppError(
+          400,
+          'VALIDATION_ERROR',
+          'A categoria deve ser agricultura ou artesanato.',
+          { category: PRODUCT_CATEGORIES },
+        );
+      }
+
+      category = PRODUCT_CATEGORY_TO_DB[normalizedCategory];
+    }
+
+    const skip = (page - 1) * pageSize;
 
     if (!Number.isSafeInteger(skip)) {
       throw new AppError(
@@ -98,20 +210,26 @@ export class ProductService {
     const { items, totalItems } =
       await this.productRepository.listActive({
         skip,
-        take: PRODUCT_PAGE_SIZE,
+        take: pageSize,
+        ...(category && { category }),
       });
 
     return {
-      items,
+      items: items.map(toProductResponse),
       pagination: {
         page,
-        limit: PRODUCT_PAGE_SIZE,
+        limit: pageSize,
         totalItems,
-        totalPages: Math.ceil(
-          totalItems / PRODUCT_PAGE_SIZE,
-        ),
+        totalPages: Math.ceil(totalItems / pageSize),
       },
     };
+  }
+
+  // Painel admin: todos os produtos (ativos e inativos).
+  async listAll() {
+    const products = await this.productRepository.listAll();
+
+    return products.map(toProductResponse);
   }
 
   async create(data = {}) {
@@ -121,6 +239,8 @@ export class ProductService {
       category,
       imageUrl,
       active,
+      price,
+      images,
     } = data;
 
     if (typeof title !== 'string' || title.trim() === '') {
@@ -142,10 +262,8 @@ export class ProductService {
       );
     }
 
-    const normalizedTitle = title.trim().toLowerCase();
-    const normalizedCategory = category
-      .trim()
-      .toLowerCase();
+    const normalizedTitle = title.trim();
+    const normalizedCategory = normalizeCategory(category);
 
     if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
       throw new AppError(
@@ -155,6 +273,9 @@ export class ProductService {
         { category: PRODUCT_CATEGORIES },
       );
     }
+
+    const normalizedPrice = validatePrice(price);
+    const imageUrls = validateProductImages(images);
 
     if (active !== undefined && typeof active !== 'boolean') {
       throw new AppError(
@@ -178,19 +299,24 @@ export class ProductService {
     }
 
     try {
-      return await this.productRepository.create({
-        title: normalizedTitle,
-        description:
-          typeof description === 'string'
-            ? description.trim() || null
-            : null,
-        category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
-        imageUrl:
-          typeof imageUrl === 'string'
-            ? imageUrl.trim() || null
-            : null,
-        active: active ?? true,
-      });
+      return toProductResponse(
+        await this.productRepository.create({
+          title: normalizedTitle,
+          description:
+            typeof description === 'string'
+              ? description.trim() || null
+              : null,
+          category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
+          price: normalizedPrice,
+          imageUrl:
+            imageUrls?.[0] ??
+            (typeof imageUrl === 'string'
+              ? imageUrl.trim() || null
+              : null),
+          ...(imageUrls && { images: imageUrls }),
+          active: active ?? true,
+        }),
+      );
     } catch (error) {
       if (error?.code === 'P2002') {
         throw new AppError(
@@ -226,7 +352,7 @@ export class ProductService {
     }
 
     if (!product.active) {
-      return product;
+      return toProductResponse(product);
     }
 
     const inactiveProduct =
@@ -240,7 +366,28 @@ export class ProductService {
       );
     }
 
-    return inactiveProduct;
+    return toProductResponse(inactiveProduct);
+  }
+
+  // "Excluir" produto: remove de vez. Para só esconder do site use inactivate.
+  async remove(id) {
+    if (!UUID_PATTERN.test(id ?? '')) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'O identificador do produto é inválido.',
+      );
+    }
+
+    const removed = await this.productRepository.remove(id);
+
+    if (!removed) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
   }
 
   async activate(id) {
@@ -265,7 +412,7 @@ export class ProductService {
     }
 
     if (product.active) {
-      return product;
+      return toProductResponse(product);
     }
 
     const activeProduct =
@@ -279,7 +426,7 @@ export class ProductService {
       );
     }
 
-    return activeProduct;
+    return toProductResponse(activeProduct);
   }
 
   async update(id, data = {}) {
@@ -309,6 +456,8 @@ export class ProductService {
       category,
       imageUrl,
       active,
+      price,
+      images,
     } = data;
 
     if (typeof title !== 'string' || title.trim() === '') {
@@ -338,10 +487,8 @@ export class ProductService {
       );
     }
 
-    const normalizedTitle = title.trim().toLowerCase();
-    const normalizedCategory = category
-      .trim()
-      .toLowerCase();
+    const normalizedTitle = title.trim();
+    const normalizedCategory = normalizeCategory(category);
 
     if (!PRODUCT_CATEGORIES.includes(normalizedCategory)) {
       throw new AppError(
@@ -351,6 +498,9 @@ export class ProductService {
         { category: PRODUCT_CATEGORIES },
       );
     }
+
+    const normalizedPrice = validatePrice(price);
+    const imageUrls = validateProductImages(images);
 
     const productWithSameTitle =
       await this.productRepository.findByTitle(
@@ -377,10 +527,13 @@ export class ProductService {
               ? description.trim() || null
               : null,
           category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
+          price: normalizedPrice,
           imageUrl:
-            typeof imageUrl === 'string'
+            imageUrls?.[0] ??
+            (typeof imageUrl === 'string'
               ? imageUrl.trim() || null
-              : null,
+              : null),
+          ...(imageUrls && { images: imageUrls }),
         });
 
       if (!updatedProduct) {
@@ -391,7 +544,7 @@ export class ProductService {
         );
       }
 
-      return updatedProduct;
+      return toProductResponse(updatedProduct);
     } catch (error) {
       if (error?.code === 'P2002') {
         throw new AppError(

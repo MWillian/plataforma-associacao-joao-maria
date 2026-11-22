@@ -1,0 +1,97 @@
+import { prisma } from '../lib/prisma.js';
+
+const NOTICE_INCLUDE = { classes: true };
+
+export class NoticeRepository {
+  async findActiveClasses(ids) {
+    return prisma.class.findMany({
+      where: { id: { in: ids }, active: true },
+      select: { id: true },
+    });
+  }
+
+  // Alunos ativos com matrícula ativa em alguma das turmas.
+  async findStudentsOfClasses(classIds) {
+    return prisma.student.findMany({
+      where: {
+        active: true,
+        enrollments: {
+          some: { classId: { in: classIds }, status: 'ACTIVE' },
+        },
+      },
+      include: { guardians: { include: { guardian: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async create({ recipients, classIds, ...data }) {
+    return prisma.notice.create({
+      data: {
+        ...data,
+        classes: {
+          create: classIds.map((classId) => ({ classId })),
+        },
+        recipients: {
+          create: recipients,
+        },
+      },
+      include: { classes: true, recipients: true },
+    });
+  }
+
+  // Grava o resultado do envio de cada destinatário e os totais do aviso.
+  async saveDelivery(noticeId, results) {
+    const sentCount = results.filter((r) => r.status === 'SENT').length;
+    const failedCount = results.filter((r) => r.status === 'FAILED').length;
+
+    return prisma.$transaction(async (tx) => {
+      for (const result of results) {
+        await tx.noticeRecipient.update({
+          where: { id: result.recipientId },
+          data: {
+            status: result.status,
+            failureReason: result.failureReason ?? null,
+            sentAt: result.status === 'SENT' ? new Date() : null,
+          },
+        });
+      }
+
+      return tx.notice.update({
+        where: { id: noticeId },
+        data: { sentAt: new Date(), sentCount, failedCount },
+        include: NOTICE_INCLUDE,
+      });
+    });
+  }
+
+  async listActive() {
+    return prisma.notice.findMany({
+      where: { archivedAt: null },
+      include: NOTICE_INCLUDE,
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    });
+  }
+
+  async findById(id) {
+    return prisma.notice.findUnique({
+      where: { id },
+      include: NOTICE_INCLUDE,
+    });
+  }
+
+  async archive(id) {
+    try {
+      return await prisma.notice.update({
+        where: { id },
+        data: { archivedAt: new Date() },
+        include: NOTICE_INCLUDE,
+      });
+    } catch (error) {
+      if (error?.code === 'P2025') {
+        return null;
+      }
+
+      throw error;
+    }
+  }
+}
