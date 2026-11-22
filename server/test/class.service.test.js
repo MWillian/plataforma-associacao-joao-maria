@@ -199,6 +199,27 @@ describe('ClassService.create', () => {
 });
 
 describe('ClassService.update', () => {
+  it('rejeita reduzir a capacidade abaixo dos alunos matriculados', async () => {
+    const service = new ClassService(
+      createRepository({
+        findById: async (id) => ({ id, active: true, capacity: 10 }),
+        countActiveEnrollments: async () => 6,
+        update: async () => {
+          throw new Error('o repository não deveria ser chamado');
+        },
+      }),
+    );
+
+    await assert.rejects(
+      service.update(CLASS_ID, validData({ capacity: 5 })),
+      (error) => {
+        assert.equal(error.statusCode, 409);
+        assert.equal(error.code, 'CLASS_CAPACITY_BELOW_STUDENT_COUNT');
+        return true;
+      },
+    );
+  });
+
   it('normaliza e atualiza uma turma', async () => {
     let received;
     const service = new ClassService(

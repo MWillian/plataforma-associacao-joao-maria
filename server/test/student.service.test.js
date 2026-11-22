@@ -193,6 +193,31 @@ class FakeStudentRepository {
     }
   }
 
+  async setActiveEnrollments(studentId, classIds) {
+    for (const enrollment of this.enrollments) {
+      if (
+        enrollment.studentId === studentId &&
+        enrollment.status === 'ACTIVE' &&
+        !classIds.includes(enrollment.classId)
+      ) {
+        enrollment.status = 'CANCELED';
+      }
+    }
+
+    for (const classId of classIds) {
+      const existing = this.enrollments.find(
+        (enrollment) =>
+          enrollment.studentId === studentId && enrollment.classId === classId,
+      );
+
+      if (existing) {
+        existing.status = 'ACTIVE';
+      } else {
+        this.enrollments.push({ studentId, classId, status: 'ACTIVE' });
+      }
+    }
+  }
+
   async cancelActiveEnrollments(studentId) {
     for (const enrollment of this.enrollments) {
       if (enrollment.studentId === studentId) {
@@ -237,6 +262,16 @@ async function assertValidationError(promise, field) {
 }
 
 describe('StudentService.create', () => {
+  it('matricula o aluno em múltiplas turmas', async () => {
+    const result = await service.create(
+      validData({ danceClassIds: [CLASS_A, CLASS_B] }),
+    );
+
+    assert.deepEqual(result.danceClassIds, [CLASS_A, CLASS_B]);
+    assert.equal(await repo.countActiveEnrollments(CLASS_A), 1);
+    assert.equal(await repo.countActiveEnrollments(CLASS_B), 1);
+  });
+
   it('cadastra aluno só com nome e turma', async () => {
     const result = await service.create(validData());
 
@@ -266,7 +301,7 @@ describe('StudentService.create', () => {
 
     assert.equal(result.name, 'Lucas Ferreira');
     assert.equal(result.email, 'lucas@email.com');
-    assert.equal(result.phone, '(11) 99234-5678');
+    assert.equal(result.phone, '11992345678');
     assert.equal(result.isMinor, true);
     assert.equal(result.guardian, 'Maria Ferreira (Mãe)');
     assert.equal(result.guardianEmail, 'maria@email.com');
@@ -484,7 +519,7 @@ describe('StudentService.update', () => {
     assert.equal(result.id, created.id);
     assert.equal(result.name, 'Lucas F. Ferreira');
     assert.equal(result.email, 'novo@email.com');
-    assert.equal(result.phone, '(21) 97654-3210');
+    assert.equal(result.phone, '21976543210');
     assert.equal(result.allergies, 'Lactose');
     assert.equal(result.danceClassId, CLASS_A);
   });

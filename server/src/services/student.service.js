@@ -70,24 +70,32 @@ function validateStudentData(data) {
   let phone = null;
 
   if (isFilled(data.phone)) {
-    if (normalizePhone(data.phone)) {
-      phone = data.phone.trim();
+    const normalizedPhone = normalizePhone(data.phone);
+    if (normalizedPhone) {
+      phone = normalizedPhone;
     } else {
       fields.phone = 'Telefone inválido. Informe DDD e número.';
     }
   }
 
-  let danceClassId = null;
+  let danceClassIds = [];
+  const rawDanceClassIds = Array.isArray(data.danceClassIds)
+    ? data.danceClassIds
+    : data.danceClassId
+      ? [data.danceClassId]
+      : [];
 
-  if (!isFilled(data.danceClassId)) {
+  if (rawDanceClassIds.length === 0) {
     fields.danceClassId = 'Selecione uma turma.';
-  } else if (
-    typeof data.danceClassId !== 'string' ||
-    !UUID_PATTERN.test(data.danceClassId)
-  ) {
-    fields.danceClassId = 'Turma inválida.';
   } else {
-    danceClassId = data.danceClassId;
+    for (const classId of rawDanceClassIds) {
+      if (typeof classId !== 'string' || !UUID_PATTERN.test(classId)) {
+        fields.danceClassId = 'Turma inválida.';
+        break;
+      }
+    }
+
+    danceClassIds = [...new Set(rawDanceClassIds)];
   }
 
   if (
@@ -121,7 +129,21 @@ function validateStudentData(data) {
       }
     }
 
-    guardian = { name: guardianName, email: guardianEmail };
+    let guardianPhone = null;
+
+    if (isFilled(data.guardianPhone)) {
+      guardianPhone = normalizePhone(data.guardianPhone);
+
+      if (!guardianPhone) {
+        fields.guardianPhone = 'Telefone do responsável inválido.';
+      }
+    }
+
+    guardian = {
+      name: guardianName,
+      email: guardianEmail,
+      phone: guardianPhone,
+    };
   }
 
   const medical = {};
@@ -140,7 +162,7 @@ function validateStudentData(data) {
 
   return {
     student: { name, email, phone, isMinor, ...medical },
-    danceClassId,
+    danceClassIds,
     guardian,
   };
 }
@@ -184,16 +206,21 @@ function studentNotFound() {
 // Formato esperado pelo front: turma e responsável "achatados".
 function toStudentResponse(row) {
   const guardian = row.guardians?.[0]?.guardian ?? null;
+  const danceClassIds = (row.enrollments ?? []).map(
+    (enrollment) => enrollment.classId,
+  );
 
   return {
     id: row.id,
     name: row.name,
     email: row.email,
     phone: row.phone,
-    danceClassId: row.enrollments?.[0]?.classId ?? null,
+    danceClassIds,
+    danceClassId: danceClassIds[0] ?? null,
     isMinor: row.isMinor,
     guardian: guardian?.name ?? null,
     guardianEmail: guardian?.email ?? null,
+    guardianPhone: guardian?.phone ?? null,
     allergies: row.allergies,
     medicalConditions: row.medicalConditions,
     medications: row.medications,
@@ -233,21 +260,20 @@ export class StudentService {
   }
 
   async create(data = {}) {
-    const { student, danceClassId, guardian } =
+    const { student, danceClassIds, guardian } =
       validateStudentData(data);
 
     return this.runInTransaction(async (repo) => {
-      const danceClass = await this.findClassOrFail(
-        repo,
-        danceClassId,
-      );
+      const classes = await this.findClassesOrFail(repo, danceClassIds);
 
-      await this.assertClassHasRoom(repo, danceClass);
+      for (const danceClass of classes) {
+        await this.assertClassHasRoom(repo, danceClass);
+      }
 
       const created = await repo.createStudent(student);
 
       await this.syncGuardian(repo, created.id, guardian);
-      await repo.setActiveEnrollment(created.id, danceClassId);
+      await this.setActiveEnrollments(repo, created.id, danceClassIds);
 
       return toStudentResponse(await repo.findById(created.id));
     });
@@ -259,7 +285,7 @@ export class StudentService {
   async update(id, data = {}) {
     assertValidStudentId(id);
 
-    const { student, danceClassId, guardian } =
+    const { student, danceClassIds, guardian } =
       validateStudentData(data);
 
     return this.runInTransaction(async (repo) => {
@@ -269,16 +295,19 @@ export class StudentService {
         throw studentNotFound();
       }
 
-      const danceClass = await this.findClassOrFail(
-        repo,
-        danceClassId,
-      );
+      const classes = await this.findClassesOrFail(repo, danceClassIds);
+      const currentClassIds = (existing.enrollments ?? [])
+        .map((enrollment) => enrollment.classId);
+      const changedEnrollments =
+        danceClassIds.some((classId) => !currentClassIds.includes(classId)) ||
+        currentClassIds.some((classId) => !danceClassIds.includes(classId));
 
-      const currentClassId = existing.enrollments?.[0]?.classId;
-      const changedClass = currentClassId !== danceClassId;
-
-      if (changedClass) {
-        await this.assertClassHasRoom(repo, danceClass);
+      if (changedEnrollments) {
+        for (const danceClass of classes) {
+          if (!currentClassIds.includes(danceClass.id)) {
+            await this.assertClassHasRoom(repo, danceClass);
+          }
+        }
       }
 
       const updated = await repo.updateStudent(id, student);
@@ -289,8 +318,8 @@ export class StudentService {
 
       await this.syncGuardian(repo, id, guardian);
 
-      if (changedClass) {
-        await repo.setActiveEnrollment(id, danceClassId);
+      if (changedEnrollments) {
+        await this.setActiveEnrollments(repo, id, danceClassIds);
       }
 
       return toStudentResponse(await repo.findById(id));
@@ -321,12 +350,18 @@ export class StudentService {
         throw studentNotFound();
       }
 
-      if (student.enrollments?.[0]?.classId === classId) {
+      if (student.enrollments?.some(
+        (enrollment) => enrollment.classId === classId,
+      )) {
         return toStudentResponse(student);
       }
 
       await this.assertClassHasRoom(repo, danceClass);
-      await repo.setActiveEnrollment(studentId, classId);
+      if (typeof repo.addActiveEnrollment === 'function') {
+        await repo.addActiveEnrollment(studentId, classId);
+      } else {
+        await repo.setActiveEnrollment(studentId, classId);
+      }
 
       return toStudentResponse(await repo.findById(studentId));
     });
@@ -414,16 +449,42 @@ export class StudentService {
     if (!danceClass) {
       throw validationError({
         danceClassId: 'Turma não encontrada.',
+        danceClassIds: 'Uma das turmas selecionadas não foi encontrada.',
       });
     }
 
     return danceClass;
   }
 
+  async findClassesOrFail(repo, danceClassIds) {
+    const classes = [];
+
+    for (const danceClassId of danceClassIds) {
+      classes.push(await this.findClassOrFail(repo, danceClassId));
+    }
+
+    return classes;
+  }
+
+  async setActiveEnrollments(repo, studentId, danceClassIds) {
+    if (typeof repo.setActiveEnrollments === 'function') {
+      await repo.setActiveEnrollments(studentId, danceClassIds);
+      return;
+    }
+
+    for (const danceClassId of danceClassIds) {
+      await repo.setActiveEnrollment(studentId, danceClassId);
+    }
+  }
+
   // Só bloqueia quando a turma tem limite de vagas (capacity).
   async assertClassHasRoom(repo, danceClass) {
     if (danceClass.capacity === null || danceClass.capacity === undefined) {
       return;
+    }
+
+    if (typeof repo.lockClassById === 'function') {
+      await repo.lockClassById(danceClass.id);
     }
 
     const enrolled = await repo.countActiveEnrollments(
@@ -455,8 +516,18 @@ export class StudentService {
     if (existing) {
       guardianId = existing.id;
 
-      if (existing.name !== guardian.name) {
-        await repo.updateGuardianName(existing.id, guardian.name);
+      if (
+        existing.name !== guardian.name ||
+        existing.phone !== guardian.phone
+      ) {
+        if (typeof repo.updateGuardian === 'function') {
+          await repo.updateGuardian(existing.id, {
+            name: guardian.name,
+            phone: guardian.phone,
+          });
+        } else {
+          await repo.updateGuardianName(existing.id, guardian.name);
+        }
       }
     } else {
       guardianId = (await repo.createGuardian(guardian)).id;
