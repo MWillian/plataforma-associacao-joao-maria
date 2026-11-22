@@ -38,11 +38,13 @@ export function AdmClassesPage({
     name: '',
     turn: '',
     days: [],
+    capacity: '',
   });
   const [editForm, setEditForm] = useState({
     name: '',
     turn: '',
     days: [],
+    capacity: '',
   });
 
   const handleChange = (event) => {
@@ -77,6 +79,7 @@ export function AdmClassesPage({
       name: '',
       turn: '',
       days: [],
+      capacity: '',
     });
 
     setDaysErr('');
@@ -100,6 +103,7 @@ export function AdmClassesPage({
         name: form.name.trim(),
         turn: form.turn,
         days: form.days,
+        capacity: form.capacity === '' ? null : Number(form.capacity),
       });
 
       clearForm();
@@ -149,6 +153,7 @@ export function AdmClassesPage({
       name: danceClass.name || '',
       turn: danceClass.turn || '',
       days: [...(danceClass.days || [])],
+      capacity: danceClass.capacity ?? '',
     });
 
     setEditDaysErr('');
@@ -190,6 +195,7 @@ export function AdmClassesPage({
       name: '',
       turn: '',
       days: [],
+      capacity: '',
     });
 
     setEditDaysErr('');
@@ -216,6 +222,7 @@ export function AdmClassesPage({
         name: editForm.name.trim(),
         turn: editForm.turn,
         days: [...editForm.days],
+        capacity: editForm.capacity === '' ? null : Number(editForm.capacity),
       });
 
       showFeedback('Turma atualizada com sucesso.');
@@ -328,6 +335,26 @@ export function AdmClassesPage({
                   <option value="Tarde">Tarde</option>
                   <option value="Noite">Noite</option>
                 </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="class-capacity"
+                  className="mb-2 block font-medium text-[#40516B]"
+                >
+                  Capacidade
+                </label>
+                <input
+                  id="class-capacity"
+                  type="number"
+                  name="capacity"
+                  min="1"
+                  step="1"
+                  value={form.capacity}
+                  onChange={handleChange}
+                  placeholder="Quantidade máxima de alunos"
+                  className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
               </div>
 
             </div>
@@ -622,6 +649,26 @@ export function AdmClassesPage({
                     <option value="Tarde">Tarde</option>
                     <option value="Noite">Noite</option>
                   </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="edit-class-capacity"
+                    className="mb-2 block text-sm font-medium text-[#40516B]"
+                  >
+                    Capacidade
+                  </label>
+                  <input
+                    id="edit-class-capacity"
+                    type="number"
+                    name="capacity"
+                    min="1"
+                    step="1"
+                    value={editForm.capacity}
+                    onChange={handleEditChange}
+                    placeholder="Quantidade máxima de alunos"
+                    className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
                 </div>
 
               </div>

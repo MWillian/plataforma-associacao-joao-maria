@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { FooterSection } from './components/layout/FooterSection.jsx';
@@ -25,11 +25,31 @@ import {
 } from './services/classes.js';
 import { listStudents } from './services/students.js';
 import {
+  createNews,
+  listNews,
+  removeNews,
+  updateNews,
+} from './services/news.js';
+import {
+  createNotice,
+  listNotices,
+  removeNotice,
+} from './services/notices.js';
+import {
+  createProduct,
+  deleteProduct,
+  listAdminProducts,
+  listPublicProducts,
+  setProductAvailability,
+  updateProduct,
+} from './services/products.js';
+import {
   clearAccessToken,
   getAccessToken,
   logout,
   restoreSession,
 } from './services/auth.js';
+<<<<<<< HEAD
 import { createNews, listNews, removeNews, updateNews } from './services/news.js';
 import { createNotice, listNotices, removeNotice, sendNotice } from './services/notices.js';
 import {
@@ -38,6 +58,9 @@ import {
   removeProduct,
   updateProduct,
 } from './services/products.js';
+=======
+import { productToPublic } from './services/productMapper.js';
+>>>>>>> origin/main
 
 const routes = {
   '/': 'home',
@@ -156,6 +179,21 @@ export default function App() {
   const [isAuthLoading, setIsAuthLoading] = useState(() =>
     isAdminPage(initialLocation.activePage)
   );
+
+  // Dados do painel e do site vêm do backend. Os estados ficam aqui no
+  // topo porque os efeitos e handlers abaixo os usam.
+  const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [notices, setNotices] = useState([]);
+  const [news, setNews] = useState([]);
+  // Produtos do painel admin (todos). O site público usa `publicProducts`
+  // até o painel ser carregado.
+  const [products, setProducts] = useState([]);
+  const [publicProducts, setPublicProducts] = useState([]);
+  // 'idle' | 'ready' | 'error'
+  const [adminDataStatus, setAdminDataStatus] = useState('idle');
+  // Evita pedir os dados do painel mais de uma vez por sessão.
+  const adminDataRequestedRef = useRef(false);
 
   useEffect(() => {
     const pageTitle = pageTitles[activePage] || 'Associação João Maria';
@@ -281,11 +319,15 @@ export default function App() {
       setIsAuthenticated(false);
       setClasses([]);
       setStudents([]);
+      setNotices([]);
+      setProducts([]);
+      adminDataRequestedRef.current = false;
       setAdminDataStatus('idle');
       navigate('adm-login');
     }
   };
 
+<<<<<<< HEAD
   // Turmas e alunos vêm do backend (carregados após o login).
   const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -306,22 +348,25 @@ export default function App() {
       });
   }, []);
 
+=======
+>>>>>>> origin/main
   useEffect(() => {
     if (
       !isAuthenticated ||
       isAuthLoading ||
       !isAdminPage(activePage) ||
-      adminDataStatus !== 'idle'
+      adminDataRequestedRef.current
     ) {
       return;
     }
 
-    setAdminDataStatus('loading');
+    adminDataRequestedRef.current = true;
 
     Promise.all([
       listClasses(),
       listStudents(),
       listNotices(),
+<<<<<<< HEAD
       listProducts(1),
       listNews({ page: 1, includeInactive: true }),
     ])
@@ -333,16 +378,56 @@ export default function App() {
         setNews(loadedNews.items);
         setAdminDataStatus('ready');
       })
+=======
+      listAdminProducts(),
+    ])
+      .then(
+        ([
+          loadedClasses,
+          loadedStudents,
+          loadedNotices,
+          loadedProducts,
+        ]) => {
+          setClasses(loadedClasses);
+          setStudents(loadedStudents);
+          setNotices(loadedNotices);
+          setProducts(loadedProducts);
+          setAdminDataStatus('ready');
+        }
+      )
+>>>>>>> origin/main
       .catch(() => {
         setAdminDataStatus('error');
       });
-  }, [isAuthenticated, isAuthLoading, activePage, adminDataStatus]);
+  }, [isAuthenticated, isAuthLoading, activePage]);
 
+<<<<<<< HEAD
+=======
+  // Conteúdo público: notícias e catálogo de produtos.
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([listNews(), listPublicProducts()])
+      .then(([loadedNews, loadedProducts]) => {
+        if (cancelled) return;
+
+        setNews(loadedNews);
+        setPublicProducts(loadedProducts);
+      })
+      .catch(() => {
+        // O site continua funcionando sem notícias/produtos.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+>>>>>>> origin/main
 
   // As três funções abaixo falham (lançam erro) se o backend recusar; a
   // página que chamou mostra a mensagem ao usuário.
-  const handleCreateDanceClass = async ({ name, turn, days }) => {
-    const createdClass = await createClass({ name, turn, days });
+  const handleCreateDanceClass = async ({ name, turn, days, capacity }) => {
+    const createdClass = await createClass({ name, turn, days, capacity });
 
     setClasses((previousClasses) => [
       ...previousClasses,
@@ -362,9 +447,28 @@ export default function App() {
     );
     // O backend também inativa os alunos da turma; refletimos na tela.
     setStudents((previousStudents) =>
-      previousStudents.filter(
-        (student) => String(student.danceClassId) !== String(id)
-      )
+      previousStudents
+        .map((student) => {
+          const classIds = (student.danceClassIds?.length
+            ? student.danceClassIds
+            : student.danceClassId
+              ? [student.danceClassId]
+              : [])
+            .filter((classId) => String(classId) !== String(id));
+
+          if (classIds.length === (student.danceClassIds?.length
+            ? student.danceClassIds.length
+            : student.danceClassId ? 1 : 0)) {
+            return student;
+          }
+
+          return {
+            ...student,
+            danceClassIds: classIds,
+            danceClassId: classIds[0] ?? null,
+          };
+        })
+        .filter((student) => (student.danceClassIds?.length ?? 0) > 0)
     );
     setNotices((previousNotices) =>
       previousNotices.filter((notice) => {
@@ -378,39 +482,81 @@ export default function App() {
     );
   };
 
+<<<<<<< HEAD
   const handleCreateNotice = async (newNotice) => {
     const createdNotice = await createNotice(newNotice);
     const sentNotice = await sendNotice(createdNotice.id);
 
     setNotices((previousNotices) => [
       sentNotice,
+=======
+  // Os handlers abaixo lançam erro se o backend recusar; a página que
+  // chamou mostra a mensagem ao usuário.
+  const handleCreateNotice = async ({ classIds, subject, type, message }) => {
+    const createdNotice = await createNotice({
+      classIds,
+      subject,
+      type,
+      message,
+    });
+
+    setNotices((previousNotices) => [
+      createdNotice,
+>>>>>>> origin/main
       ...previousNotices,
     ]);
+
+    return createdNotice;
   };
 
   const handleRemoveNotice = async (id) => {
     await removeNotice(id);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
     setNotices((previousNotices) =>
-      previousNotices.filter((notice) => notice.id !== id)
+      previousNotices.filter(
+        (notice) => String(notice.id) !== String(id)
+      )
     );
   };
 
   const handleCreateNews = async (newNews) => {
     const createdNews = await createNews(newNews);
+<<<<<<< HEAD
     setNews((previousNews) => [createdNews, ...previousNews]);
+=======
+
+    setNews((previousNews) => [createdNews, ...previousNews]);
+
+    return createdNews;
+>>>>>>> origin/main
   };
 
   const handleUpdateNews = async (updatedNews) => {
     const savedNews = await updateNews(updatedNews.id, updatedNews);
+<<<<<<< HEAD
     setNews((previousNews) =>
       previousNews.map((newsItem) =>
         newsItem.id === savedNews.id ? savedNews : newsItem
+=======
+
+    setNews((previousNews) =>
+      previousNews.map((newsItem) =>
+        String(newsItem.id) === String(savedNews.id)
+          ? savedNews
+          : newsItem
+>>>>>>> origin/main
       )
     );
+
+    return savedNews;
   };
 
   const handleRemoveNews = async (id) => {
     await removeNews(id);
+<<<<<<< HEAD
     setNews((previousNews) =>
       previousNews.filter((newsItem) => newsItem.id !== id)
     );
@@ -429,14 +575,70 @@ export default function App() {
     setProducts((previousProducts) =>
       previousProducts.map((product) =>
         product.id === savedProduct.id ? savedProduct : product
+=======
+
+    setNews((previousNews) =>
+      previousNews.filter(
+        (newsItem) => String(newsItem.id) !== String(id)
+>>>>>>> origin/main
       )
     );
   };
 
+<<<<<<< HEAD
   const handleRemoveProduct = async (id) => {
     await removeProduct(id);
+=======
+  const handleCreateProduct = async (form) => {
+    const createdProduct = await createProduct(form);
+
+    setProducts((previousProducts) => [
+      ...previousProducts,
+      createdProduct,
+    ]);
+
+    return createdProduct;
+  };
+
+  const handleUpdateProduct = async (form) => {
+    const currentProduct = products.find(
+      (product) => String(product.id) === String(form.id)
+    );
+
+    let savedProduct = await updateProduct(form.id, form);
+
+    // O PUT não altera a disponibilidade; isso é feito à parte.
+    const wantsAvailable = form.available !== false;
+
+    if (
+      currentProduct &&
+      Boolean(currentProduct.available) !== wantsAvailable
+    ) {
+      savedProduct = await setProductAvailability(
+        form.id,
+        wantsAvailable
+      );
+    }
+
+>>>>>>> origin/main
     setProducts((previousProducts) =>
-      previousProducts.filter((product) => product.id !== id)
+      previousProducts.map((product) =>
+        String(product.id) === String(savedProduct.id)
+          ? savedProduct
+          : product
+      )
+    );
+
+    return savedProduct;
+  };
+
+  const handleRemoveProduct = async (id) => {
+    await deleteProduct(id);
+
+    setProducts((previousProducts) =>
+      previousProducts.filter(
+        (product) => String(product.id) !== String(id)
+      )
     );
   };
 
@@ -460,11 +662,23 @@ export default function App() {
     return savedClass;
   };
 
+  // Catálogo do site: usa o painel (se carregado) ou a lista pública.
+  const catalogProducts =
+    adminDataStatus === 'ready'
+      ? products.filter((product) => product.available)
+      : publicProducts;
+  const craftCatalog = catalogProducts
+    .filter((product) => product.category === 'Artesanato')
+    .map(productToPublic);
+  const agricultureCatalog = catalogProducts
+    .filter((product) => product.category === 'Agricultura Familiar')
+    .map(productToPublic);
+
   const loadErrorToast =
     adminDataStatus === 'error' ? (
       <FeedbackToast
         type="error"
-        message="Não foi possível carregar turmas e alunos. Recarregue a página."
+        message="Não foi possível carregar os dados do painel. Recarregue a página."
       />
     ) : null;
 
@@ -593,6 +807,7 @@ export default function App() {
         {activePage === 'crafts' && (
           <CraftsPage
             news={news}
+            products={craftCatalog}
             onSelectProduct={handleSelectCraftProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'crafts')}
           />
@@ -601,6 +816,7 @@ export default function App() {
         {activePage === 'agriculture' && (
           <AgriculturePage
             news={news}
+            products={agricultureCatalog}
             onSelectProduct={handleSelectAgricultureProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'agriculture')}
           />
@@ -616,6 +832,7 @@ export default function App() {
         {activePage === 'craft-detail' && (
           <CraftDetailPage
             product={selectedProduct}
+            products={craftCatalog}
             onBack={() => navigate('crafts')}
             onGoHome={() => navigate('home')}
             onSelectProduct={handleSelectCraftProduct}

@@ -1,9 +1,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
+import { getApiErrorMessage } from '../services/apiError.js';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 import { getApiErrorMessage } from '../services/apiError.js';
 
+// Categorias que o backend e o site público suportam.
 const availableCategories = [
   'Artesanato',
   'Agricultura Familiar',
@@ -95,6 +97,13 @@ export function AdmProductsPage({
   const [form, setForm] = useState(initialForm);
   const [formError, setFormError] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('success');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const showFeedback = (message, type = 'success') => {
+    setFeedbackType(type);
+    setFeedback(message);
+  };
 
   const [categoryFilter, setCategoryFilter] = useUrlQueryState(
     'adminProductCategory',
@@ -231,6 +240,8 @@ export function AdmProductsPage({
   const saveProduct = async (event) => {
     event.preventDefault();
 
+    if (isSaving) return;
+
     if (
       !form.name.trim() ||
       !form.category ||
@@ -243,6 +254,7 @@ export function AdmProductsPage({
     }
 
     setFormError('');
+    setIsSaving(true);
 
     const productData = {
       ...form,
@@ -253,6 +265,7 @@ export function AdmProductsPage({
 
     try {
       if (editingProduct) {
+<<<<<<< HEAD
         await onUpdate?.({
           ...productData,
           id: editingProduct.id,
@@ -269,6 +282,20 @@ export function AdmProductsPage({
     } catch (error) {
       setFormError(getApiErrorMessage(error));
       setFeedback('');
+=======
+        await onUpdate({ ...productData, id: editingProduct.id });
+        showFeedback('Produto atualizado com sucesso.');
+      } else {
+        await onCreate(productData);
+        showFeedback('Produto cadastrado com sucesso.');
+      }
+
+      clearForm();
+    } catch (error) {
+      setFormError(getApiErrorMessage(error));
+    } finally {
+      setIsSaving(false);
+>>>>>>> origin/main
     }
   };
 
@@ -291,6 +318,7 @@ export function AdmProductsPage({
     setProductsToDelete(product);
   };
 
+<<<<<<< HEAD
   // Confirma a exclusão da turma
   const confirmRemove = async () => {
     if (!productsToDelete) return;
@@ -302,12 +330,30 @@ export function AdmProductsPage({
     } catch (error) {
       setProductsToDelete(null);
       setFeedback(getApiErrorMessage(error));
+=======
+  // Confirma a exclusão do produto (remove de vez no backend)
+  const confirmRemove = async () => {
+    if (!productsToDelete || isSaving) return;
+
+    setIsSaving(true);
+
+    try {
+      await onRemove(productsToDelete.id);
+
+      setProductsToDelete(null);
+      showFeedback('Produto excluído com sucesso.');
+    } catch (error) {
+      setProductsToDelete(null);
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+>>>>>>> origin/main
     }
   };
 
   return (
     <>
-      <FeedbackToast message={feedback} />
+      <FeedbackToast message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
       <div className="mx-auto max-w-360">
 
@@ -501,6 +547,7 @@ export function AdmProductsPage({
               <div className="mt-8 flex md:justify-end md:pr-[0%]">
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="rounded-lg bg-blue-700 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-800"
                 >
                   Salvar produto
@@ -896,6 +943,7 @@ export function AdmProductsPage({
 
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
                 >
                   Salvar alterações

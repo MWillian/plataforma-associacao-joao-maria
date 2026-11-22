@@ -23,6 +23,14 @@ productRouter.get(
   productController.list,
 );
 
+// Painel admin: todos os produtos, inclusive inativos.
+productRouter.get(
+  '/admin',
+  requireAuth,
+  requireAdmin,
+  productController.listAll,
+);
+
 productRouter.post(
   '/',
   requireAuth,

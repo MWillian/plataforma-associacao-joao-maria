@@ -1,6 +1,8 @@
 
 import { useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
+import { getApiErrorMessage } from '../services/apiError.js';
+import { readImageAsDataUrl } from '../utils/imageFile.js';
 
 export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) {
   const [showForm, setShowForm] = useState(false);
@@ -11,6 +13,13 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   const [newsToDelete, setNewsToDelete] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('success');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const showFeedback = (message, type = 'success') => {
+    setFeedbackType(type);
+    setFeedback(message);
+  };
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
@@ -24,16 +33,13 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     files.forEach((file) => {
       if (!file.type.startsWith('image/')) return;
 
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        setImages((previousImages) => [
-          ...previousImages,
-          reader.result,
-        ]);
-      };
-
-      reader.readAsDataURL(file);
+      readImageAsDataUrl(file)
+        .then((dataUrl) => {
+          setImages((previousImages) => [...previousImages, dataUrl]);
+        })
+        .catch((error) => {
+          showFeedback(getApiErrorMessage(error), 'error');
+        });
     });
 
     event.target.value = '';
@@ -42,25 +48,33 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!title.trim()) return;
+    if (!title.trim() || isSaving) return;
 
-    const newNews = {
-      id: Date.now(),
-      title: title.trim(),
-      description: description.trim(),
-      date: new Date().toLocaleDateString('pt-BR'),
-      images,
-      publicationArea,
-    };
+    setIsSaving(true);
 
+<<<<<<< HEAD
     await onCreate?.(newNews);
+=======
+    try {
+      await onCreate({
+        title: title.trim(),
+        description: description.trim(),
+        images,
+        publicationArea,
+      });
+>>>>>>> origin/main
 
-    setTitle('');
-    setDescription('');
-    setImages([]);
-    setPublicationArea('');
-    setShowForm(false);
-    setFeedback('Notícia publicada com sucesso.');
+      setTitle('');
+      setDescription('');
+      setImages([]);
+      setPublicationArea('');
+      setShowForm(false);
+      showFeedback('Notícia publicada com sucesso.');
+    } catch (error) {
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -75,14 +89,31 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     setNewsToDelete(danceClass);
   };
 
+<<<<<<< HEAD
   // Confirma a exclusão da turma
   const confirmRemove = async () => {
     if (!newsToDelete) return;
 
     await onRemove?.(newsToDelete.id);
+=======
+  // Confirma a exclusão da notícia (no backend ela é despublicada)
+  const confirmRemove = async () => {
+    if (!newsToDelete || isSaving) return;
 
-    setNewsToDelete(null);
-    setFeedback('Notícia excluída com sucesso.');
+    setIsSaving(true);
+>>>>>>> origin/main
+
+    try {
+      await onRemove(newsToDelete.id);
+
+      setNewsToDelete(null);
+      showFeedback('Notícia excluída com sucesso.');
+    } catch (error) {
+      setNewsToDelete(null);
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Abre o diálogo de edição
@@ -114,16 +145,16 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     files.forEach((file) => {
       if (!file.type.startsWith('image/')) return;
 
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        setEditForm((previousState) => ({
-          ...previousState,
-          images: [...previousState.images, reader.result],
-        }));
-      };
-
-      reader.readAsDataURL(file);
+      readImageAsDataUrl(file)
+        .then((dataUrl) => {
+          setEditForm((previousState) => ({
+            ...previousState,
+            images: [...previousState.images, dataUrl],
+          }));
+        })
+        .catch((error) => {
+          showFeedback(getApiErrorMessage(error), 'error');
+        });
     });
 
     event.target.value = '';
@@ -155,25 +186,36 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
   const handleUpdateNews = async (event) => {
     event.preventDefault();
 
-    if (!editForm.title.trim() || !editingNews) return;
+    if (!editForm.title.trim() || !editingNews || isSaving) return;
 
-    const updatedNews = {
-      ...editingNews,
-      title: editForm.title.trim(),
-      description: editForm.description.trim(),
-      images: editForm.images,
-      publicationArea: editForm.publicationArea,
-    };
+    setIsSaving(true);
 
+<<<<<<< HEAD
     await onUpdate?.(updatedNews);
     setFeedback('Notícia atualizada com sucesso.');
+=======
+    try {
+      await onUpdate({
+        ...editingNews,
+        title: editForm.title.trim(),
+        description: editForm.description.trim(),
+        images: editForm.images,
+        publicationArea: editForm.publicationArea,
+      });
+>>>>>>> origin/main
 
-    handleCancelEdit();
+      showFeedback('Notícia atualizada com sucesso.');
+      handleCancelEdit();
+    } catch (error) {
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <>
-      <FeedbackToast message={feedback} />
+      <FeedbackToast message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
       <div className="mx-auto max-w-6xl">
 
@@ -352,6 +394,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
               <div className="flex justify-end">
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
                 >
                   Publicar notícia
@@ -672,6 +715,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
 
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
                 >
                   Salvar alterações

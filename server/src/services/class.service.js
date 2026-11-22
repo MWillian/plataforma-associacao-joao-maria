@@ -112,11 +112,52 @@ export class ClassService {
     assertValidClassId(id);
 
     const validatedData = validateClassData(data);
+    const existing = await this.classRepository.findById(id);
 
-    const danceClass = await this.classRepository.update(
-      id,
-      validatedData,
-    );
+    if (!existing) {
+      throw classNotFound();
+    }
+
+    if (
+      validatedData.capacity !== null &&
+      typeof this.classRepository.countActiveEnrollments === 'function'
+    ) {
+      if (typeof this.classRepository.lockClassById === 'function') {
+        await this.classRepository.lockClassById(id);
+      }
+
+      const activeStudents =
+        await this.classRepository.countActiveEnrollments(id);
+
+      if (validatedData.capacity < activeStudents) {
+        throw new AppError(
+          409,
+          'CLASS_CAPACITY_BELOW_STUDENT_COUNT',
+          `A capacidade não pode ser menor que o número atual de ${activeStudents} aluno(s) matriculado(s).`,
+          { capacity: 'A capacidade não pode ser menor que os alunos matriculados.' },
+        );
+      }
+    }
+
+    let danceClass;
+
+    try {
+      danceClass = await this.classRepository.update(
+        id,
+        validatedData,
+      );
+    } catch (error) {
+      if (error?.code === 'CLASS_CAPACITY_BELOW_STUDENT_COUNT') {
+        throw new AppError(
+          409,
+          'CLASS_CAPACITY_BELOW_STUDENT_COUNT',
+          error.message,
+          { capacity: 'A capacidade não pode ser menor que os alunos matriculados.' },
+        );
+      }
+
+      throw error;
+    }
 
     if (!danceClass) {
       throw classNotFound();

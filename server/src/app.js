@@ -10,6 +10,8 @@ import {
 import { adminRouter } from './routes/admin.routes.js';
 import { authRouter } from './routes/auth.routes.js';
 import { classRouter } from './routes/class.routes.js';
+import { newsRouter } from './routes/news.routes.js';
+import { noticeRouter } from './routes/notice.routes.js';
 import { productRouter } from './routes/product.routes.js';
 import { studentRouter } from './routes/student.routes.js';
 import { newsRouter } from './routes/news.routes.js';
@@ -23,6 +25,14 @@ app.use(
   cors({
     origin: env.frontendUrl,
     credentials: true,
+  }),
+);
+
+// Produtos e notícias recebem imagens em base64 dentro do JSON.
+app.use(
+  ['/api/products', '/api/news'],
+  express.json({
+    limit: '25mb',
   }),
 );
 
@@ -41,6 +51,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/classes', classRouter);
+app.use('/api/news', newsRouter);
+app.use('/api/notices', noticeRouter);
 app.use('/api/products', productRouter);
 app.use('/api/students', studentRouter);
 app.use('/api/news', newsRouter);
