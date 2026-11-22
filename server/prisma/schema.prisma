@@ -74,7 +74,7 @@ model Student {
   id                   String            @id @default(uuid())
   name                 String
   email                String?
-  phone                String
+  phone                String?
   birthDate            DateTime?         @map("birth_date") @db.Date
   isMinor              Boolean           @default(false) @map("is_minor")
   allergies            String?           @db.Text

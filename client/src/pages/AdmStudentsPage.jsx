@@ -1,6 +1,12 @@
 
 import { useState } from 'react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
+import { getApiErrorMessage } from '../services/apiError.js';
+import {
+  createStudent,
+  removeStudent,
+  updateStudent,
+} from '../services/students.js';
 
 function MedicalField({ name, label, value, onChange, placeholder }) {
   return (
@@ -30,6 +36,13 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('success');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const showFeedback = (message, type = 'success') => {
+    setFeedbackType(type);
+    setFeedback(message);
+  };
 
   const [form, setForm] = useState({
     name: '',
@@ -69,54 +82,72 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     }));
   };
 
-  // Cadastra um novo aluno
-  const handleSubmit = (event) => {
+  // Cadastra um novo aluno no backend
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const newStudent = {
-      id: Date.now(),
-      ...form,
-    };
+    if (isSaving) return;
 
-    setStudents((previousStudents) => [
-      ...previousStudents,
-      newStudent,
-    ]);
+    setIsSaving(true);
 
-    setForm({
-      name: '',
-      email: '',
-      phone: '',
-      danceClassId: '',
-      isMinor: false,
-      guardian: '',
-      guardianEmail: '',
-      allergies: '',
-      medicalConditions: '',
-      medications: '',
-      physicalRestrictions: '',
-    });
+    try {
+      const createdStudent = await createStudent(form);
 
-    setShowForm(false);
-    setFeedback('Aluno cadastrado com sucesso.');
+      setStudents((previousStudents) => [
+        ...previousStudents,
+        createdStudent,
+      ]);
+
+      setForm({
+        name: '',
+        email: '',
+        phone: '',
+        danceClassId: '',
+        isMinor: false,
+        guardian: '',
+        guardianEmail: '',
+        allergies: '',
+        medicalConditions: '',
+        medications: '',
+        physicalRestrictions: '',
+      });
+
+      setShowForm(false);
+      showFeedback('Aluno cadastrado com sucesso.');
+    } catch (error) {
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleRemove = (student) => {
     setStudentToDelete(student);
   };
 
-  // Confirma a exclusão do aluno
-  const confirmRemove = () => {
-    if (!studentToDelete) return;
+  // Confirma a exclusão do aluno (no backend ele é inativado)
+  const confirmRemove = async () => {
+    if (!studentToDelete || isSaving) return;
 
-    setStudents((previousStudents) =>
-      previousStudents.filter(
-        (student) => student.id !== studentToDelete.id
-      )
-    );
+    setIsSaving(true);
 
-    setStudentToDelete(null);
-    setFeedback('Aluno excluído com sucesso.');
+    try {
+      await removeStudent(studentToDelete.id);
+
+      setStudents((previousStudents) =>
+        previousStudents.filter(
+          (student) => student.id !== studentToDelete.id
+        )
+      );
+
+      setStudentToDelete(null);
+      showFeedback('Aluno excluído com sucesso.');
+    } catch (error) {
+      setStudentToDelete(null);
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Abre o diálogo de edição
@@ -151,37 +182,34 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     }));
   }
 
-  // Salva as alterações do aluno
-  const handleUpdateStudent = (event) => {
+  // Salva as alterações do aluno no backend
+  const handleUpdateStudent = async (event) => {
     event.preventDefault();
 
-    if (!editingStudent) return;
+    if (!editingStudent || isSaving) return;
 
-    const updatedStudent = {
-      ...editingStudent,
-      ...editForm,
-      name: editForm.name.trim(),
-      email: editForm.email.trim(),
-      phone: editForm.phone.trim(),
-      guardian: editForm.isMinor ? editForm.guardian.trim() : '',
-      guardianEmail: editForm.isMinor
-        ? editForm.guardianEmail.trim()
-        : '',
-      allergies: editForm.allergies.trim(),
-      medicalConditions: editForm.medicalConditions.trim(),
-      medications: editForm.medications.trim(),
-      physicalRestrictions: editForm.physicalRestrictions.trim(),
-    };
+    setIsSaving(true);
 
-    setStudents((previousStudents) =>
-      previousStudents.map((student) =>
-        student.id === editingStudent.id
-          ? updatedStudent
-          : student
-      )
-    );
-    setEditingStudent(null);
-    setFeedback('Dados do aluno atualizados com sucesso.');
+    try {
+      const savedStudent = await updateStudent(editingStudent.id, {
+        ...editForm,
+        guardian: editForm.isMinor ? editForm.guardian : '',
+        guardianEmail: editForm.isMinor ? editForm.guardianEmail : '',
+      });
+
+      setStudents((previousStudents) =>
+        previousStudents.map((student) =>
+          student.id === savedStudent.id ? savedStudent : student
+        )
+      );
+
+      setEditingStudent(null);
+      showFeedback('Dados do aluno atualizados com sucesso.');
+    } catch (error) {
+      showFeedback(getApiErrorMessage(error), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Cancela o cadastro
@@ -205,7 +233,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
   const getDanceClassName = (classId) => {
     const danceClass = classes.find(
-      (danceClass) => Number(danceClass.id) === Number(classId)
+      (danceClass) => String(danceClass.id) === String(classId)
     );
 
     return danceClass?.name || 'Turma não encontrada';
@@ -213,7 +241,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
   return (
     <>
-      <FeedbackToast message={feedback} />
+      <FeedbackToast message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
 
       {/* Cabeçalho */}
@@ -457,6 +485,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
             <div className="mt-6 flex justify-end">
               <button
                 type="submit"
+                disabled={isSaving}
                 className="rounded-xl bg-[#2450DC] px-8 py-4 font-semibold text-white transition hover:bg-blue-700"
               >
                 Salvar aluno
@@ -874,6 +903,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
                 <button
                   type="submit"
+                disabled={isSaving}
                   className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
                 >
                   Salvar alterações
