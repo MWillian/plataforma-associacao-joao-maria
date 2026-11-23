@@ -584,6 +584,18 @@ describe('StudentService.update', () => {
     assert.equal(await repo.countActiveEnrollments(CLASS_B), 1);
   });
 
+  it('mantém o aluno cadastrado ao salvar sem turma e cancela a matrícula ativa', async () => {
+    const result = await service.update(
+      created.id,
+      validData({ danceClassIds: [] }),
+    );
+
+    assert.deepEqual(result.danceClassIds, []);
+    assert.equal(result.danceClassId, null);
+    assert.equal(await repo.countActiveEnrollments(CLASS_A), 0);
+    assert.equal(repo.students.has(created.id), true);
+  });
+
   it('volta para uma turma antiga reativando a matrícula', async () => {
     await service.update(created.id, minorData({ danceClassId: CLASS_B }));
     const result = await service.update(

@@ -214,10 +214,6 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     event.preventDefault();
 
     if (!editingStudent || isSaving) return;
-    if (editForm.danceClassIds.length === 0) {
-      showFeedback('Selecione pelo menos uma turma.', 'error');
-      return;
-    }
 
     setIsSaving(true);
 
@@ -273,7 +269,8 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       classes.find((danceClass) => String(danceClass.id) === String(id))?.name
     ).filter(Boolean);
 
-    return names.length ? names.join(', ') : 'Turma não encontrada';
+    if (names.length) return names.join(', ');
+    return ids.length ? 'Turma não encontrada' : 'Sem turma';
   };
 
   return (
@@ -800,7 +797,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     htmlFor="edit-student-class"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
-                    Turma *
+                    Turma (opcional)
                   </label>
 
                   <div className="flex flex-wrap gap-2 rounded-xl border border-[#DCE4F0] p-3">
@@ -824,6 +821,9 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                       );
                     })}
                   </div>
+                  <p className="mt-2 text-sm text-[#71839F]">
+                    Se nenhuma turma estiver selecionada, o aluno continuará cadastrado sem turma.
+                  </p>
                 </div>
 
                 {/* Menor de idade */}

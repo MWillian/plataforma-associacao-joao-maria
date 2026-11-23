@@ -108,6 +108,5 @@ export const env = {
     process.env.RESEND_API_KEY?.trim() || '',
 
   resendFrom:
-    process.env.RESEND_FROM?.trim() ||
-    'Studio Adágio <no-reply@example.com>',
+    process.env.RESEND_FROM?.trim() || '',
 };

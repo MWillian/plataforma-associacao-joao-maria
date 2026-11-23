@@ -101,7 +101,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
     const danceClass = getDanceClass(danceClassId);
 
     if (!danceClass) {
-      return 'Turma não encontrada';
+      return 'Turma inativa';
     }
 
     const days = danceClass.days?.join(', ');

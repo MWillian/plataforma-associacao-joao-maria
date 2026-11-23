@@ -273,15 +273,34 @@ describe('NoticeService.create — envio', () => {
     );
   });
 
-  it('envia em lotes para muitos destinatários', async () => {
+  it('limita o envio a cinco pessoas por vez e continua após falhas entre lotes', async () => {
     repo.students = Array.from({ length: 12 }, (_, i) =>
       student(i + 1, { email: `a${i}@email.com` }),
     );
+    let activeSends = 0;
+    let maxConcurrentSends = 0;
+
+    service = new NoticeService(repo, {
+      isEmailConfigured: () => true,
+      sendEmail: async ({ email }) => {
+        activeSends += 1;
+        maxConcurrentSends = Math.max(maxConcurrentSends, activeSends);
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        activeSends -= 1;
+
+        if (email === 'a2@email.com') {
+          throw new Error('falha simulada');
+        }
+      },
+    });
 
     const result = await service.create(1, valid());
 
-    assert.equal(sent.length, 12);
-    assert.equal(result.sentCount, 12);
+    assert.equal(maxConcurrentSends, 5);
+    assert.equal(result.totalRecipients, 12);
+    assert.equal(result.sentCount, 11);
+    assert.equal(result.failedCount, 1);
+    assert.equal(repo.deliveries[0].length, 12);
   });
 });
 
