@@ -28,7 +28,7 @@ function formatPrice(value) {
 
 function getProductImages(product) {
   if (product.images?.length) {
-    return product.images;
+    return product.images.slice(0, 3);
   }
 
   if (product.imageUrl) {
@@ -36,7 +36,7 @@ function getProductImages(product) {
   }
 
   // Compatibilidade com produtos antigos que utilizavam a propriedade "photos".
-  return (product.photos || []).map((photo) => ({
+  return (product.photos || []).slice(0, 3).map((photo) => ({
     url: photo,
     type: 'emoji',
   }));

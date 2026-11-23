@@ -106,7 +106,7 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
             >
               <div
                 style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
-                className="w-full h-80 sm:h-96 lg:h-[320px] bg-emerald-100 rounded-2xl shadow-xl flex items-center justify-center overflow-hidden border border-emerald-200"
+                className="w-full h-80 sm:h-96 lg:h-[320px] bg-emerald-100 rounded-2xl shadow-xl flex items-center justify-center overflow-hidden border border-emerald-200 cursor-pointer"
               >
                 {latestNews.images?.[0] ? (
                   <img
@@ -123,19 +123,33 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
             </button>
 
             <div className="lg:col-span-5 space-y-6">
-              <span className="text-xs uppercase tracking-widest text-emerald-700 font-bold">
-                Última notícia
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
-                {latestNews.title}
-              </h3>
-              <p className="text-slate-600 font-roboto text-base leading-relaxed">
-                {latestNews.description}
-              </p>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelectNews?.(latestNews)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectNews?.(latestNews);
+                  }
+                }}
+                aria-label={`Ler notícia: ${latestNews.title}`}
+                className="block w-full cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2"
+              >
+                <span className="text-xs uppercase tracking-widest text-emerald-700 font-bold">
+                  Última notícia
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
+                  {latestNews.title}
+                </h3>
+                <p className="text-slate-600 font-roboto text-base leading-relaxed break-words [overflow-wrap:anywhere] line-clamp-4">
+                  {latestNews.description}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => onSelectNews?.(latestNews)}
-                className="inline-flex items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
+                className="inline-flex cursor-pointer items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
               >
                 Ler notícia completa <span>→</span>
               </button>
@@ -332,7 +346,7 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
                     </h3>
                   </div>
 
-                  <p className="text-slate-600 font-roboto text-sm leading-relaxed line-clamp-3">
+                  <p className="text-slate-600 font-roboto text-sm leading-relaxed line-clamp-3 break-words [overflow-wrap:anywhere]">
                     {item.description}
                   </p>
 

@@ -92,10 +92,10 @@ export function NewsDetailPage({ news, onBack, onGoHome, backLabel }) {
         <article className="prose prose-slate max-w-none font-roboto text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 sm:space-y-6 pt-2 sm:pt-4 page-reveal-up" style={{ animationDelay: '220ms' }}>
           {Array.isArray(currentNews.content) ? (
             currentNews.content.map((paragraph, index) => (
-              <p key={index} className="m-0 leading-relaxed">{paragraph}</p>
+              <p key={index} className="m-0 break-words leading-relaxed [overflow-wrap:anywhere]">{paragraph}</p>
             ))
           ) : (
-            <p className="m-0 leading-relaxed">{currentNews.description || currentNews.content}</p>
+            <p className="m-0 break-words leading-relaxed [overflow-wrap:anywhere]">{currentNews.description || currentNews.content}</p>
           )}
         </article>
 

@@ -24,7 +24,15 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
   };
 
   const currentProduct = product || defaultProduct;
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [imageSelection, setImageSelection] = useState({
+    productId: currentProduct.id,
+    index: 0,
+  });
+  const selectedImageIndex =
+    String(imageSelection.productId) === String(currentProduct.id)
+      ? imageSelection.index
+      : 0;
+  const productImages = (currentProduct.images || []).slice(0, 3);
 
   // Produtos agrícolas semelhantes no rodapé da página
   const similarAgricultureItems = [
@@ -95,38 +103,47 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
             {/* Imagem Principal */}
             <div className="w-full h-64 sm:h-96 md:h-[420px] bg-emerald-50/60 rounded-2xl sm:rounded-3xl border border-emerald-200/50 flex items-center justify-center overflow-hidden shadow-sm relative">
               <ProductImage
-                src={currentProduct.images?.[selectedImageIndex]}
+                src={productImages[selectedImageIndex]}
                 alt={currentProduct.title}
               >
                 <span className="text-emerald-800/60 font-roboto text-xs sm:text-base font-medium px-4 text-center">
-                  {currentProduct.images?.[selectedImageIndex] || `Imagem de ${currentProduct.title}`}
+                  {productImages[selectedImageIndex] || `Imagem de ${currentProduct.title}`}
                 </span>
               </ProductImage>
             </div>
 
             {/* Miniaturas */}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
-              {[0, 1, 2].map((idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImageIndex(idx + 1)}
-                  className={`h-20 sm:h-28 bg-emerald-50/30 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-center p-2 ${
-                    selectedImageIndex === idx + 1
-                      ? 'border-emerald-700 ring-2 ring-emerald-700/20 shadow-md'
-                      : 'border-slate-200 hover:border-emerald-400'
-                  }`}
-                >
-                  <ProductImage
-                    src={currentProduct.images?.[idx + 1]}
-                    alt={`${currentProduct.title} (foto ${idx + 2})`}
-                  >
-                    <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
-                      {currentProduct.images?.[idx + 1] || `Foto ${idx + 1}`}
-                    </span>
-                  </ProductImage>
-                </button>
-              ))}
-            </div>
+            {productImages.length > 1 && (
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+                {productImages.slice(1).map((image, index) => {
+                  const imageIndex = index + 1;
+
+                  return (
+                    <button
+                      key={imageIndex}
+                      onClick={() => setImageSelection({
+                        productId: currentProduct.id,
+                        index: imageIndex,
+                      })}
+                      className={`h-20 sm:h-28 bg-emerald-50/30 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-center p-2 ${
+                        selectedImageIndex === imageIndex
+                          ? 'border-emerald-700 ring-2 ring-emerald-700/20 shadow-md'
+                          : 'border-slate-200 hover:border-emerald-400'
+                      }`}
+                    >
+                      <ProductImage
+                        src={image}
+                        alt={`${currentProduct.title} (foto ${imageIndex + 1})`}
+                      >
+                        <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
+                          {image || `Foto ${imageIndex + 1}`}
+                        </span>
+                      </ProductImage>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Coluna da Direita: Informações e Consulta (5 colunas no Desktop) */}
