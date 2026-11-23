@@ -1,399 +1,362 @@
-function ActionButton({ children, page, className = '', onNavigate }) {
+import { ArrowUpRight, LogOut } from 'lucide-react';
+
+function ActionButton({ children, page, onNavigate }) {
   return (
     <button
       type="button"
       onClick={() => onNavigate?.(page)}
-      className={`rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 ${className}`}
+      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-800"
     >
       {children}
+      <ArrowUpRight aria-hidden="true" size={16} />
     </button>
+  );
+}
+
+function getImageUrl(image) {
+  return typeof image === 'string' ? image : image?.url;
+}
+
+function RecentThumbnail({ imageUrl, label, tone, size = 'h-14 w-14' }) {
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt=""
+        className={`${size} shrink-0 rounded-lg border border-slate-200 object-cover`}
+      />
+    );
+  }
+
+  return (
+    <div className={`flex ${size} shrink-0 items-center justify-center rounded-lg text-center text-xs font-semibold ${tone}`}>
+      {label}
+    </div>
+  );
+}
+
+function RecentSection({
+  title,
+  description,
+  page,
+  onNavigate,
+  accent,
+  emptyMessage,
+  children,
+}) {
+  return (
+    <section className={`overflow-hidden rounded-2xl border border-slate-300 border-t-4 bg-white shadow-sm ${accent}`}>
+      <header className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-4">
+        <div>
+          <h2 className="font-bold text-slate-800">{title}</h2>
+          <p className="mt-1 text-xs text-slate-600">{description}</p>
+        </div>
+        <ActionButton page={page} onNavigate={onNavigate}>
+          Ver todos
+        </ActionButton>
+      </header>
+      <div className="space-y-3 p-4">
+        {children || (
+          <p className="rounded-xl bg-slate-100 px-4 py-6 text-center text-sm text-slate-600">
+            {emptyMessage}
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 
 const publicationAreaLabels = {
   studio: {
     label: 'Estúdio Adágio',
-    className: 'bg-purple-100 text-purple-700',
+    className: 'bg-violet-100 text-violet-800',
   },
   crafts: {
     label: 'Artesanato',
-    className: 'bg-amber-100 text-amber-700',
+    className: 'bg-amber-100 text-amber-900',
   },
   agriculture: {
     label: 'Agricultura Familiar',
-    className: 'bg-green-100 text-green-700',
+    className: 'bg-emerald-100 text-emerald-900',
   },
 };
 
 export function AdmDashboardPage({
   onNavigate,
   onLogout,
-  classes,
-  students,
+  classes = [],
+  students = [],
   news = [],
   notices = [],
   products = [],
 }) {
-  
-
-const classesWithStudents = classes.map((danceClass) => ({
-  ...danceClass,
-  students: students.filter(
-    (student) => String(student.danceClassId) === String(danceClass.id)
-  ).length,
-}));
-
-const totalStudents = students.length;
-
-const classesWithStudentCount = classesWithStudents.filter(
-  (danceClass) => danceClass.students > 0
-).length;
-
-const getDanceClassName = (classId) => {
-  if (Array.isArray(classId)) {
-    return classId.map((id) => getDanceClassName(id)).join(', ');
-  }
-
-  const danceClass = classes.find(
-    (danceClass) => String(danceClass.id) === String(classId)
-  );
-
-  return danceClass?.name || 'Turma inativa';
-};
+  const summaryCards = [
+    {
+      label: 'Turmas Cadastradas',
+      count: classes.length,
+      page: 'adm-classes',
+      accent: 'border-t-blue-700',
+    },
+    {
+      label: 'Estudantes Criados',
+      count: students.length,
+      page: 'adm-students',
+      accent: 'border-t-emerald-700',
+    },
+    {
+      label: 'Avisos',
+      count: notices.length,
+      page: 'adm-class-notices',
+      accent: 'border-t-amber-600',
+    },
+    {
+      label: 'Notícias',
+      count: news.length,
+      page: 'adm-news',
+      accent: 'border-t-violet-700',
+    },
+    {
+      label: 'Produtos Cadastrados',
+      count: products.length,
+      page: 'adm-products',
+      accent: 'border-t-green-700',
+    },
+  ];
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
-      <div className="mx-auto max-w-360">
-
-        {/* Cabeçalho */}
-        <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+    <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-10 lg:py-9">
+      <div className="mx-auto max-w-[1480px]">
+        <header className="mb-8 flex flex-col justify-between gap-6 rounded-3xl bg-blue-950/75 px-6 py-7 text-white shadow-xl shadow-blue-950/10 sm:flex-row sm:items-center sm:px-9 sm:py-9">
           <div>
-            <h1 className="text-2xl font-bold text-[#172957]">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-blue-100">
+              Gestão da associação
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Painel principal
             </h1>
-
-            <p className="mt-1 text-sm text-[#7183A3]">
-              Acompanhe as turmas e as matrículas da instituição.
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-blue-100 sm:text-base">
+              Acompanhe os totais e acesse cada área administrativa.
             </p>
           </div>
 
           <button
             type="button"
             onClick={onLogout}
-            className="rounded-lg border border-red-700 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+            className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-xl border border-white/40 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20 sm:self-center"
           >
+            <LogOut aria-hidden="true" size={17} />
             Sair
           </button>
         </header>
 
-        {/* Indicadores */}
-        <section className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-
-          <div className="rounded-xl border border-[#DCE4F0] bg-white px-5 py-4">
-            <p className="text-sm text-[#7183A3]">
-              Turmas cadastradas
-            </p>
-
-            <p className="mt-1 text-3xl font-bold text-blue-700">
-              {classes.length}
-            </p>
-
-            <p className="mt-1 text-xs text-[#7183A3]">
-              No total da instituição
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-[#DCE4F0] bg-white px-5 py-4">
-            <p className="text-sm text-[#7183A3]">
-              Alunos matriculados
-            </p>
-
-            <p className="mt-1 text-3xl font-bold text-blue-700">
-              {totalStudents}
-            </p>
-
-            <p className="mt-1 text-xs text-[#7183A3]">
-              Distribuídos entre as turmas
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-[#DCE4F0] bg-white px-5 py-4">
-            <p className="text-sm text-[#7183A3]">
-              Turmas com alunos
-            </p>
-
-            <p className="mt-1 text-3xl font-bold text-blue-700">
-              {classesWithStudentCount} de {classes.length}
-            </p>
-
-            <p className="mt-1 text-xs text-[#7183A3]">
-              {classes.length - classesWithStudentCount} turmas sem matrículas
-            </p>
-          </div>
-
-        </section>
-
-        {/* Alunos por turma */}
-        <section className="mb-6 overflow-hidden rounded-xl border border-[#DCE4F0] bg-white">
-
-          <div className="flex flex-col justify-between gap-4 border-b border-[#E5EAF2] px-6 py-4 sm:flex-row sm:items-center">
-
-            <div>
-              <h2 className="font-bold text-[#172957]">
-                Alunos por turma
-              </h2>
-
-              <p className="text-xs text-[#7183A3]">
-                Total de alunos matriculados em cada turma.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <ActionButton page="adm-students" onNavigate={onNavigate}>
-                Ver alunos
-              </ActionButton>
-
-              <ActionButton page="adm-classes" onNavigate={onNavigate}>
-                Ver turmas
-              </ActionButton>
-            </div>
-          </div>
-
-          <div className="flex justify-between bg-[#F9FAFC] px-6 py-2 text-xs text-[#7183A3]">
-            <span>TURMA</span>
-            <span>ALUNOS MATRICULADOS</span>
-          </div>
-
-          {classesWithStudents.map((danceClass) => (
-            <div
-              key={danceClass.id}
-              className="flex justify-between border-t border-[#E5EAF2] px-6 py-4 text-sm"
+        <section
+          aria-label="Resumo do painel"
+          className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5"
+        >
+          {summaryCards.map((card) => (
+            <article
+              key={card.label}
+              className={`min-h-32 rounded-2xl border border-slate-300 border-t-4 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${card.accent}`}
             >
-              <span className="font-semibold text-[#172957]">
-                {danceClass.name}
-              </span>
-
-              <span className="font-bold text-[#172957]">
-                {danceClass.students}
-              </span>
-            </div>
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="text-sm font-bold text-slate-800">
+                  {card.label}
+                </h2>
+                <ActionButton page={card.page} onNavigate={onNavigate}>
+                  Gerenciar
+                </ActionButton>
+              </div>
+              <p className="mt-3 text-3xl font-bold tracking-tight text-black">
+                {card.count}
+              </p>
+            </article>
           ))}
-
-          <div className="flex justify-between border-t border-[#E5EAF2] px-6 py-4 text-sm font-bold">
-            <span className="text-[#172957]">
-              Total nas {classes.length} turmas
-            </span>
-
-            <span className="text-blue-700">
-              {totalStudents} alunos
-            </span>
-          </div>
         </section>
 
-        <p className="mb-6 text-xs text-[#7183A3]">
-          Distribuição atual de alunos entre as turmas cadastradas.
-          Total de {totalStudents} alunos conforme o cadastro.
-        </p>
-
-        {/* Última notícia */}
-        <section className="mb-8">
-
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-[#172957]">
-              Últimas Notícias
-            </h2>
-
-            <ActionButton page="adm-news" onNavigate={onNavigate}>
-              Ver notícias
-            </ActionButton>
-          </div>
-
-          {news.length > 0 ? (
-            <ul className="divide-y divide-[#E7EDF5] rounded-xl border border-[#DCE4F0] bg-white">
-              {news.slice(0, 2).map((newsItem) => (
-                <li
-                  key={newsItem.id}
-                  className="p-5"
-                >
-
-                  {/* Área e data */}
-                  <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
-                    {publicationAreaLabels[newsItem.publicationArea] && (
-                      <span
-                        className={`rounded-md px-2 py-1 font-medium ${publicationAreaLabels[newsItem.publicationArea].className}`}
-                      >
-                        {publicationAreaLabels[newsItem.publicationArea].label}
-                      </span>
-                    )}
-
-                    <span className="text-[#91A2BF]">
-                      {newsItem.date}
-                    </span>
-                  </div>
-
-                  {/* Título */}
-                  <h3 className="mb-2 font-semibold text-[#172957]">
-                    {newsItem.title}
-                  </h3>
-
-                  {/* Descrição */}
-                  <p className="line-clamp-4 break-words text-sm leading-relaxed text-[#7183A3] [overflow-wrap:anywhere]">
-                    {newsItem.description}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="rounded-xl border border-dashed border-[#DCE4F0] bg-white p-8 text-center">
-              <p className="text-sm text-[#7183A3]">
-                Nenhuma notícia cadastrada.
+        <section className="mb-8 overflow-hidden rounded-2xl border border-slate-300 border-t-4 border-t-blue-700 bg-white shadow-sm">
+          <header className="flex flex-col justify-between gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="font-bold text-slate-800">Turmas recentes</h2>
+              <p className="mt-1 text-xs text-slate-600">
+                Últimas turmas cadastradas
               </p>
             </div>
-          )}
-
-        </section>
-
-        {/* Avisos */}
-        <section className="mb-8">
-
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-[#172957]">
-              Últimos Avisos
-            </h2>
-
-            <ActionButton page="adm-class-notices" onNavigate={onNavigate}>
-              Ver avisos
+            <ActionButton page="adm-classes" onNavigate={onNavigate}>
+              Ver todas
             </ActionButton>
-          </div>
+          </header>
 
-          {notices.length > 0 ? (
-            <ul className="divide-y divide-[#E7EDF5] rounded-xl border border-[#DCE4F0] bg-white">
-              {notices.slice(0, 2).map((notice) => (
-                <li
-                  key={notice.id}
-                  className="p-5"
+          {classes.length > 0 ? (
+            <div className="divide-y divide-slate-200">
+              {classes.slice(-3).reverse().map((danceClass) => (
+                <div
+                  key={danceClass.id}
+                  className="w-full px-5 py-4 transition hover:bg-blue-50"
                 >
-
-                  {/* Tipo, turma e data */}
-                  <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
-
-                    <span
-                      className={`rounded-md px-2 py-1 font-medium ${
-                        notice.type === 'Cancelamento'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-blue-100 text-blue-700'
-                      }`}
-                    >
-                      {notice.type}
-                    </span>
-
-                    <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
-                      {getDanceClassName(
-                        notice.classIds || notice.classId || notice.danceClassId
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <h3 className="break-words font-semibold text-slate-800 [overflow-wrap:anywhere]">
+                        {danceClass.name}
+                      </h3>
+                      {danceClass.createdAt && (
+                        <>
+                          <span aria-hidden="true" className="text-slate-400">
+                            &nbsp;·&nbsp;
+                          </span>
+                          <time
+                            dateTime={danceClass.createdAt}
+                            className="shrink-0 text-sm text-slate-600"
+                          >
+                            {new Date(danceClass.createdAt).toLocaleDateString('pt-BR')}
+                          </time>
+                        </>
                       )}
-                    </span>
-
-                    <span className="text-[#91A2BF]">
-                      {notice.date}
-                    </span>
-
-                  </div>
-
-                  {/* Assunto */}
-                  <h3 className="mb-2 font-semibold text-[#172957]">
-                    {notice.subject}
-                  </h3>
-
-                  {/* Mensagem */}
-                  <p className="text-sm leading-relaxed text-[#7183A3]">
-                    {notice.message}
-                  </p>
-
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="rounded-xl border border-dashed border-[#DCE4F0] bg-white p-8 text-center">
-              <p className="text-sm text-[#7183A3]">
-                Nenhum aviso cadastrado.
-              </p>
-            </div>
-          )}
-
-        </section>
-
-
-        {/* Produtos */}
-        <section className="rounded-xl border border-[#DCE4F0] bg-white p-6">
-
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-[#172957]">
-              Últimos produtos cadastrados
-            </h2>
-
-            <ActionButton page="adm-products" onNavigate={onNavigate}>
-              Ver produtos
-            </ActionButton>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-
-            {products.slice(-2).reverse().map((product) => (
-              <article
-                key={product.name}
-                className="overflow-hidden rounded-xl border border-[#DCE4F0] bg-white"
-              >
-                <div className="flex h-24 items-center justify-center bg-[#EDF4FD]">
-                  {product.images?.length > 0 ? (
-                    <img
-                      src={
-                        typeof product.images[0] === 'string'
-                          ? product.images[0]
-                          : product.images[0].url
-                      }
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name || product.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xs text-slate-400">
-                      Sem imagem
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex min-h-41.25 flex-col justify-between p-4">
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-[#172033]">
-                      {product.name}
-                    </h3>
-
-                    <p className="mt-7 text-xs leading-relaxed text-[#7183A3]">
-                      {product.description}
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {danceClass.turn}
+                      {danceClass.days?.length
+                        ? ` · ${danceClass.days.join(', ')}`
+                        : ''}
                     </p>
                   </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="px-5 py-8 text-center text-sm text-slate-600">
+              Nenhuma turma cadastrada.
+            </p>
+          )}
+        </section>
 
-                  <p className="mt-5 font-bold text-blue-700">
+        <section
+          aria-label="Registros recentes"
+          className="grid gap-5 xl:grid-cols-3"
+        >
+          <RecentSection
+            title="Produtos recentes"
+            description="Últimos itens cadastrados"
+            page="adm-products"
+            onNavigate={onNavigate}
+            accent="border-t-green-700"
+            emptyMessage="Nenhum produto cadastrado."
+          >
+            {products.length > 0 && products.slice(-3).reverse().map((product) => {
+              const imageUrl = getImageUrl(product.images?.[0]) || product.imageUrl;
+              const name = product.name || product.title || 'Produto';
+
+              return (
+                <article
+                  key={product.id || name}
+                  className="flex items-center gap-3 rounded-xl border border-slate-300 bg-green-50 p-3"
+                >
+                  <RecentThumbnail
+                    imageUrl={imageUrl}
+                    label="Sem imagem"
+                    tone="bg-green-100 text-green-900"
+                    size="h-20 w-20"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-semibold text-slate-800">
+                      {name}
+                    </h3>
+                    <p className="mt-1 line-clamp-2 break-words text-xs text-slate-600 [overflow-wrap:anywhere]">
+                      {product.description || 'Sem descrição.'}
+                    </p>
+                  </div>
+                  <span className="max-w-24 shrink-0 break-words text-right text-xs font-bold text-green-900">
                     {product.price == null
-                      ? 'Consulte disponibilidade'
+                      ? 'Sob consulta'
                       : Number(product.price).toLocaleString('pt-BR', {
                           style: 'currency',
                           currency: 'BRL',
                         })}
+                  </span>
+                </article>
+              );
+            })}
+          </RecentSection>
+
+          <RecentSection
+            title="Notícias recentes"
+            description="Últimas publicações"
+            page="adm-news"
+            onNavigate={onNavigate}
+            accent="border-t-green-700"
+            emptyMessage="Nenhuma notícia cadastrada."
+          >
+            {news.length > 0 && news.slice(0, 3).map((newsItem) => (
+              <article
+                key={newsItem.id}
+                className="flex items-center gap-3 rounded-xl border border-slate-300 bg-green-50 p-3"
+              >
+                <RecentThumbnail
+                  imageUrl={getImageUrl(newsItem.images?.[0])}
+                  label="Notícia"
+                  tone="bg-green-100 text-green-900"
+                />
+                <div className="min-w-0 flex-1">
+                  {publicationAreaLabels[newsItem.publicationArea] && (
+                    <span className={`mb-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${publicationAreaLabels[newsItem.publicationArea].className}`}>
+                      {publicationAreaLabels[newsItem.publicationArea].label}
+                    </span>
+                  )}
+                  <h3 className="truncate text-sm font-semibold text-slate-800">
+                    {newsItem.title}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 break-words text-xs text-slate-600 [overflow-wrap:anywhere]">
+                    {newsItem.description || 'Sem descrição.'}
+                  </p>
+                </div>
+                <span className="max-w-20 shrink-0 text-right text-xs font-semibold text-slate-600">
+                  {newsItem.date}
+                </span>
+              </article>
+            ))}
+          </RecentSection>
+
+          <RecentSection
+            title="Avisos recentes"
+            description="Últimos comunicados enviados"
+            page="adm-class-notices"
+            onNavigate={onNavigate}
+            accent="border-t-green-700"
+            emptyMessage="Nenhum aviso enviado."
+          >
+            {notices.length > 0 && notices.slice(0, 3).map((notice) => (
+              <article
+                key={notice.id}
+                className="flex items-center gap-3 rounded-xl border border-slate-300 bg-green-50 p-3"
+              >
+                <RecentThumbnail
+                  label="Aviso"
+                  tone="bg-green-100 text-green-900"
+                />
+                <div className="min-w-0 flex-1">
+                  <span className={`mb-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    notice.type === 'Cancelamento'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-amber-100 text-amber-900'
+                  }`}>
+                    {notice.type}
+                  </span>
+                  <h3 className="truncate text-sm font-semibold text-slate-800">
+                    {notice.subject}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 break-words text-xs text-slate-600 [overflow-wrap:anywhere]">
+                    {notice.message}
+                  </p>
+                </div>
+                <div className="max-w-20 shrink-0 text-right text-xs text-slate-600">
+                  <p className="font-semibold">{notice.date}</p>
+                  <p className="mt-1">
+                    {notice.sentCount ?? 0} destinatário(s)
                   </p>
                 </div>
               </article>
             ))}
-
-          </div>
+          </RecentSection>
         </section>
-
       </div>
     </main>
   );

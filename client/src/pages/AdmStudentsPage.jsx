@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { getApiErrorMessage } from '../services/apiError.js';
 import {
@@ -314,10 +315,11 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
           ) : (
             <button
               type="button"
-              onClick={handleCancel}
-              className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              onClick={onBack}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-700 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
             >
-              × Cancelar
+              <ArrowLeft aria-hidden="true" size={16} />
+              Voltar
             </button>
           )}
 
@@ -523,7 +525,14 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
             </div>
 
             {/* Botão salvar */}
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="rounded-xl border border-[#2450DC] bg-white px-6 py-4 font-semibold text-[#2450DC] transition hover:bg-blue-50"
+              >
+                Cancelar
+              </button>
               <button
                 type="submit"
                 disabled={isSaving}

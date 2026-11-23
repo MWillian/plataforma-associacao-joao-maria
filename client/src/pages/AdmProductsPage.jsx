@@ -1,5 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { getApiErrorMessage } from '../services/apiError.js';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
@@ -361,10 +362,11 @@ export function AdmProductsPage({
             ) : (
               <button
                 type="button"
-                onClick={clearForm}
-                className="rounded-lg bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+                onClick={onBack}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-700 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
               >
-                ✕ Cancelar
+                <ArrowLeft aria-hidden="true" size={16} />
+                Voltar
               </button>
             )}
           </div>
@@ -510,7 +512,14 @@ export function AdmProductsPage({
                 </p>
               </div>
 
-              <div className="mt-8 flex md:justify-end md:pr-[0%]">
+              <div className="mt-8 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={clearForm}
+                  className="rounded-lg border border-blue-700 bg-white px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                >
+                  Cancelar
+                </button>
                 <button
                   type="submit"
                   disabled={isSaving}
@@ -656,14 +665,23 @@ export function AdmProductsPage({
                         {getProductName(product)}
                       </h3>
 
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(product)}
-                        aria-label={`Excluir ${getProductName(product)}`}
-                        className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-                      >
-                        Excluir
-                      </button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(product)}
+                          className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(product)}
+                          aria-label={`Excluir ${getProductName(product)}`}
+                          className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                        >
+                          Excluir
+                        </button>
+                      </div>
                     </div>
 
                     <p className="mt-2 text-xs text-[#7183A3]">
@@ -678,7 +696,7 @@ export function AdmProductsPage({
                       {formatPrice(product.price)}
                     </p>
 
-                    <div className="mt-3 flex items-center justify-between gap-2">
+                    <div className="mt-3">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                           !isProductAvailable(product)
@@ -690,14 +708,6 @@ export function AdmProductsPage({
                           ? 'Indisponível'
                           : 'Disponível'}
                       </span>
-
-                      <button
-                        type="button"
-                        onClick={() => openEdit(product)}
-                        className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
-                      >
-                        Editar
-                      </button>
                     </div>
                   </div>
                 </article>

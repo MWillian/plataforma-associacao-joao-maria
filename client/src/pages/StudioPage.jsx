@@ -137,49 +137,49 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
         </div>
 
         {danceClasses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {danceClasses.map((item) => (
-            <div
-              key={item.id}
-              className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:shadow-lg transition-all"
-            >
-              <div className="space-y-4">
-                <span className="inline-block bg-[#0b1b3d] text-white text-[10px] font-bold px-3 py-1 rounded shadow-sm uppercase tracking-wider">
-                  Turma
-                </span>
-
-                <h3 className="text-xl font-bold text-[#142D59] leading-snug">
-                  {item.name}
-                </h3>
-
-                <div className="space-y-2 pt-2 border-t border-slate-200/60 font-roboto text-xs text-slate-700">
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Users size={14} className="text-[#3570FC]" />
-                    <span><strong>Turno:</strong> {item.turn}</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-slate-600">
-                    <Clock size={14} className="text-[#3570FC]" />
-                    <span><strong>Dias:</strong> {(item.days || []).join(', ') || 'Não informado'}</span>
-                  </div>
-                  {item.capacity !== null && item.capacity !== undefined && (
-                    <div className="text-slate-600">
-                      <strong>Capacidade:</strong> {item.capacity} aluno(s)
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <a
-                href="https://wa.me/5582996486572"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-2.5 px-4 rounded-xl text-xs font-bold text-center block transition-colors shadow-sm"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {danceClasses.map((item) => (
+              <div
+                key={item.id}
+                className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:shadow-lg transition-all"
               >
-                Inscrever pelo WhatsApp
-              </a>
-            </div>
-          ))}
-        </div>
+                <div className="space-y-4">
+                  <span className="inline-block bg-[#0b1b3d] text-white text-[10px] font-bold px-3 py-1 rounded shadow-sm uppercase tracking-wider">
+                    Turma
+                  </span>
+
+                  <h3 className="text-xl font-bold text-[#142D59] leading-snug">
+                    {item.name}
+                  </h3>
+
+                  <div className="space-y-2 pt-2 border-t border-slate-200/60 font-roboto text-xs text-slate-700">
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Users size={14} className="text-[#3570FC]" />
+                      <span><strong>Turno:</strong> {item.turn}</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-slate-600">
+                      <Clock size={14} className="text-[#3570FC]" />
+                      <span><strong>Dias:</strong> {(item.days || []).join(', ') || 'Não informado'}</span>
+                    </div>
+                    {item.capacity !== null && item.capacity !== undefined && (
+                      <div className="text-slate-600">
+                        <strong>Capacidade:</strong> {item.capacity} aluno(s)
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <a
+                  href="https://wa.me/5582996486572"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-2.5 px-4 rounded-xl text-xs font-bold text-center block transition-colors shadow-sm"
+                >
+                  Inscrever pelo WhatsApp
+                </a>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="rounded-xl border border-slate-200 bg-slate-50 py-12 text-center text-slate-500">
             Nenhuma turma cadastrada no momento.
@@ -275,11 +275,10 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${
-                    currentPage === page
-                      ? 'bg-[#0b1b3d] text-white'
-                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-                  }`}
+                  className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${currentPage === page
+                    ? 'bg-[#0b1b3d] text-white'
+                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                    }`}
                 >
                   {page}
                 </button>
