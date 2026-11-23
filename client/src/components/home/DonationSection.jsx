@@ -1,4 +1,8 @@
 export function DonationSection() {
+    const message = encodeURIComponent(
+        'Olá, desejo obter mais informações sobre como fazer uma doação.'
+    );
+
     return (
         <section id="doacao" className="bg-[#0b1b3d] text-white py-16 md:py-20 px-4 sm:px-6 font-poppins">
             <div className="max-w-7xl mx-auto">
@@ -15,9 +19,14 @@ export function DonationSection() {
                         </h2>
 
                         <div className="pt-4 flex justify-center lg:justify-start">
-                            <button className="bg-white text-[#0b1b3d] px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-gray-100 transition-colors shadow-md cursor-pointer tracking-wider">
+                            <a
+                                href={`https://wa.me/5582996486572?text=${message}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center bg-white text-[#0b1b3d] px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-gray-100 transition-colors shadow-md cursor-pointer tracking-wider"
+                            >
                                 Transformar vidas
-                            </button>
+                            </a>
                         </div>
                     </div>
 

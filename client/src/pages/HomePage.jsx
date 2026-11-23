@@ -11,6 +11,7 @@ export default function HomePage({
   news = [],
   craftProducts = [],
   agricultureProducts = [],
+  onNavigate,
   onSelectNews,
 }) {
   return (
@@ -18,9 +19,12 @@ export default function HomePage({
       <HeroSection />
       <NewsCarousel news={news} onSelectNews={onSelectNews} />
       <AboutSection />
-      <StudioSection />
-      <CraftsSection products={craftProducts} />
-      <AgricultureSection products={agricultureProducts} />
+      <StudioSection onNavigate={onNavigate} />
+      <CraftsSection products={craftProducts} onNavigate={onNavigate} />
+      <AgricultureSection
+        products={agricultureProducts}
+        onNavigate={onNavigate}
+      />
       <FoundersSection />
       <DonationSection />
     </main>

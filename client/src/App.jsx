@@ -301,6 +301,17 @@ export default function App() {
     setActivePage(targetPage);
   };
 
+  const navigateToHomeSection = (sectionId) => {
+    navigate('home');
+
+    window.setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 100);
+  };
+
   const handleLogin = (user) => {
     setIsAuthenticated(true);
     navigate('adm-dashboard');
@@ -754,6 +765,7 @@ export default function App() {
             news={news}
             craftProducts={latestCraftProducts}
             agricultureProducts={latestAgricultureProducts}
+            onNavigate={navigate}
             onSelectNews={(newsItem) => handleSelectNews(
               newsItem,
               newsItem.publicationArea || 'studio'
@@ -821,7 +833,7 @@ export default function App() {
           />
         )}
       </div>
-      <FooterSection />
+      <FooterSection onNavigateToSection={navigateToHomeSection} />
     </div>
   );
 }

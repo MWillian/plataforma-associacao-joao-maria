@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function CraftsSection({ products = [] }) {
+export function CraftsSection({ products = [], onNavigate }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -39,6 +39,7 @@ export function CraftsSection({ products = [] }) {
         font-poppins
         text-slate-800
         overflow-hidden
+        scroll-mt-24
       "
     >
       <div className="max-w-7xl mx-auto">
@@ -337,6 +338,8 @@ export function CraftsSection({ products = [] }) {
           `}
         >
           <button
+            type="button"
+            onClick={() => onNavigate?.('crafts')}
             className="
               group
               relative

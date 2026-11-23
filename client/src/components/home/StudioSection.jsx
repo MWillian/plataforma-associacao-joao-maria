@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function StudioSection() {
+export function StudioSection({ onNavigate }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -35,6 +35,7 @@ export function StudioSection() {
         px-4 sm:px-6
         font-poppins
         overflow-hidden
+        scroll-mt-24
       "
     >
       <div className="max-w-7xl mx-auto">
@@ -154,6 +155,8 @@ export function StudioSection() {
               `}
             >
               <button
+                type="button"
+                onClick={() => onNavigate?.('studio')}
                 className="
                   group
                   relative

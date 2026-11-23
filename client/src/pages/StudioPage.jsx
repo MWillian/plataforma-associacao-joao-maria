@@ -170,7 +170,7 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
               </div>
 
               <a
-                href="https://wa.me/5582998989898"
+                href="https://wa.me/5582996486572"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-2.5 px-4 rounded-xl text-xs font-bold text-center block transition-colors shadow-sm"

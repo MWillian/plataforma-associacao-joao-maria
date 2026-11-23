@@ -24,10 +24,10 @@ export function FoundersSection() {
               <div
                 key={founder.id}
                 style={{ width: '100%', maxWidth: '342.09px', minHeight: '378.77px' }}
-                className="bg-slate-50/80 rounded-2xl p-6 sm:p-8 pt-32 flex flex-col justify-between shadow-sm border border-slate-100 relative mt-20"
+                className="group relative mt-20 flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50/80 p-6 pt-32 shadow-sm transition-all duration-500 ease-out hover:-translate-y-3 hover:border-blue-200 hover:shadow-2xl motion-reduce:transition-none sm:p-8"
               >
                 {/* Imagem Circular Sobreposta no Topo */}
-                <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full bg-slate-300 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+                <div className="absolute -top-16 left-1/2 flex h-24 w-24 -translate-x-1/2 transform items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-300 shadow-md transition-transform duration-500 group-hover:scale-110 motion-reduce:transition-none">
                   <span className="text-slate-500 text-xs font-roboto">Foto</span>
                 </div>
 

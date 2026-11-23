@@ -62,21 +62,9 @@ export function Navbar({ activePage, setActivePage }) {
         >
           <div className="flex items-center gap-5">
             <a
-              href="https://www.facebook.com/associacaojoaomaria"
+              href="https://www.instagram.com/associacaobairrojoaomaria"
               target="_blank"
-              rel="noreferrer"
-              aria-label="Facebook"
-              className="hover:text-blue-300 hover:scale-110 transition-all duration-300"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-            </a>
-
-            <a
-              href="https://www.instagram.com/associacaojoaomaria"
-              target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="Instagram"
               className="hover:text-blue-300 hover:scale-110 transition-all duration-300"
             >
@@ -86,7 +74,7 @@ export function Navbar({ activePage, setActivePage }) {
             </a>
 
             <a
-              href="mailto:contato@associacaojoaomaria.org"
+              href="mailto:Ana_mary_1_4@hotmail.com"
               aria-label="E-mail"
               className="hover:text-blue-300 hover:scale-110 transition-all duration-300"
             >
@@ -98,7 +86,9 @@ export function Navbar({ activePage, setActivePage }) {
 
           <div className="flex items-center gap-2 font-roboto text-xs sm:text-sm">
             <Phone size={14} />
-            <span>(82) 99898-9898</span>
+            <a href="tel:+5582996486572" className="hover:text-blue-300 transition-colors">
+              (82) 99648-6572
+            </a>
           </div>
         </div>
       </div>

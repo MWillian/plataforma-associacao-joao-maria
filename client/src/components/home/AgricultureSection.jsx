@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function AgricultureSection({ products = [] }) {
+export function AgricultureSection({ products = [], onNavigate }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -39,6 +39,7 @@ export function AgricultureSection({ products = [] }) {
         sm:px-6
         font-poppins
         overflow-hidden
+        scroll-mt-24
       "
     >
       <div className="max-w-7xl mx-auto">
@@ -309,6 +310,8 @@ export function AgricultureSection({ products = [] }) {
           `}
         >
           <button
+            type="button"
+            onClick={() => onNavigate?.('agriculture')}
             className="
               group
               relative

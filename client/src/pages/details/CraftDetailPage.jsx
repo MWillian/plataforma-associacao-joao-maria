@@ -156,7 +156,7 @@ export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSe
             {/* Botão do WhatsApp */}
             <div className="pt-2 space-y-3">
               <a
-                href="https://wa.me/5582998989898"
+                href="https://wa.me/5582996486572"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-3.5 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all cursor-pointer"
