@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { getApiErrorMessage } from '../services/apiError.js';
 import { readImageAsDataUrl } from '../utils/imageFile.js';
@@ -226,10 +227,11 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
             ) : (
               <button
                 type="button"
-                onClick={handleCancel}
-                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                onClick={onBack}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-700 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
               >
-                ✕ Cancelar
+                <ArrowLeft aria-hidden="true" size={16} />
+                Voltar
               </button>
             )}
 
@@ -374,7 +376,14 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
               </div>
 
               {/* Publicar */}
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="rounded-lg border border-blue-700 bg-white px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                >
+                  Cancelar
+                </button>
                 <button
                   type="submit"
                   disabled={isSaving}
@@ -403,7 +412,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
             {news.map((newsItem) => (
               <article
                 key={newsItem.id}
-                className="rounded-xl border border-[#DCE4F0] bg-white p-5"
+                className="flex h-full flex-col rounded-xl border border-[#DCE4F0] bg-white p-5"
               >
                 {/* Data */}
                 <div className="mb-4 flex items-center justify-between">
@@ -441,7 +450,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                   {newsItem.description}
                 </p>
 
-                <p className="mt-3 text-xs font-medium text-blue-700">
+                <p className="mt-auto pt-3 text-xs font-medium text-blue-700">
                   Exibição: {
                     {
                       studio: 'Estúdio Adágio',
