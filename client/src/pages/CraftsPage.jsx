@@ -69,6 +69,7 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
     (newsPage - 1) * newsPerPage,
     newsPage * newsPerPage
   );
+  const latestNews = filteredNews[0];
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen page-reveal-fade">
@@ -93,47 +94,68 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
         </div>
       </div>
 
-      {/* Destaque da Oficina Recente */}
-      <section className="py-16 sm:py-20 px-6 max-w-7xl mx-auto border-b border-slate-100">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 flex justify-center">
-            <div 
-              style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
-              className="w-full h-80 sm:h-96 lg:h-[320px] bg-amber-100/90 rounded-2xl shadow-xl flex items-center justify-center p-6 relative overflow-hidden text-center border border-amber-200"
+      {latestNews && (
+        <section className="py-16 sm:py-20 px-6 max-w-7xl mx-auto border-b border-slate-100">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <button
+              type="button"
+              onClick={() => onSelectNews?.(latestNews)}
+              className="lg:col-span-7 flex justify-center"
+              aria-label={`Ler notícia: ${latestNews.title}`}
             >
-              <div className="text-amber-950 space-y-2">
-                <h3 className="text-2xl sm:text-3xl font-serif italic font-bold">
-                  Oficina de Crochê
-                </h3>
-                <h4 className="text-lg sm:text-xl font-medium">
-                  Venha criar com as mãos.
-                </h4>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 space-y-6">
-            <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
-              Oficinas: Produção de artigos de crochê.
-            </h3>
-            
-            <p className="text-slate-600 font-roboto text-base leading-relaxed">
-              Participe desse encontro para aprender e compartilhar conhecimentos básicos sobre a arte do crochê.
-            </p>
-
-            <div className="pt-2">
-              <a
-                href="https://wa.me/5582998989898"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
+              <div
+                style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
+                className="w-full h-80 sm:h-96 lg:h-[320px] bg-amber-100 rounded-2xl shadow-xl flex items-center justify-center overflow-hidden border border-amber-200 cursor-pointer"
               >
-                Saiba Mais / Inscrições <span>→</span>
-              </a>
+                {latestNews.images?.[0] ? (
+                  <img
+                    src={latestNews.images[0]}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-amber-800 text-sm font-medium">
+                    Sem imagem
+                  </span>
+                )}
+              </div>
+            </button>
+
+            <div className="lg:col-span-5 space-y-6">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelectNews?.(latestNews)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectNews?.(latestNews);
+                  }
+                }}
+                aria-label={`Ler notícia: ${latestNews.title}`}
+                className="block w-full cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2"
+              >
+                <span className="text-xs uppercase tracking-widest text-amber-800 font-bold">
+                  Última notícia
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
+                  {latestNews.title}
+                </h3>
+                <p className="text-slate-600 font-roboto text-base leading-relaxed break-words [overflow-wrap:anywhere] line-clamp-4">
+                  {latestNews.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onSelectNews?.(latestNews)}
+                className="inline-flex cursor-pointer items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
+              >
+                Ler notícia completa <span>→</span>
+              </button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* SEÇÃO 1: CATÁLOGO DE PRODUTOS ARTESANAIS */}
       <section ref={productsSectionRef} className="py-16 px-6 max-w-7xl mx-auto scroll-mt-24">
@@ -326,7 +348,7 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
                     </h3>
                   </div>
 
-                  <p className="text-slate-600 font-roboto text-sm leading-relaxed line-clamp-3">
+                  <p className="text-slate-600 font-roboto text-sm leading-relaxed line-clamp-3 break-words [overflow-wrap:anywhere]">
                     {item.description}
                   </p>
 

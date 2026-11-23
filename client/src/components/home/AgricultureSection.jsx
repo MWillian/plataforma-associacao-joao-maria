@@ -1,26 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function AgricultureSection() {
+export function AgricultureSection({ products = [], onNavigate }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const products = [
-    {
-      id: 1,
-      tag: 'Produto',
-      title: 'Tomates',
-    },
-    {
-      id: 2,
-      tag: 'Produto',
-      title: 'Batata doce',
-    },
-    {
-      id: 3,
-      tag: 'Produto',
-      title: 'Alface',
-    },
-  ];
+  const items = products.slice(0, 3);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -55,6 +39,7 @@ export function AgricultureSection() {
         sm:px-6
         font-poppins
         overflow-hidden
+        scroll-mt-24
       "
     >
       <div className="max-w-7xl mx-auto">
@@ -124,7 +109,7 @@ export function AgricultureSection() {
             md:gap-8
           "
         >
-          {products.map((item, index) => (
+          {items.map((item, index) => (
             <div
               key={item.id}
               style={{
@@ -208,8 +193,14 @@ export function AgricultureSection() {
                   "
                 />
 
-                {/* Placeholder */}
-                <span
+                {item.images?.[0] ? (
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="relative z-10 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                ) : (
+                  <span
                   className="
                     relative
                     z-10
@@ -225,8 +216,9 @@ export function AgricultureSection() {
                     group-hover:scale-105
                   "
                 >
-                  Placeholder Imagem
+                  Sem imagem
                 </span>
+                )}
 
                 {/* Tag */}
                 <span
@@ -318,6 +310,8 @@ export function AgricultureSection() {
           `}
         >
           <button
+            type="button"
+            onClick={() => onNavigate?.('agriculture')}
             className="
               group
               relative

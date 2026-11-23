@@ -69,6 +69,7 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
     (newsPage - 1) * newsPerPage,
     newsPage * newsPerPage
   );
+  const latestNews = filteredNews[0];
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen page-reveal-fade">
@@ -94,47 +95,68 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
         </div>
       </div>
 
-      {/* Seção do Evento em Destaque */}
-      <section className="py-16 sm:py-20 px-6 max-w-7xl mx-auto border-b border-slate-100">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 flex justify-center">
-            <div
-              style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
-              className="w-full h-80 sm:h-96 lg:h-[320px] bg-amber-200/90 rounded-2xl shadow-xl flex items-center justify-center p-6 relative overflow-hidden text-center border border-amber-300"
+      {latestNews && (
+        <section className="py-16 sm:py-20 px-6 max-w-7xl mx-auto border-b border-slate-100">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <button
+              type="button"
+              onClick={() => onSelectNews?.(latestNews)}
+              className="lg:col-span-7 flex justify-center"
+              aria-label={`Ler notícia: ${latestNews.title}`}
             >
-              <div className="text-amber-950 space-y-3">
-                <h3 className="text-3xl sm:text-4xl font-serif font-extrabold tracking-wide">
-                  Feira de Agricultura Familiar
+              <div
+                style={{ width: '100%', maxWidth: '664px', minHeight: '320px' }}
+                className="w-full h-80 sm:h-96 lg:h-[320px] bg-emerald-100 rounded-2xl shadow-xl flex items-center justify-center overflow-hidden border border-emerald-200 cursor-pointer"
+              >
+                {latestNews.images?.[0] ? (
+                  <img
+                    src={latestNews.images[0]}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-emerald-800 text-sm font-medium">
+                    Sem imagem
+                  </span>
+                )}
+              </div>
+            </button>
+
+            <div className="lg:col-span-5 space-y-6">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelectNews?.(latestNews)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectNews?.(latestNews);
+                  }
+                }}
+                aria-label={`Ler notícia: ${latestNews.title}`}
+                className="block w-full cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2"
+              >
+                <span className="text-xs uppercase tracking-widest text-emerald-700 font-bold">
+                  Última notícia
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
+                  {latestNews.title}
                 </h3>
-                <p className="text-sm font-medium opacity-90">
-                  Alimentos frescos direto do produtor para a sua mesa
+                <p className="text-slate-600 font-roboto text-base leading-relaxed break-words [overflow-wrap:anywhere] line-clamp-4">
+                  {latestNews.description}
                 </p>
               </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 space-y-6">
-            <h3 className="text-2xl sm:text-3xl font-bold text-[#142D59] leading-tight">
-              Evento: Feira da Agricultura Familiar.
-            </h3>
-
-            <p className="text-slate-600 font-roboto text-base leading-relaxed">
-              Participe da nova edição da nossa feira livre e leve alimentos livres de agrotóxicos para sua família.
-            </p>
-
-            <div className="pt-2">
-              <a
-                href="https://wa.me/5582998989898"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
+              <button
+                type="button"
+                onClick={() => onSelectNews?.(latestNews)}
+                className="inline-flex cursor-pointer items-center text-[#3570FC] font-semibold text-sm hover:underline underline-offset-4 gap-2 transition-colors"
               >
-                Saiba Mais / Datas e Locais <span>→</span>
-              </a>
+                Ler notícia completa <span>→</span>
+              </button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* SEÇÃO 1: CATÁLOGO DE CULTIVOS E ALIMENTOS */}
       <section ref={productsSectionRef} className="py-16 px-6 max-w-7xl mx-auto scroll-mt-24">
@@ -324,7 +346,7 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
                     </h3>
                   </div>
 
-                  <p className="text-slate-600 font-roboto text-sm leading-relaxed line-clamp-3">
+                  <p className="text-slate-600 font-roboto text-sm leading-relaxed line-clamp-3 break-words [overflow-wrap:anywhere]">
                     {item.description}
                   </p>
 

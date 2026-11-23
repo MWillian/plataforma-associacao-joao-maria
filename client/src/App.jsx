@@ -20,6 +20,7 @@ import { FeedbackToast } from './components/details/FeedbackToast.jsx';
 import {
   createClass,
   listClasses,
+  listPublicClasses,
   removeClass,
   updateClass,
 } from './services/classes.js';
@@ -40,6 +41,7 @@ import {
   deleteProduct,
   listAdminProducts,
   listPublicProducts,
+  listProductHighlights,
   setProductAvailability,
   updateProduct,
 } from './services/products.js';
@@ -179,8 +181,12 @@ export default function App() {
   // até o painel ser carregado.
   const [products, setProducts] = useState([]);
   const [publicProducts, setPublicProducts] = useState([]);
+  const [latestCraftProducts, setLatestCraftProducts] = useState([]);
+  const [latestAgricultureProducts, setLatestAgricultureProducts] = useState([]);
+  const [adminProductsLoaded, setAdminProductsLoaded] = useState(false);
   // 'idle' | 'ready' | 'error'
   const [adminDataStatus, setAdminDataStatus] = useState('idle');
+  const [publicDataError, setPublicDataError] = useState(false);
   // Evita pedir os dados do painel mais de uma vez por sessão.
   const adminDataRequestedRef = useRef(false);
 
@@ -295,6 +301,17 @@ export default function App() {
     setActivePage(targetPage);
   };
 
+  const navigateToHomeSection = (sectionId) => {
+    navigate('home');
+
+    window.setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 100);
+  };
+
   const handleLogin = (user) => {
     setIsAuthenticated(true);
     navigate('adm-dashboard');
@@ -310,6 +327,7 @@ export default function App() {
       setStudents([]);
       setNotices([]);
       setProducts([]);
+      setAdminProductsLoaded(false);
       adminDataRequestedRef.current = false;
       setAdminDataStatus('idle');
       navigate('adm-login');
@@ -328,28 +346,36 @@ export default function App() {
 
     adminDataRequestedRef.current = true;
 
-    Promise.all([
+    Promise.allSettled([
       listClasses(),
       listStudents(),
       listNotices(),
       listAdminProducts(),
     ])
-      .then(
-        ([
-          loadedClasses,
-          loadedStudents,
-          loadedNotices,
-          loadedProducts,
-        ]) => {
-          setClasses(loadedClasses);
-          setStudents(loadedStudents);
-          setNotices(loadedNotices);
-          setProducts(loadedProducts);
-          setAdminDataStatus('ready');
+      .then(([classesResult, studentsResult, noticesResult, productsResult]) => {
+        if (classesResult.status === 'fulfilled') {
+          setClasses(classesResult.value);
         }
-      )
-      .catch(() => {
-        setAdminDataStatus('error');
+
+        if (studentsResult.status === 'fulfilled') {
+          setStudents(studentsResult.value);
+        }
+
+        if (noticesResult.status === 'fulfilled') {
+          setNotices(noticesResult.value);
+        }
+
+        if (productsResult.status === 'fulfilled') {
+          setProducts(productsResult.value);
+          setAdminProductsLoaded(true);
+        }
+
+        setAdminDataStatus(
+          [classesResult, studentsResult, noticesResult, productsResult]
+            .some((result) => result.status === 'rejected')
+            ? 'error'
+            : 'ready'
+        );
       });
   }, [isAuthenticated, isAuthLoading, activePage]);
 
@@ -357,15 +383,42 @@ export default function App() {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([listNews(), listPublicProducts()])
-      .then(([loadedNews, loadedProducts]) => {
+    Promise.allSettled([
+      listNews(),
+      listPublicProducts(),
+      listPublicClasses(),
+      listProductHighlights('artesanato'),
+      listProductHighlights('agricultura'),
+    ])
+      .then(([newsResult, productsResult, classesResult, craftsResult, agricultureResult]) => {
         if (cancelled) return;
 
-        setNews(loadedNews);
-        setPublicProducts(loadedProducts);
-      })
-      .catch(() => {
-        // O site continua funcionando sem notícias/produtos.
+        if (newsResult.status === 'fulfilled') {
+          setNews(newsResult.value);
+        }
+
+        if (productsResult.status === 'fulfilled') {
+          setPublicProducts(productsResult.value);
+        }
+
+        if (classesResult.status === 'fulfilled') {
+          setClasses(classesResult.value);
+        }
+
+        if (craftsResult.status === 'fulfilled') {
+          setLatestCraftProducts(craftsResult.value.map(productToPublic));
+        }
+
+        if (agricultureResult.status === 'fulfilled') {
+          setLatestAgricultureProducts(
+            agricultureResult.value.map(productToPublic)
+          );
+        }
+
+        setPublicDataError(
+          [newsResult, productsResult, classesResult, craftsResult, agricultureResult]
+            .some((result) => result.status === 'rejected')
+        );
       });
 
     return () => {
@@ -565,7 +618,7 @@ export default function App() {
 
   // Catálogo do site: usa o painel (se carregado) ou a lista pública.
   const catalogProducts =
-    adminDataStatus === 'ready'
+    adminProductsLoaded
       ? products.filter((product) => product.available)
       : publicProducts;
   const craftCatalog = catalogProducts
@@ -579,7 +632,7 @@ export default function App() {
     adminDataStatus === 'error' ? (
       <FeedbackToast
         type="error"
-        message="Não foi possível carregar os dados do painel. Recarregue a página."
+        message="Alguns dados do painel não puderam ser carregados. Recarregue a página."
       />
     ) : null;
 
@@ -662,30 +715,42 @@ export default function App() {
 
   if (activePage === 'adm-news') {
     return (
-      <AdmNewsPage
-        news={news}
-        onCreate={handleCreateNews}
-        onUpdate={handleUpdateNews}
-        onRemove={handleRemoveNews}
-        onBack={() => navigate('adm-dashboard')}
-      />
+      <>
+        {loadErrorToast}
+        <AdmNewsPage
+          news={news}
+          onCreate={handleCreateNews}
+          onUpdate={handleUpdateNews}
+          onRemove={handleRemoveNews}
+          onBack={() => navigate('adm-dashboard')}
+        />
+      </>
     );
   }
 
   if (activePage === 'adm-products') {
     return (
-      <AdmProductsPage
-        products={products}
-        onCreate={handleCreateProduct}
-        onUpdate={handleUpdateProduct}
-        onRemove={handleRemoveProduct}
-        onBack={() => navigate('adm-dashboard')}
-      />
+      <>
+        {loadErrorToast}
+        <AdmProductsPage
+          products={products}
+          onCreate={handleCreateProduct}
+          onUpdate={handleUpdateProduct}
+          onRemove={handleRemoveProduct}
+          onBack={() => navigate('adm-dashboard')}
+        />
+      </>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
+      {publicDataError && (
+        <FeedbackToast
+          type="error"
+          message="Alguns conteúdos não puderam ser carregados. Recarregue a página."
+        />
+      )}
       <div>
         <Navbar
           activePage={activePage}
@@ -698,6 +763,9 @@ export default function App() {
         {activePage === 'home' && (
           <HomePage
             news={news}
+            craftProducts={latestCraftProducts}
+            agricultureProducts={latestAgricultureProducts}
+            onNavigate={navigate}
             onSelectNews={(newsItem) => handleSelectNews(
               newsItem,
               newsItem.publicationArea || 'studio'
@@ -726,6 +794,7 @@ export default function App() {
         {activePage === 'studio' && (
           <StudioPage
             news={news}
+            classes={classes}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'studio')}
           />
         )}
@@ -764,7 +833,7 @@ export default function App() {
           />
         )}
       </div>
-      <FooterSection />
+      <FooterSection onNavigateToSection={navigateToHomeSection} />
     </div>
   );
 }

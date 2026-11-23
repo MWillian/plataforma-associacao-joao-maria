@@ -113,7 +113,7 @@ export function NewsDetailPage({ news, onBack, onGoHome }) {
           </div>
 
           <a
-            href="https://wa.me/5582998989898"
+            href="https://wa.me/5582996486572"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto bg-[#1b7a33] hover:bg-[#156128] text-white px-6 py-3.5 rounded-xl font-bold text-sm text-center transition-all shadow-md hover:shadow-lg shrink-0 cursor-pointer"

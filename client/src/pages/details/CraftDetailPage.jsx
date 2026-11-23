@@ -26,7 +26,15 @@ export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSe
   };
 
   const currentProduct = product || defaultProduct;
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [imageSelection, setImageSelection] = useState({
+    productId: currentProduct.id,
+    index: 0,
+  });
+  const selectedImageIndex =
+    String(imageSelection.productId) === String(currentProduct.id)
+      ? imageSelection.index
+      : 0;
+  const productImages = (currentProduct.images || []).slice(0, 3);
 
   // Produtos semelhantes: outros itens do catálogo.
   const similarProducts = products
@@ -66,38 +74,47 @@ export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSe
             {/* Imagem Principal */}
             <div className="w-full h-64 sm:h-96 md:h-[420px] bg-amber-50/60 rounded-2xl sm:rounded-3xl border border-amber-200/50 flex items-center justify-center overflow-hidden shadow-sm relative">
               <ProductImage
-                src={currentProduct.images?.[selectedImageIndex]}
+                src={productImages[selectedImageIndex]}
                 alt={currentProduct.title}
               >
                 <span className="text-amber-800/60 font-roboto text-xs sm:text-base font-medium px-4 text-center">
-                  {currentProduct.images?.[selectedImageIndex] || 'Imagem do Produto'}
+                  {productImages[selectedImageIndex] || 'Imagem do Produto'}
                 </span>
               </ProductImage>
             </div>
 
             {/* Miniaturas */}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
-              {[0, 1, 2].map((idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImageIndex(idx + 1)}
-                  className={`h-20 sm:h-28 bg-amber-50/40 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-center p-2 ${
-                    selectedImageIndex === idx + 1
-                      ? 'border-amber-700 ring-2 ring-amber-700/20 shadow-md'
-                      : 'border-slate-200 hover:border-amber-400'
-                  }`}
-                >
-                  <ProductImage
-                    src={currentProduct.images?.[idx + 1]}
-                    alt={`${currentProduct.title} (foto ${idx + 2})`}
-                  >
-                    <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
-                      {currentProduct.images?.[idx + 1] || `Foto ${idx + 1}`}
-                    </span>
-                  </ProductImage>
-                </button>
-              ))}
-            </div>
+            {productImages.length > 1 && (
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+                {productImages.slice(1).map((image, index) => {
+                  const imageIndex = index + 1;
+
+                  return (
+                    <button
+                      key={imageIndex}
+                      onClick={() => setImageSelection({
+                        productId: currentProduct.id,
+                        index: imageIndex,
+                      })}
+                      className={`h-20 sm:h-28 bg-amber-50/40 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-center p-2 ${
+                        selectedImageIndex === imageIndex
+                          ? 'border-amber-700 ring-2 ring-amber-700/20 shadow-md'
+                          : 'border-slate-200 hover:border-amber-400'
+                      }`}
+                    >
+                      <ProductImage
+                        src={image}
+                        alt={`${currentProduct.title} (foto ${imageIndex + 1})`}
+                      >
+                        <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
+                          {image || `Foto ${imageIndex + 1}`}
+                        </span>
+                      </ProductImage>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Coluna da Direita: Informações e Encomenda (5 colunas no Desktop) */}
@@ -139,7 +156,7 @@ export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSe
             {/* Botão do WhatsApp */}
             <div className="pt-2 space-y-3">
               <a
-                href="https://wa.me/5582998989898"
+                href="https://wa.me/5582996486572"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-3.5 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all cursor-pointer"

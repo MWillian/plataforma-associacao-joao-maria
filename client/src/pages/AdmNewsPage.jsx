@@ -437,7 +437,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                   {newsItem.title}
                 </h3>
 
-                <p className="text-sm leading-relaxed text-[#7183A3]">
+                <p className="line-clamp-4 break-words text-sm leading-relaxed text-[#7183A3] [overflow-wrap:anywhere]">
                   {newsItem.description}
                 </p>
 

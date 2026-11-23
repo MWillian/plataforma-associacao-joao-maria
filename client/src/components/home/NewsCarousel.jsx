@@ -61,7 +61,7 @@ export function NewsCarousel({ news = [], onSelectNews }) {
           <button
             type="button"
             onClick={selectNews}
-            className="flex min-h-56 items-center justify-center bg-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-inset md:min-h-72"
+            className="flex min-h-56 cursor-pointer items-center justify-center bg-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-inset md:min-h-72"
             aria-label={`Abrir notícia: ${currentNews.title}`}
           >
             {isImageFile ? (
@@ -81,7 +81,7 @@ export function NewsCarousel({ news = [], onSelectNews }) {
             <button
               type="button"
               onClick={selectNews}
-              className="text-left focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2"
+              className="cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#3570FC] focus:ring-offset-2"
             >
               <span className="text-xs font-semibold uppercase tracking-wide text-[#3570FC]">
                 {areaLabels[currentNews.publicationArea] || 'Associação'}
@@ -89,7 +89,7 @@ export function NewsCarousel({ news = [], onSelectNews }) {
               <h3 className="mt-3 text-2xl font-bold leading-tight text-[#142D59]">
                 {currentNews.title}
               </h3>
-              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+              <p className="mt-4 text-sm leading-relaxed text-slate-600 line-clamp-4 break-words [overflow-wrap:anywhere]">
                 {currentNews.description}
               </p>
               <span className="mt-5 inline-block text-sm font-semibold text-[#3570FC]">

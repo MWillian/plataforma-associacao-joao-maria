@@ -28,7 +28,7 @@ export function AboutSection() {
     <section
       id="quem-somos"
       ref={sectionRef}
-      className="bg-white py-16 md:py-20 px-6 font-poppins text-[#142D59] overflow-hidden"
+      className="scroll-mt-24 bg-white py-16 md:py-20 px-6 font-poppins text-[#142D59] overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
 

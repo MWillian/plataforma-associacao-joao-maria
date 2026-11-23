@@ -20,8 +20,8 @@ export class ProductRepository {
       include: PRODUCT_INCLUDE,
       take: 3,
       orderBy: [
-        { title: 'asc' },
-        { id: 'asc' },
+        { createdAt: 'desc' },
+        { id: 'desc' },
       ],
     });
   }

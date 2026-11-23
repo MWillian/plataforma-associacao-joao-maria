@@ -237,7 +237,7 @@ const getDanceClassName = (classId) => {
                   </h3>
 
                   {/* Descrição */}
-                  <p className="text-sm leading-relaxed text-[#7183A3]">
+                  <p className="line-clamp-4 break-words text-sm leading-relaxed text-[#7183A3] [overflow-wrap:anywhere]">
                     {newsItem.description}
                   </p>
                 </li>

@@ -1,32 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function CraftsSection() {
+export function CraftsSection({ products = [], onNavigate }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const items = [
-    {
-      id: 1,
-      tag: 'Produto',
-      title: 'Kit 3 pulseiras de macramê',
-      info: 'INSERIR O PREÇO',
-      isEvent: false,
-    },
-    {
-      id: 2,
-      tag: 'Produto',
-      title: 'Caminho de mesa em fuxico',
-      info: 'INSERIR O PREÇO',
-      isEvent: false,
-    },
-    {
-      id: 3,
-      tag: 'Evento',
-      title: '4ª Feira de Artesanato da Associação',
-      info: 'Saiba Mais',
-      isEvent: true,
-    },
-  ];
+  const items = products.slice(0, 3);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -61,6 +39,7 @@ export function CraftsSection() {
         font-poppins
         text-slate-800
         overflow-hidden
+        scroll-mt-24
       "
     >
       <div className="max-w-7xl mx-auto">
@@ -215,8 +194,14 @@ export function CraftsSection() {
                   "
                 />
 
-                {/* Placeholder */}
-                <span
+                {item.images?.[0] ? (
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="relative z-10 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                ) : (
+                  <span
                   className="
                     relative
                     z-10
@@ -232,8 +217,9 @@ export function CraftsSection() {
                     group-hover:scale-105
                   "
                 >
-                  Placeholder Imagem
+                  Sem imagem
                 </span>
+                )}
 
                 {/* =================================================
                     TAG
@@ -306,42 +292,6 @@ export function CraftsSection() {
                     border-slate-100
                   "
                 >
-                  {item.isEvent ? (
-                    <a
-                      href="#"
-                      className="
-                        inline-flex
-                        items-center
-                        gap-1
-
-                        text-[#142D59]
-                        font-semibold
-                        text-sm
-
-                        underline
-                        underline-offset-4
-
-                        hover:text-blue-600
-
-                        transition-all
-                        duration-300
-
-                        group-hover:gap-2
-                      "
-                    >
-                      {item.info}
-
-                      <span
-                        className="
-                          transition-transform
-                          duration-300
-                          group-hover:translate-x-1
-                        "
-                      >
-                        →
-                      </span>
-                    </a>
-                  ) : (
                     <span
                       className="
                         text-slate-400
@@ -357,9 +307,8 @@ export function CraftsSection() {
                         group-hover:text-slate-500
                       "
                     >
-                      {item.info}
+                      {item.price || 'Sob consulta'}
                     </span>
-                  )}
                 </div>
               </div>
             </div>
@@ -389,6 +338,8 @@ export function CraftsSection() {
           `}
         >
           <button
+            type="button"
+            onClick={() => onNavigate?.('crafts')}
             className="
               group
               relative
