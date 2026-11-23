@@ -58,7 +58,7 @@ const getDanceClassName = (classId) => {
     (danceClass) => String(danceClass.id) === String(classId)
   );
 
-  return danceClass?.name || 'Turma não encontrada';
+  return danceClass?.name || 'Turma inativa';
 };
 
   return (

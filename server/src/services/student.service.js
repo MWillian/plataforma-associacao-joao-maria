@@ -47,7 +47,7 @@ function validationError(fields) {
 // Valida o corpo no formato enviado pelo formulário do front:
 // name, email, phone, danceClassId, isMinor, guardian, guardianEmail
 // e os quatro campos da ficha médica.
-function validateStudentData(data) {
+function validateStudentData(data, { requireClass = true } = {}) {
   const fields = {};
 
   const name =
@@ -86,7 +86,9 @@ function validateStudentData(data) {
       : [];
 
   if (rawDanceClassIds.length === 0) {
-    fields.danceClassId = 'Selecione uma turma.';
+    if (requireClass) {
+      fields.danceClassId = 'Selecione uma turma.';
+    }
   } else {
     for (const classId of rawDanceClassIds) {
       if (typeof classId !== 'string' || !UUID_PATTERN.test(classId)) {
@@ -292,7 +294,7 @@ export class StudentService {
     assertValidStudentId(id);
 
     const { student, danceClassIds, guardian } =
-      validateStudentData(data);
+      validateStudentData(data, { requireClass: false });
 
     return this.runInTransaction(async (repo) => {
       const existing = await repo.findById(id);

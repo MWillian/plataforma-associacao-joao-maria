@@ -153,6 +153,11 @@ export class StudentRepository {
   }
 
   async setActiveEnrollments(studentId, classIds) {
+    if (classIds.length === 0) {
+      await this.cancelActiveEnrollments(studentId);
+      return;
+    }
+
     await this.client.enrollment.updateMany({
       where: {
         studentId,

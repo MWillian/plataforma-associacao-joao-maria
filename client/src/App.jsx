@@ -447,7 +447,7 @@ export default function App() {
         (danceClass) => String(danceClass.id) !== String(id)
       )
     );
-    // O backend também inativa os alunos da turma; refletimos na tela.
+    // Os alunos continuam ativos, mas ficam sem matrícula na turma inativada.
     setStudents((previousStudents) =>
       previousStudents
         .map((student) => {
@@ -470,17 +470,6 @@ export default function App() {
             danceClassId: classIds[0] ?? null,
           };
         })
-        .filter((student) => (student.danceClassIds?.length ?? 0) > 0)
-    );
-    setNotices((previousNotices) =>
-      previousNotices.filter((notice) => {
-        const classIds = notice.classIds
-          || [notice.classId ?? notice.danceClassId];
-
-        return !classIds.some(
-          (classId) => String(classId) === String(id)
-        );
-      })
     );
   };
 
