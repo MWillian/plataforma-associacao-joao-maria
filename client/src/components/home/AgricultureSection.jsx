@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function AgricultureSection({ products = [], onNavigate }) {
+export function AgricultureSection({ products = [], onNavigate, onSelectProduct }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -112,10 +112,24 @@ export function AgricultureSection({ products = [], onNavigate }) {
           {items.map((item, index) => (
             <div
               key={item.id}
+              role="link"
+              tabIndex={0}
+              aria-label={`Ver detalhes: ${item.title}`}
+              onClick={() => onSelectProduct?.(item)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onSelectProduct?.(item);
+                }
+              }}
               style={{
                 transitionDelay: `${200 + index * 150}ms`,
               }}
               className={`
+                cursor-pointer
+                focus:outline-none
+                focus-visible:ring-4
+                focus-visible:ring-[#3570FC]/40
                 w-full
                 max-w-[360px]
                 min-h-[430px]

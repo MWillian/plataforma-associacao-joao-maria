@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
+import { matchesSearch } from '../utils/search.js';
 import { ProductImage } from '../components/details/ProductImage.jsx';
 
 export function CraftsPage({ news = [], products = [], onSelectProduct, onSelectNews }) {
@@ -44,8 +45,7 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
 
   // Filtro de Produtos
   const filteredProducts = craftProducts.filter((item) =>
-    item.title.toLowerCase().includes(productSearch.toLowerCase()) ||
-    item.description.toLowerCase().includes(productSearch.toLowerCase())
+    matchesSearch(productSearch, item.title, item.description)
   );
 
   const productsPerPage = 6;
@@ -57,10 +57,8 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
 
   // Filtro de Notícias/Eventos
   const filteredNews = news.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(newsSearch.toLowerCase()) ||
-      item.description.toLowerCase().includes(newsSearch.toLowerCase());
-    return matchesSearch && item.publicationArea === 'crafts';
+    const matchesQuery = matchesSearch(newsSearch, item.title, item.description);
+    return matchesQuery && item.publicationArea === 'crafts';
   });
 
   const newsPerPage = 3;

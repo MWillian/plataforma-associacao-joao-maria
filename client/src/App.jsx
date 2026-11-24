@@ -759,6 +759,8 @@ export default function App() {
               newsItem,
               newsItem.publicationArea || 'studio'
             )}
+            onSelectCraftProduct={handleSelectCraftProduct}
+            onSelectAgricultureProduct={handleSelectAgricultureProduct}
           />
         )}
 
