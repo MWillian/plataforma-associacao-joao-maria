@@ -83,34 +83,28 @@ export function CraftDetailPage({ product, products = [], isLoading = false, onB
 
             {/* Miniaturas */}
             {productImages.length > 1 && (
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
-                {productImages.slice(1).map((image, index) => {
-                  const imageIndex = index + 1;
-
-                  return (
-                    <button
-                      key={imageIndex}
-                      onClick={() => setImageSelection({
-                        productId: currentProduct.id,
-                        index: imageIndex,
-                      })}
-                      className={`h-20 sm:h-28 bg-amber-50/40 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-center p-2 ${
-                        selectedImageIndex === imageIndex
-                          ? 'border-amber-700 ring-2 ring-amber-700/20 shadow-md'
-                          : 'border-slate-200 hover:border-amber-400'
-                      }`}
+              <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+                {productImages.map((image, imageIndex) => (
+                  <button
+                    key={imageIndex}
+                    type="button"
+                    aria-pressed={selectedImageIndex === imageIndex}
+                    onClick={() => setImageSelection({
+                      productId: currentProduct.id,
+                      index: imageIndex,
+                    })}
+                    className="h-20 sm:h-28 bg-amber-50/40 rounded-xl sm:rounded-2xl border border-slate-200 transition-all cursor-pointer flex items-center justify-center p-2 hover:border-amber-400"
+                  >
+                    <ProductImage
+                      src={image}
+                      alt={`${currentProduct.title} (foto ${imageIndex + 1})`}
                     >
-                      <ProductImage
-                        src={image}
-                        alt={`${currentProduct.title} (foto ${imageIndex + 1})`}
-                      >
-                        <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
-                          {image || `Foto ${imageIndex + 1}`}
-                        </span>
-                      </ProductImage>
-                    </button>
-                  );
-                })}
+                      <span className="text-[11px] sm:text-xs text-slate-400 font-roboto text-center line-clamp-1">
+                        {image || `Foto ${imageIndex + 1}`}
+                      </span>
+                    </ProductImage>
+                  </button>
+                ))}
               </div>
             )}
           </div>
