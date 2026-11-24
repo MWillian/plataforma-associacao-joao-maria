@@ -113,26 +113,13 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
           "
         >
           {items.map((item, index) => (
-            <div
+            <article
               key={item.id}
-              role="link"
-              tabIndex={0}
-              aria-label={`Ver detalhes: ${item.title}`}
-              onClick={() => onSelectProduct?.(item)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onSelectProduct?.(item);
-                }
-              }}
               style={{
                 transitionDelay: `${200 + index * 150}ms`,
               }}
               className={`
-                cursor-pointer
-                focus:outline-none
-                focus-visible:ring-4
-                focus-visible:ring-[#3570FC]/40
+                relative
                 w-full
                 max-w-[360px]
                 min-h-[430px]
@@ -281,8 +268,14 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
                     {item.price || 'Sob consulta'}
                   </span>
                 </div>
-              </div>
-            </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onSelectProduct?.(item)}
+                  aria-label={`Ver detalhes de ${item.title}`}
+                  className="absolute inset-0 z-10 cursor-pointer rounded-2xl bg-transparent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#3570FC]/50"
+                />
+            </article>
           ))}
         </div>
 

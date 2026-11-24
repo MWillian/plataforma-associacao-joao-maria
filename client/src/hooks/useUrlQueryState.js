@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 function readQueryValue(key, initialValue, parse) {
   const value = new URLSearchParams(window.location.search).get(key);
@@ -21,6 +21,11 @@ export function useUrlQueryState(
   // navegador deixaria de ser ouvido. Por isso ela fica guardada em uma ref.
   const parseRef = useRef(parse);
   const initialValueRef = useRef(initialValue);
+  const replaceHistoryRef = useRef(false);
+  const setValueReplacingHistory = useCallback((nextValue) => {
+    replaceHistoryRef.current = true;
+    setValue(nextValue);
+  }, []);
 
   useEffect(() => {
     parseRef.current = parse;
@@ -55,17 +60,20 @@ export function useUrlQueryState(
 
     const isFirstSync = isFirstSyncRef.current;
     isFirstSyncRef.current = false;
+    const shouldPushHistory =
+      history === 'push' && !isFirstSync && !replaceHistoryRef.current;
+    replaceHistoryRef.current = false;
 
     if (url.href === window.location.href) {
       return;
     }
 
-    if (history === 'push' && !isFirstSync) {
+    if (shouldPushHistory) {
       window.history.pushState({}, '', url);
     } else {
       window.history.replaceState({}, '', url);
     }
   }, [history, initialValue, key, serialize, value]);
 
-  return [value, setValue];
+  return [value, setValue, setValueReplacingHistory];
 }

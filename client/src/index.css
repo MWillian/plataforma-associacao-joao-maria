@@ -281,13 +281,30 @@
 /* ACESSIBILIDADE */
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
   .about-title,
   .about-image-wrapper,
   .about-content,
   .about-subtitle,
   .about-text,
   .about-stats {
-    transition: none;
+    opacity: 1;
     transform: none;
+  }
+
+  #quem-somos .opacity-0,
+  #estudio .opacity-0,
+  #artesanato .opacity-0,
+  #agricultura .opacity-0,
+  #fundadores .opacity-0 {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

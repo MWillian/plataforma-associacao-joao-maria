@@ -1,15 +1,21 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Search, ChevronRight, Users, Clock } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 import { matchesSearch } from '../utils/search.js';
 import { ProductImage } from '../components/details/ProductImage.jsx';
 
-export function StudioPage({ news = [], classes = [], onSelectNews }) {
+export function StudioPage({
+  news = [],
+  classes = [],
+  isPublicContentSettled = true,
+  publicDataErrors = [],
+  onSelectNews,
+}) {
   // Referência para controlar a rolagem da seção do mural
   const newsSectionRef = useRef(null);
 
   const [searchQuery, setSearchQuery] = useUrlQueryState('studioNewsSearch', '');
-  const [currentPage, setCurrentPage] = useUrlQueryState('studioNewsPage', 1, {
+  const [currentPage, setCurrentPage, replaceCurrentPage] = useUrlQueryState('studioNewsPage', 1, {
     parse: (value) => Math.max(1, Number(value) || 1),
     serialize: String,
     history: 'push',
@@ -30,11 +36,19 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
     return matchesQuery && item.publicationArea === 'studio';
   });
 
+  const remainingNews = filteredNews.slice(1);
   const itemsPerPage = 6;
-  const totalPages = Math.ceil(filteredNews.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentNews = filteredNews.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.ceil(remainingNews.length / itemsPerPage) || 1;
+  const displayedPage = Math.min(currentPage, totalPages);
+  const startIndex = (displayedPage - 1) * itemsPerPage;
+  const currentNews = remainingNews.slice(startIndex, startIndex + itemsPerPage);
   const latestNews = filteredNews[0];
+
+  useEffect(() => {
+    if (isPublicContentSettled && currentPage > totalPages) {
+      replaceCurrentPage(totalPages);
+    }
+  }, [currentPage, isPublicContentSettled, replaceCurrentPage, totalPages]);
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen page-reveal-fade">
@@ -182,7 +196,11 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
           </div>
         ) : (
           <div className="rounded-xl border border-slate-200 bg-slate-50 py-12 text-center text-slate-500">
-            Nenhuma turma cadastrada no momento.
+            {!isPublicContentSettled
+              ? 'Carregando turmas...'
+              : publicDataErrors.includes('classes')
+                ? 'Não foi possível carregar as turmas. Use o aviso de erro para tentar novamente.'
+                : 'Nenhuma turma cadastrada no momento.'}
           </div>
         )}
       </section>
@@ -265,7 +283,13 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
           </div>
         ) : (
           <div className="text-center py-16 text-slate-500 font-roboto">
-            Nenhuma publicação encontrada para a sua busca.
+            {!isPublicContentSettled
+              ? 'Carregando notícias...'
+              : publicDataErrors.includes('news')
+                ? 'Não foi possível carregar as notícias. Use o aviso de erro para tentar novamente.'
+                : latestNews
+                  ? 'A notícia encontrada está em destaque acima.'
+                  : 'Nenhuma publicação encontrada para a sua busca.'}
           </div>
         )}
 
@@ -277,7 +301,7 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${currentPage === page
+                  className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${displayedPage === page
                     ? 'bg-[#0b1b3d] text-white'
                     : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                     }`}
@@ -288,8 +312,8 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
             </div>
 
             <button
-              onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(Math.min(displayedPage + 1, totalPages))}
+              disabled={displayedPage === totalPages}
               className="flex items-center gap-2 text-[#0b1b3d] font-semibold text-sm hover:text-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               Próxima <ChevronRight size={16} />
