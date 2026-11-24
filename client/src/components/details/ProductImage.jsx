@@ -1,14 +1,13 @@
-// Mostra a imagem do produto quando houver; caso contrário, o conteúdo
-// de reserva (children).
 export function ProductImage({ src, alt, children }) {
+  const imageSource = typeof src === 'string' ? src : src?.url;
   const isImage =
-    typeof src === 'string' &&
-    (src.startsWith('data:image/') || src.startsWith('http'));
+    typeof imageSource === 'string' &&
+    (imageSource.startsWith('data:image/') || imageSource.startsWith('http'));
 
   if (isImage) {
     return (
       <img
-        src={src}
+        src={imageSource}
         alt={alt}
         className="h-full w-full object-cover"
       />

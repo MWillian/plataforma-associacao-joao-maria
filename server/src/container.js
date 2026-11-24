@@ -1,4 +1,5 @@
 import { ClassController } from './controllers/class.controller.js';
+import { MediaController } from './controllers/media.controller.js';
 import { NewsController } from './controllers/news.controller.js';
 import { NoticeController } from './controllers/notice.controller.js';
 import { ProductController } from './controllers/product.controller.js';
@@ -9,6 +10,7 @@ import { NoticeRepository } from './repositories/notice.repository.js';
 import { ProductRepository } from './repositories/product.repository.js';
 import { StudentRepository } from './repositories/student.repository.js';
 import { ClassService } from './services/class.service.js';
+import { MediaService } from './services/media.service.js';
 import {
   isEmailConfigured,
   sendNoticeEmail,
@@ -38,6 +40,8 @@ const newsController = new NewsController(
   new NewsService(new NewsRepository()),
 );
 
+const mediaController = new MediaController(new MediaService());
+
 const noticeController = new NoticeController(
   new NoticeService(new NoticeRepository(), {
     sendEmail: sendNoticeEmail,
@@ -47,6 +51,7 @@ const noticeController = new NoticeController(
 
 export {
   classController,
+  mediaController,
   newsController,
   noticeController,
   productController,

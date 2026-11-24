@@ -79,6 +79,22 @@ function validateProductImages(images) {
   return urls;
 }
 
+function validateLegacyImageUrl(imageUrl) {
+  if (
+    typeof imageUrl === 'string' &&
+    imageUrl.trim().startsWith('data:image/')
+  ) {
+    throw new AppError(
+      400,
+      'VALIDATION_ERROR',
+      'Envie arquivos de imagem pelo endpoint de upload antes de cadastrar o produto.',
+      { images: 'Imagens em base64 não são aceitas neste endpoint.' },
+    );
+  }
+
+  return typeof imageUrl === 'string' ? imageUrl.trim() || null : null;
+}
+
 // Preço (Decimal) sai como número no JSON.
 function toProductResponse(product) {
   if (!product || product.price === null || product.price === undefined) {
@@ -126,7 +142,7 @@ export class ProductService {
     return {
       items,
       category: normalizedCategory,
-      limit: 3,
+      limit: 5,
     };
   }
 
@@ -276,6 +292,7 @@ export class ProductService {
 
     const normalizedPrice = validatePrice(price);
     const imageUrls = validateProductImages(images);
+    const fallbackImageUrl = validateLegacyImageUrl(imageUrl);
 
     if (active !== undefined && typeof active !== 'boolean') {
       throw new AppError(
@@ -310,9 +327,7 @@ export class ProductService {
           price: normalizedPrice,
           imageUrl:
             imageUrls?.[0] ??
-            (typeof imageUrl === 'string'
-              ? imageUrl.trim() || null
-              : null),
+            fallbackImageUrl,
           ...(imageUrls && { images: imageUrls }),
           active: active ?? true,
         }),
@@ -501,6 +516,7 @@ export class ProductService {
 
     const normalizedPrice = validatePrice(price);
     const imageUrls = validateProductImages(images);
+    const fallbackImageUrl = validateLegacyImageUrl(imageUrl);
 
     const productWithSameTitle =
       await this.productRepository.findByTitle(
@@ -530,9 +546,7 @@ export class ProductService {
           price: normalizedPrice,
           imageUrl:
             imageUrls?.[0] ??
-            (typeof imageUrl === 'string'
-              ? imageUrl.trim() || null
-              : null),
+            fallbackImageUrl,
           ...(imageUrls && { images: imageUrls }),
         });
 

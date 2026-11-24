@@ -4,7 +4,7 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const items = products.slice(0, 3);
+  const items = products.slice(0, 5);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -95,6 +95,9 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
               }
             `}
           />
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-blue-100/85 sm:text-base">
+            Alimentos cultivados pelas famílias da associação, valorizando a produção local e a economia comunitária.
+          </p>
         </div>
 
         {/* =====================================================
@@ -234,35 +237,6 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
                 </span>
                 )}
 
-                {/* Tag */}
-                <span
-                  className="
-                    absolute
-                    bottom-3
-                    left-3
-
-                    bg-[#0b1b3d]
-                    text-white
-
-                    text-xs
-                    font-medium
-
-                    px-3
-                    py-1
-
-                    rounded
-
-                    shadow-sm
-
-                    transition-all
-                    duration-300
-
-                    group-hover:-translate-y-1
-                    group-hover:shadow-md
-                  "
-                >
-                  {item.tag}
-                </span>
               </div>
 
               {/* =================================================
@@ -275,8 +249,6 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
 
                   flex
                   flex-col
-                  justify-between
-
                   flex-1
                 "
               >
@@ -297,6 +269,18 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
                   {item.title}
                 </h3>
 
+                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">
+                  {item.description || 'Entre em contato para saber mais sobre este produto.'}
+                </p>
+
+                <div className="mt-5 border-t border-slate-100 pt-4">
+                  <span className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Preço
+                  </span>
+                  <span className="mt-1 block text-xl font-bold text-[#0b1b3d]">
+                    {item.price || 'Sob consulta'}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

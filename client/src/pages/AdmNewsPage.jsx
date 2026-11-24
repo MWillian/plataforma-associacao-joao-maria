@@ -674,7 +674,8 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                     >
 
                       {typeof image === 'string' &&
-                      image.startsWith('data:image/') ? (
+                      (image.startsWith('data:image/') ||
+                        /^https?:\/\//i.test(image)) ? (
                         <img
                           src={image}
                           alt={`Imagem da notícia ${index + 1}`}

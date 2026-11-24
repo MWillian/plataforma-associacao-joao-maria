@@ -18,7 +18,7 @@ export class ProductRepository {
         category,
       },
       include: PRODUCT_INCLUDE,
-      take: 3,
+      take: 5,
       orderBy: [
         { createdAt: 'desc' },
         { id: 'desc' },

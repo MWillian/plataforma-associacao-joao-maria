@@ -6,6 +6,10 @@ export function getApiErrorMessage(
   fallback = 'Não foi possível concluir a operação. Tente novamente.'
 ) {
   if (!error?.response) {
+    if (!error?.isAxiosError && typeof error?.message === 'string') {
+      return error.message;
+    }
+
     return 'Sem conexão com o servidor. Verifique sua internet e tente novamente.';
   }
 

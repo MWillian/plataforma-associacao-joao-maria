@@ -1,27 +1,20 @@
 import { api } from './api.js';
 import { productFromApi } from './productMapper.js';
-import { readImageAsDataUrl } from '../utils/imageFile.js';
+import { uploadImageToCloudinary } from './media.js';
 
 const CATEGORY_TO_API = {
   Artesanato: 'artesanato',
   'Agricultura Familiar': 'agricultura',
 };
 
-// Arquivos novos viram data URL; imagens já salvas (data URL ou link) são
-// reaproveitadas; links temporários (blob:) são descartados.
 async function imagesToUrls(images = []) {
   const urls = [];
 
   for (const image of images) {
-    if (image?.file) {
-      urls.push(await readImageAsDataUrl(image.file));
-      continue;
-    }
+    const uploadedImage = await uploadImageToCloudinary(image, 'products');
 
-    const url = typeof image === 'string' ? image : image?.url;
-
-    if (url && !url.startsWith('blob:')) {
-      urls.push(url);
+    if (uploadedImage?.url) {
+      urls.push(uploadedImage.url);
     }
   }
 

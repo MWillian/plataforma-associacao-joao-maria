@@ -1,4 +1,5 @@
 import { api } from './api.js';
+import { uploadImageToCloudinary } from './media.js';
 
 // A API devolve createdAt; o front exibe a data em dd/mm/aaaa.
 export function newsFromApi(row) {
@@ -12,11 +13,21 @@ export function newsFromApi(row) {
   };
 }
 
-function toPayload(news) {
+async function toPayload(news) {
+  const images = [];
+
+  for (const image of news.images ?? []) {
+    const uploadedImage = await uploadImageToCloudinary(image, 'news');
+
+    if (uploadedImage?.url) {
+      images.push(uploadedImage.url);
+    }
+  }
+
   return {
     title: news.title,
     description: news.description,
-    images: news.images,
+    images,
     publicationArea: news.publicationArea,
   };
 }
@@ -28,12 +39,12 @@ export async function listNews() {
 }
 
 export async function createNews(news) {
-  const { data } = await api.post('/news', toPayload(news));
+  const { data } = await api.post('/news', await toPayload(news));
   return newsFromApi(data);
 }
 
 export async function updateNews(id, news) {
-  const { data } = await api.put(`/news/${id}`, toPayload(news));
+  const { data } = await api.put(`/news/${id}`, await toPayload(news));
   return newsFromApi(data);
 }
 
