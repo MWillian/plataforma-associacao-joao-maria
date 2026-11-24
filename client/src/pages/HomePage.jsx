@@ -13,6 +13,8 @@ export default function HomePage({
   agricultureProducts = [],
   onNavigate,
   onSelectNews,
+  onSelectCraftProduct,
+  onSelectAgricultureProduct,
 }) {
   return (
     <main>
@@ -20,10 +22,15 @@ export default function HomePage({
       <NewsCarousel news={news} onSelectNews={onSelectNews} />
       <AboutSection />
       <StudioSection onNavigate={onNavigate} />
-      <CraftsSection products={craftProducts} onNavigate={onNavigate} />
+      <CraftsSection
+        products={craftProducts}
+        onNavigate={onNavigate}
+        onSelectProduct={onSelectCraftProduct}
+      />
       <AgricultureSection
         products={agricultureProducts}
         onNavigate={onNavigate}
+        onSelectProduct={onSelectAgricultureProduct}
       />
       <FoundersSection />
       <DonationSection />

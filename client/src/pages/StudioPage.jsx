@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Search, ChevronRight, Users, Clock } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
+import { matchesSearch } from '../utils/search.js';
 
 export function StudioPage({ news = [], classes = [], onSelectNews }) {
   // Referência para controlar a rolagem da seção do mural
@@ -24,10 +25,8 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
   const danceClasses = classes;
 
   const filteredNews = news.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch && item.publicationArea === 'studio';
+    const matchesQuery = matchesSearch(searchQuery, item.title, item.description);
+    return matchesQuery && item.publicationArea === 'studio';
   });
 
   const itemsPerPage = 6;

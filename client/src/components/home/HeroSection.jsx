@@ -12,7 +12,7 @@ export function HeroSection() {
 
   return (
     <section className="bg-[#0b1b3d] text-white font-poppins overflow-hidden">
-      <main
+      <div
         className="
           max-w-7xl mx-auto
           px-4 sm:px-6 lg:px-8
@@ -78,7 +78,7 @@ export function HeroSection() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </section>
   );
 }

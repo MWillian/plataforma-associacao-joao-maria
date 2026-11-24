@@ -27,7 +27,8 @@ export function Navbar({ activePage, setActivePage }) {
     setActivePage(page);
     setMobileMenuOpen(false); // Fecha o menu hambúrguer ao clicar
 
-    if (page === 'home' && hash) {
+    // '#' sozinho não é um seletor válido: sem seção, volta ao topo.
+    if (page === 'home' && hash && hash !== '#') {
       setTimeout(() => {
         const element = document.querySelector(hash);
         if (element) {
@@ -106,7 +107,8 @@ export function Navbar({ activePage, setActivePage }) {
         {/* LOGO */}
         <div className="flex items-center">
           <button
-            onClick={() => handleNavClick('home', '#')}
+            type="button"
+            onClick={() => handleNavClick('home')}
             className="bg-transparent border-none cursor-pointer p-0"
           >
             <div
@@ -133,7 +135,8 @@ export function Navbar({ activePage, setActivePage }) {
         {/* NAVEGAÇÃO DESKTOP */}
         <nav className="hidden md:flex items-center gap-5 lg:gap-8 text-xs lg:text-sm font-medium tracking-wide">
           <button
-            onClick={() => handleNavClick('home', '#')}
+            type="button"
+            onClick={() => handleNavClick('home')}
             className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
               activePage === 'home' ? 'text-blue-300 font-bold' : 'text-white'
             } hover:text-blue-300`}
@@ -147,6 +150,7 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
 
           <button
+            type="button"
             onClick={() => handleNavClick('home', '#quem-somos')}
             className="relative group bg-transparent border-none cursor-pointer text-white hover:text-blue-300 transition-colors duration-300 whitespace-nowrap"
           >
@@ -155,6 +159,7 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
 
           <button
+            type="button"
             onClick={() => handleNavClick('studio', '')}
             className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
               activePage === 'studio' ? 'text-blue-300 font-bold' : 'text-white'
@@ -169,6 +174,7 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
 
           <button
+            type="button"
             onClick={() => handleNavClick('crafts', '')}
             className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
               activePage === 'crafts' ? 'text-blue-300 font-bold' : 'text-white'
@@ -183,6 +189,7 @@ export function Navbar({ activePage, setActivePage }) {
           </button>
 
           <button
+            type="button"
             onClick={() => handleNavClick('agriculture', '')}
             className={`relative group bg-transparent border-none cursor-pointer transition-colors duration-300 whitespace-nowrap ${
               activePage === 'agriculture' ? 'text-blue-300 font-bold' : 'text-white'
@@ -200,6 +207,7 @@ export function Navbar({ activePage, setActivePage }) {
         {/* BOTÃO DOAR DESKTOP */}
         <div className="hidden md:block">
           <button
+            type="button"
             onClick={() => handleNavClick('home', '#doacao')}
             className="
               bg-white text-[#0b1b3d]
@@ -219,9 +227,12 @@ export function Navbar({ activePage, setActivePage }) {
 
         {/* BOTÃO HAMBÚRGUER MOBILE */}
         <button
+          type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="md:hidden p-2 rounded-lg text-white hover:text-blue-300 bg-white/5 border border-white/10 transition-colors cursor-pointer"
-          aria-label="Abrir Menu de Navegação"
+          aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="menu-mobile"
         >
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -229,10 +240,11 @@ export function Navbar({ activePage, setActivePage }) {
 
       {/* PAINEL MOBILE RECOLHÍVEL */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#07132c] border-b border-blue-950 px-6 py-6 space-y-5 animate-fadeIn">
+        <div id="menu-mobile" className="md:hidden bg-[#07132c] border-b border-blue-950 px-6 py-6 space-y-5 animate-fadeIn">
           <nav className="flex flex-col gap-4 text-sm font-medium tracking-wide">
             <button
-              onClick={() => handleNavClick('home', '#')}
+              type="button"
+              onClick={() => handleNavClick('home')}
               className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
                 activePage === 'home' ? 'text-blue-300 font-bold' : 'text-slate-200'
               }`}
@@ -241,6 +253,7 @@ export function Navbar({ activePage, setActivePage }) {
             </button>
 
             <button
+              type="button"
               onClick={() => handleNavClick('home', '#quem-somos')}
               className="text-left py-2 border-b border-blue-900/40 text-slate-200 hover:text-blue-300 transition-colors"
             >
@@ -248,6 +261,7 @@ export function Navbar({ activePage, setActivePage }) {
             </button>
 
             <button
+              type="button"
               onClick={() => handleNavClick('studio', '')}
               className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
                 activePage === 'studio' ? 'text-blue-300 font-bold' : 'text-slate-200'
@@ -257,6 +271,7 @@ export function Navbar({ activePage, setActivePage }) {
             </button>
 
             <button
+              type="button"
               onClick={() => handleNavClick('crafts', '')}
               className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
                 activePage === 'crafts' ? 'text-blue-300 font-bold' : 'text-slate-200'
@@ -266,6 +281,7 @@ export function Navbar({ activePage, setActivePage }) {
             </button>
 
             <button
+              type="button"
               onClick={() => handleNavClick('agriculture', '')}
               className={`text-left py-2 border-b border-blue-900/40 transition-colors ${
                 activePage === 'agriculture' ? 'text-blue-300 font-bold' : 'text-slate-200'
@@ -278,6 +294,7 @@ export function Navbar({ activePage, setActivePage }) {
           {/* BOTÃO DE DOAÇÃO NO MOBILE */}
           <div className="pt-2">
             <button
+              type="button"
               onClick={() => handleNavClick('home', '#doacao')}
               className="
                 w-full bg-white text-[#0b1b3d]
