@@ -35,28 +35,30 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
 
   const handleImageChange = (event) => {
     const files = Array.from(event.target.files || []);
-    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
-    // Avisa quando algum arquivo escolhido não é imagem (antes era ignorado em silêncio).
-    if (imageFiles.length < files.length) {
-      showFeedback(
-        imageFiles.length === 0
-          ? 'Selecione pelo menos uma imagem válida.'
-          : 'Alguns arquivos foram ignorados porque não são imagens.',
-        'error'
-      );
+    if (files.length > 1) {
+      showFeedback('Selecione somente uma imagem para a notícia.', 'error');
+      event.target.value = '';
+      return;
     }
 
-    imageFiles.forEach((file) => {
+    const [file] = files;
 
-      readImageAsDataUrl(file)
-        .then((dataUrl) => {
-          setImages((previousImages) => [...previousImages, dataUrl]);
-        })
-        .catch((error) => {
-          showFeedback(getApiErrorMessage(error), 'error');
-        });
-    });
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showFeedback('Selecione uma imagem válida.', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    readImageAsDataUrl(file)
+      .then((dataUrl) => {
+        setImages([dataUrl]);
+      })
+      .catch((error) => {
+        showFeedback(getApiErrorMessage(error), 'error');
+      });
 
     event.target.value = '';
   };
@@ -335,7 +337,6 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                       <input
                         type="file"
                         accept="image/*"
-                        multiple
                         onChange={handleImageChange}
                         className="sr-only"
                       />
@@ -371,7 +372,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                   </div>
 
                   <p className="mt-2 text-xs text-[#91A4C2]">
-                    Você pode selecionar uma ou mais imagens.
+                    Você pode selecionar uma imagem. Selecionar outra substituirá a atual.
                   </p>
                 </div>
 
