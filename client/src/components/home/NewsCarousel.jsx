@@ -86,7 +86,7 @@ export function NewsCarousel({ news = [], onSelectNews }) {
               <span className="text-xs font-semibold uppercase tracking-wide text-[#3570FC]">
                 {areaLabels[currentNews.publicationArea] || 'Associação'}
               </span>
-              <h3 className="mt-3 text-2xl font-bold leading-tight text-[#142D59]">
+              <h3 className="mt-3 text-2xl font-bold leading-tight text-[#142D59] wrap-anywhere">
                 {currentNews.title}
               </h3>
               <p className="mt-4 text-sm leading-relaxed text-slate-600 line-clamp-4 break-words [overflow-wrap:anywhere]">

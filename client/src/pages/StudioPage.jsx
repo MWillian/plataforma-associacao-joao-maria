@@ -147,7 +147,7 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
                     Turma
                   </span>
 
-                  <h3 className="text-xl font-bold text-[#142D59] leading-snug">
+                  <h3 className="text-xl font-bold text-[#142D59] leading-snug wrap-anywhere">
                     {item.name}
                   </h3>
 
@@ -248,7 +248,7 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
                     <span className="inline-block bg-[#0b1b3d] text-white text-xs font-medium px-3 py-1 rounded shadow-sm">
                       {item.tag}
                     </span>
-                    <h3 className="text-xl font-bold text-[#142D59] leading-tight group-hover:text-[#3570FC] transition-colors">
+                    <h3 className="text-xl font-bold text-[#142D59] leading-tight group-hover:text-[#3570FC] transition-colors wrap-anywhere">
                       {item.title}
                     </h3>
                   </div>

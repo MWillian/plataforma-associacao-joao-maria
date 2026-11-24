@@ -1,35 +1,33 @@
 import { useState, useEffect } from 'react';
 import { HeartHandshake } from 'lucide-react';
 import { ProductImage } from '../../components/details/ProductImage.jsx';
+import { DetailState } from '../../components/details/DetailState.jsx';
 
-export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSelectProduct }) {
+export function CraftDetailPage({ product, products = [], isLoading = false, onBack, onGoHome, onSelectProduct }) {
   // Rola suavemente para o topo assim que o componente é montado ou o produto muda
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [product]);
 
-  // Produto padrão de fallback (Sousplat de Crochê)
-  const defaultProduct = {
-    id: 2,
-    title: 'Sousplat de crochê',
-    price: 'R$ 35,00',
-    unit: '/ unidade',
-    badge: 'PRODUTO COOPERATIVO',
-    description:
-      'Sousplat artesanal feito inteiramente à mão em crochê com fios selecionados de 100% algodão natural. Ideal para emoldurar pratos e decorar sua mesa com elegância, aconchego e um autêntico toque regional nordestino. Disponível sob encomenda em diversas cores personalizadas.',
-    images: [
-      'Placeholder Imagem Principal',
-      'Miniatura 1',
-      'Miniatura 2',
-      'Miniatura 3',
-    ],
-  };
-
-  const currentProduct = product || defaultProduct;
   const [imageSelection, setImageSelection] = useState({
-    productId: currentProduct.id,
+    productId: product?.id,
     index: 0,
   });
+
+  if (!product) {
+    return (
+      <DetailState
+        isLoading={isLoading}
+        notFoundTitle="Produto não encontrado"
+        notFoundText="Este produto não está mais disponível no catálogo de artesanato."
+        backLabel="Ver catálogo de artesanato"
+        onBack={onBack}
+        onGoHome={onGoHome}
+      />
+    );
+  }
+
+  const currentProduct = product;
   const selectedImageIndex =
     String(imageSelection.productId) === String(currentProduct.id)
       ? imageSelection.index
@@ -128,16 +126,18 @@ export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSe
 
             {/* Título e Preço */}
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0b1b3d] tracking-tight leading-snug">
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0b1b3d] tracking-tight leading-snug wrap-anywhere">
                 {currentProduct.title}
               </h1>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-extrabold text-amber-800">
-                  {currentProduct.price || 'R$ 35,00'}
+                  {currentProduct.price}
                 </span>
-                <span className="text-slate-500 font-roboto text-xs sm:text-sm">
-                  {currentProduct.unit || '/ unidade'}
-                </span>
+                {currentProduct.price !== 'Sob consulta' && (
+                  <span className="text-slate-500 font-roboto text-xs sm:text-sm">
+                    {currentProduct.unit || '/ unidade'}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -156,7 +156,7 @@ export function CraftDetailPage({ product, products = [], onBack, onGoHome, onSe
             {/* Botão do WhatsApp */}
             <div className="pt-2 space-y-3">
               <a
-                href="https://wa.me/5582996486572"
+                href={`https://wa.me/5582996486572?text=${encodeURIComponent(`Olá! Tenho interesse no produto ${currentProduct.title}.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-3.5 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all cursor-pointer"

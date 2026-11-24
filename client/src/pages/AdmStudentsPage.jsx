@@ -40,7 +40,12 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
   const [feedbackType, setFeedbackType] = useState('success');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Cada aviso ganha um id novo: assim a mesma mensagem volta a aparecer
+  // quando repetida (o FeedbackToast esconde de vez a mensagem que já expirou).
+  const [feedbackId, setFeedbackId] = useState(0);
+
   const showFeedback = (message, type = 'success') => {
+    setFeedbackId((currentId) => currentId + 1);
     setFeedbackType(type);
     setFeedback(message);
   };
@@ -276,7 +281,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
   return (
     <>
-      <FeedbackToast message={feedback} type={feedbackType} />
+      <FeedbackToast key={feedbackId} message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
 
       {/* Cabeçalho */}
@@ -409,7 +414,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                         type="button"
                         aria-pressed={selected}
                         onClick={() => handleClassToggle(String(danceClass.id))}
-                        className={`rounded-lg border px-3 py-2 text-sm font-medium ${
+                        className={`max-w-full rounded-lg border px-3 py-2 text-left text-sm font-medium wrap-anywhere ${
                           selected
                             ? 'border-blue-600 bg-blue-600 text-white'
                             : 'border-[#DCE4F0] bg-white text-[#526581]'
@@ -570,15 +575,16 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
               {/* Informações */}
               <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D]">
+                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
                   {student.name}
                 </h3>
 
                 <p className="text-[#9AACC5]"                >
-                  {student.email || 'Sem e-mail cadastrado'} · {student.phone}
+                  {student.email || 'Sem e-mail cadastrado'}
+                  {student.phone ? ` · ${student.phone}` : ''}
                 </p>
 
-                <p className="text-[#9AACC5]">
+                <p className="text-[#9AACC5] wrap-anywhere">
                   Turmas do aluno: {getDanceClassNames(student)}
                 </p>
 
@@ -786,7 +792,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     htmlFor="edit-student-phone"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
-                    Telefone *
+                    Telefone <span className="text-sm font-normal text-[#71839F]">(opcional)</span>
                   </label>
 
                   <input
@@ -795,7 +801,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     name="phone"
                     value={editForm.phone}
                     onChange={handleEditChange}
-                    required
+                    placeholder="(11) 99999-9999"
                     className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
@@ -819,7 +825,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                           type="button"
                           aria-pressed={selected}
                           onClick={() => handleClassToggle(String(danceClass.id), true)}
-                          className={`rounded-lg border px-3 py-2 text-sm ${
+                          className={`max-w-full rounded-lg border px-3 py-2 text-left text-sm wrap-anywhere ${
                             selected
                               ? 'border-blue-600 bg-blue-600 text-white'
                               : 'border-[#DCE4F0] bg-white text-[#526581]'

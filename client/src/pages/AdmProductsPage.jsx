@@ -100,7 +100,12 @@ export function AdmProductsPage({
   const [feedbackType, setFeedbackType] = useState('success');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Cada aviso ganha um id novo: assim a mesma mensagem volta a aparecer
+  // quando repetida (o FeedbackToast esconde de vez a mensagem que já expirou).
+  const [feedbackId, setFeedbackId] = useState(0);
+
   const showFeedback = (message, type = 'success') => {
+    setFeedbackId((currentId) => currentId + 1);
     setFeedbackType(type);
     setFeedback(message);
   };
@@ -320,7 +325,7 @@ export function AdmProductsPage({
 
   return (
     <>
-      <FeedbackToast message={feedback} type={feedbackType} />
+      <FeedbackToast key={feedbackId} message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-8 md:px-8 lg:px-10">
       <div className="mx-auto max-w-360">
 
@@ -661,7 +666,7 @@ export function AdmProductsPage({
 
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-bold text-[#172033]">
+                      <h3 className="min-w-0 text-sm font-bold text-[#172033] wrap-anywhere">
                         {getProductName(product)}
                       </h3>
 

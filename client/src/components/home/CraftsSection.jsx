@@ -294,6 +294,7 @@ export function CraftsSection({ products = [], onNavigate, onSelectProduct }) {
                     duration-300
 
                     group-hover:text-[#3570FC]
+                    wrap-anywhere
                   "
                 >
                   {item.title}

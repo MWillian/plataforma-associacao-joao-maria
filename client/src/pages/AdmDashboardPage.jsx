@@ -195,7 +195,7 @@ export function AdmDashboardPage({
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <h3 className="break-words font-semibold text-slate-800 [overflow-wrap:anywhere]">
+                      <h3 className="break-words font-semibold text-slate-800 [overflow-wrap:anywhere] wrap-anywhere">
                         {danceClass.name}
                       </h3>
                       {danceClass.createdAt && (
@@ -340,7 +340,7 @@ export function AdmDashboardPage({
                   }`}>
                     {notice.type}
                   </span>
-                  <h3 className="truncate text-sm font-semibold text-slate-800">
+                  <h3 className="truncate text-sm font-semibold text-slate-800 wrap-anywhere">
                     {notice.subject}
                   </h3>
                   <p className="mt-1 line-clamp-2 break-words text-xs text-slate-600 [overflow-wrap:anywhere]">

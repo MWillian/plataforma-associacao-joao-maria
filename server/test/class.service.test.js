@@ -490,3 +490,74 @@ describe('ClassService.list', () => {
     await assert.rejects(service.list(), /falha no banco/);
   });
 });
+
+describe('ClassService: nome duplicado', () => {
+  it('rejeita cadastrar turma com nome de outra turma ativa (sem diferenciar maiúsculas)', async () => {
+    let receivedName;
+    let created = false;
+    const service = new ClassService(
+      createRepository({
+        findActiveByName: async (name) => {
+          receivedName = name;
+          return { id: 'outra-turma', name: 'Balé Iniciante', active: true };
+        },
+        create: async () => {
+          created = true;
+        },
+      }),
+    );
+
+    await assert.rejects(
+      service.create(validData({ name: '  balé iniciante  ' })),
+      (error) => {
+        assert.equal(error.statusCode, 409);
+        assert.equal(error.code, 'CLASS_ALREADY_EXISTS');
+        assert.ok(error.fields?.name);
+        return true;
+      },
+    );
+    assert.equal(receivedName, 'balé iniciante');
+    assert.equal(created, false);
+  });
+
+  it('cadastra quando não existe turma ativa com o mesmo nome', async () => {
+    const service = new ClassService(
+      createRepository({ findActiveByName: async () => null }),
+    );
+
+    const result = await service.create(validData());
+
+    assert.equal(result.name, 'Balé Iniciante');
+  });
+
+  it('permite salvar a própria turma sem trocar o nome', async () => {
+    const service = new ClassService(
+      createRepository({
+        findActiveByName: async () => ({ id: CLASS_ID, active: true }),
+      }),
+    );
+
+    const result = await service.update(CLASS_ID, validData());
+
+    assert.equal(result.id, CLASS_ID);
+  });
+
+  it('rejeita renomear para o nome de outra turma ativa', async () => {
+    let updated = false;
+    const service = new ClassService(
+      createRepository({
+        findActiveByName: async () => ({ id: 'outra-turma', active: true }),
+        update: async () => {
+          updated = true;
+        },
+      }),
+    );
+
+    await assert.rejects(service.update(CLASS_ID, validData()), (error) => {
+      assert.equal(error.statusCode, 409);
+      assert.equal(error.code, 'CLASS_ALREADY_EXISTS');
+      return true;
+    });
+    assert.equal(updated, false);
+  });
+});

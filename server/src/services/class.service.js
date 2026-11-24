@@ -85,6 +85,15 @@ function assertValidClassId(id) {
   }
 }
 
+function classAlreadyExists() {
+  return new AppError(
+    409,
+    'CLASS_ALREADY_EXISTS',
+    'Já existe uma turma ativa com este nome.',
+    { name: 'Já existe uma turma ativa com este nome.' },
+  );
+}
+
 function classNotFound() {
   return new AppError(
     404,
@@ -102,10 +111,26 @@ export class ClassService {
     return this.classRepository.listActive();
   }
 
+  // Bloqueia nome repetido entre turmas ativas (ignora maiúsculas/minúsculas
+  // e espaços nas pontas). Na edição, a própria turma não conta.
+  async assertNameAvailable(name, ignoreId = null) {
+    if (typeof this.classRepository.findActiveByName !== 'function') {
+      return;
+    }
+
+    const existing = await this.classRepository.findActiveByName(name);
+
+    if (existing && existing.id !== ignoreId) {
+      throw classAlreadyExists();
+    }
+  }
+
   async create(data = {}) {
-    return this.classRepository.create(
-      validateClassData(data),
-    );
+    const validatedData = validateClassData(data);
+
+    await this.assertNameAvailable(validatedData.name);
+
+    return this.classRepository.create(validatedData);
   }
 
   async update(id, data = {}) {
@@ -117,6 +142,8 @@ export class ClassService {
     if (!existing) {
       throw classNotFound();
     }
+
+    await this.assertNameAvailable(validatedData.name, id);
 
     if (
       validatedData.capacity !== null &&

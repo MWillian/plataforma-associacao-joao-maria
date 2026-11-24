@@ -30,7 +30,12 @@ export function AdmClassesPage({
   const [feedbackType, setFeedbackType] = useState('success');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Cada aviso ganha um id novo: assim a mesma mensagem volta a aparecer
+  // quando repetida (o FeedbackToast esconde de vez a mensagem que já expirou).
+  const [feedbackId, setFeedbackId] = useState(0);
+
   const showFeedback = (message, type = 'success') => {
+    setFeedbackId((currentId) => currentId + 1);
     setFeedbackType(type);
     setFeedback(message);
   };
@@ -237,7 +242,7 @@ export function AdmClassesPage({
 
   return (
     <>
-      <FeedbackToast message={feedback} type={feedbackType} />
+      <FeedbackToast key={feedbackId} message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
 
       {/* Cabeçalho */}
@@ -440,7 +445,7 @@ export function AdmClassesPage({
 
               {/* Informações */}
               <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D]">
+                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
                   {danceClass.name}
                 </h3>
 
