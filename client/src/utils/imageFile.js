@@ -1,6 +1,12 @@
-// Lê uma imagem escolhida pelo usuário como data URL (base64), reduzindo
-// fotos grandes (máx. 1280 px) para o envio ao backend ficar leve.
-export function readImageAsDataUrl(file, maxSize = 1280, quality = 0.85) {
+function getDataUrlSize(dataUrl) {
+  const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
+
+  return Math.floor((base64.length * 3) / 4) - padding;
+}
+
+// Reduz imagens para no máximo 1280 px e usa WebP quando o resultado for menor.
+export function readImageAsDataUrl(file, maxSize = 1280, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -10,7 +16,12 @@ export function readImageAsDataUrl(file, maxSize = 1280, quality = 0.85) {
     reader.onload = () => {
       const original = reader.result;
 
-      // GIF fica como está (reduzir perderia a animação).
+      if (typeof original !== 'string') {
+        reject(new Error('Não foi possível ler a imagem.'));
+        return;
+      }
+
+      // GIF fica como está para preservar a animação.
       if (file.type === 'image/gif') {
         resolve(original);
         return;
@@ -18,33 +29,46 @@ export function readImageAsDataUrl(file, maxSize = 1280, quality = 0.85) {
 
       const image = new Image();
 
-      image.onerror = () => resolve(original);
+      image.onerror = () =>
+        reject(new Error('Não foi possível processar a imagem.'));
 
       image.onload = () => {
-        const scale = Math.min(
-          1,
-          maxSize / Math.max(image.width, image.height)
-        );
+        try {
+          const scale = Math.min(
+            1,
+            maxSize / Math.max(image.width, image.height)
+          );
+          const canvas = document.createElement('canvas');
 
-        if (scale === 1 && file.size <= 500 * 1024) {
-          resolve(original);
-          return;
+          canvas.width = Math.round(image.width * scale);
+          canvas.height = Math.round(image.height * scale);
+
+          const context = canvas.getContext('2d');
+
+          if (!context) {
+            reject(new Error('Não foi possível processar a imagem.'));
+            return;
+          }
+
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+          let optimized = canvas.toDataURL('image/webp', quality);
+
+          if (!optimized.startsWith('data:image/webp;')) {
+            optimized =
+              file.type === 'image/png' || file.type === 'image/webp'
+                ? canvas.toDataURL('image/png')
+                : canvas.toDataURL('image/jpeg', quality);
+          }
+
+          resolve(
+            getDataUrlSize(optimized) < file.size
+              ? optimized
+              : original
+          );
+        } catch {
+          reject(new Error('Não foi possível processar a imagem.'));
         }
-
-        const canvas = document.createElement('canvas');
-
-        canvas.width = Math.round(image.width * scale);
-        canvas.height = Math.round(image.height * scale);
-        canvas
-          .getContext('2d')
-          .drawImage(image, 0, 0, canvas.width, canvas.height);
-
-        // PNG mantém a transparência; as demais viram JPEG.
-        resolve(
-          file.type === 'image/png'
-            ? canvas.toDataURL('image/png')
-            : canvas.toDataURL('image/jpeg', quality)
-        );
       };
 
       image.src = original;

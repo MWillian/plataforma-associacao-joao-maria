@@ -39,7 +39,7 @@ function createRepository(overrides = {}) {
 }
 
 describe('ProductService.listHighlights', () => {
-  it('lista até 3 produtos ativos da agricultura', async () => {
+  it('lista até 5 produtos ativos da agricultura', async () => {
     let receivedCategory;
     const items = [
       {
@@ -66,11 +66,11 @@ describe('ProductService.listHighlights', () => {
     assert.deepEqual(result, {
       items,
       category: 'agricultura',
-      limit: 3,
+      limit: 5,
     });
   });
 
-  it('lista até 3 produtos ativos do artesanato', async () => {
+  it('lista até 5 produtos ativos do artesanato', async () => {
     let receivedCategory;
     const service = new ProductService(
       createRepository({
@@ -87,7 +87,7 @@ describe('ProductService.listHighlights', () => {
 
     assert.equal(receivedCategory, 'CRAFTS');
     assert.equal(result.category, 'artesanato');
-    assert.equal(result.limit, 3);
+    assert.equal(result.limit, 5);
   });
 
   it('rejeita listagem sem categoria', async () => {
@@ -748,7 +748,7 @@ describe('ProductService.activate', () => {
 });
 
 describe('ProductService — preço, imagens e categorias do front', () => {
-  const DATA_URL = 'data:image/png;base64,iVBORw0KGgo=';
+  const IMAGE_URL = 'https://res.cloudinary.com/demo/image/upload/test.png';
 
   function captureCreate() {
     const captured = {};
@@ -823,27 +823,28 @@ describe('ProductService — preço, imagens e categorias do front', () => {
     assert.equal(captured.data.price, null);
   });
 
-  it('grava imagens e usa a primeira como imageUrl', async () => {
+  it('grava URLs de imagens e usa a primeira como imageUrl', async () => {
     const { service, captured } = captureCreate();
 
     await service.create({
       title: 'Bolsa',
       category: 'artesanato',
-      images: [DATA_URL, 'https://example.com/b.jpg'],
+      images: [IMAGE_URL, 'https://example.com/b.jpg'],
     });
 
     assert.deepEqual(captured.data.images, [
-      DATA_URL,
+      IMAGE_URL,
       'https://example.com/b.jpg',
     ]);
-    assert.equal(captured.data.imageUrl, DATA_URL);
+    assert.equal(captured.data.imageUrl, IMAGE_URL);
   });
 
   it('rejeita mais de 3 imagens e imagens inválidas', async () => {
     const { service } = captureCreate();
 
     for (const images of [
-      [DATA_URL, DATA_URL, DATA_URL, DATA_URL],
+      [IMAGE_URL, IMAGE_URL, IMAGE_URL, IMAGE_URL],
+      ['data:image/png;base64,iVBORw0KGgo='],
       ['arquivo.exe'],
       [123],
       'não-é-lista',
@@ -854,6 +855,20 @@ describe('ProductService — preço, imagens e categorias do front', () => {
         { statusCode: 400, code: 'VALIDATION_ERROR' },
       );
     }
+  });
+
+  it('rejeita data URL no campo legado imageUrl', async () => {
+    const { service } = captureCreate();
+
+    await assert.rejects(
+      () =>
+        service.create({
+          title: 'X',
+          category: 'artesanato',
+          imageUrl: 'data:image/png;base64,iVBORw0KGgo=',
+        }),
+      { statusCode: 400, code: 'VALIDATION_ERROR' },
+    );
   });
 
   it('na atualização, só troca as imagens quando elas são enviadas', async () => {

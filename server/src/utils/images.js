@@ -1,14 +1,9 @@
 import { AppError } from './app-error.js';
 
-// Aceita imagem como data URL (o front envia o arquivo em base64) ou URL.
-const IMAGE_PATTERN =
-  /^(data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+|https?:\/\/\S+)$/;
+const IMAGE_PATTERN = /^https?:\/\/\S+$/;
 
-// ~6 MB de imagem em base64.
-export const MAX_IMAGE_LENGTH = 8_000_000;
-
-// Valida uma lista opcional de imagens (strings). Retorna undefined quando
-// o campo não foi enviado, ou a lista normalizada. Erros vão em `fields`.
+// Valida uma lista opcional de URLs de imagem. Retorna undefined quando o
+// campo não foi enviado, ou a lista normalizada. Erros vão em `fields`.
 export function validateImages(
   value,
   { max, field = 'images' },
@@ -33,11 +28,10 @@ export function validateImages(
   for (const item of value) {
     if (
       typeof item !== 'string' ||
-      item.length > MAX_IMAGE_LENGTH ||
       !IMAGE_PATTERN.test(item)
     ) {
       fields[field] =
-        'Cada imagem deve ser um arquivo de imagem (até ~6 MB) ou um link válido.';
+        'Cada imagem deve ser uma URL. Envie arquivos pelo endpoint de upload.';
       return undefined;
     }
 

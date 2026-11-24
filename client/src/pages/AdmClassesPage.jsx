@@ -1,8 +1,10 @@
 
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, GraduationCap } from 'lucide-react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { getApiErrorMessage } from '../services/apiError.js';
+import { formatDate, matchesDateRange } from '../utils/dateFilters.js';
+import { matchesSearch } from '../utils/search.js';
 
 const daysOfWeek = [
   'Segunda-feira',
@@ -29,6 +31,12 @@ export function AdmClassesPage({
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('success');
   const [isSaving, setIsSaving] = useState(false);
+  const [nameSearch, setNameSearch] = useState('');
+  const [turnFilter, setTurnFilter] = useState('');
+  const [dayFilter, setDayFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState('name-asc');
+  const [createdFrom, setCreatedFrom] = useState('');
+  const [createdTo, setCreatedTo] = useState('');
 
   // Cada aviso ganha um id novo: assim a mesma mensagem volta a aparecer
   // quando repetida (o FeedbackToast esconde de vez a mensagem que já expirou).
@@ -240,6 +248,33 @@ export function AdmClassesPage({
     }
   };
 
+  const filteredClasses = classes
+    .filter((danceClass) => (
+      matchesSearch(nameSearch, danceClass.name) &&
+      (!turnFilter || danceClass.turn === turnFilter) &&
+      (!dayFilter || danceClass.days?.includes(dayFilter)) &&
+      matchesDateRange(danceClass.createdAt, createdFrom, createdTo)
+    ))
+    .sort((a, b) => {
+      if (sortOrder === 'name-asc') {
+        return (a.name || '').localeCompare(b.name || '', 'pt-BR', {
+          sensitivity: 'base',
+        });
+      }
+
+      if (sortOrder === 'name-desc') {
+        return (b.name || '').localeCompare(a.name || '', 'pt-BR', {
+          sensitivity: 'base',
+        });
+      }
+
+      const aCreatedAt = Date.parse(a.createdAt) || 0;
+      const bCreatedAt = Date.parse(b.createdAt) || 0;
+      return sortOrder === 'date-asc'
+        ? aCreatedAt - bCreatedAt
+        : bCreatedAt - aCreatedAt;
+    });
+
   return (
     <>
       <FeedbackToast key={feedbackId} message={feedback} type={feedbackType} />
@@ -427,84 +462,184 @@ export function AdmClassesPage({
       {!showForm && <section className="overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white">
 
         <div className="border-b border-[#E7EDF5] px-7 py-5 text-lg text-[#71839F]">
-          {classes.length} turma(s) cadastrada(s)
+          Exibindo {filteredClasses.length} de {classes.length} turma(s)
         </div>
 
-        {classes.map((danceClass) =>  (
-          <div
-            key={danceClass.id}
-            className="flex items-center justify-between gap-4 border-b border-[#E7EDF5] px-6 py-5 last:border-b-0"
-          >
+        <div className="grid grid-cols-1 gap-4 border-b border-[#E7EDF5] bg-slate-50 p-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div>
+            <label htmlFor="class-name-search" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Buscar por nome
+            </label>
+            <input
+              id="class-name-search"
+              type="search"
+              value={nameSearch}
+              onChange={(event) => setNameSearch(event.target.value)}
+              placeholder="Digite o nome da turma"
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
 
-            <div className="flex min-w-0 items-center gap-4">
+          <div>
+            <label htmlFor="class-turn-filter" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Turno
+            </label>
+            <select
+              id="class-turn-filter"
+              value={turnFilter}
+              onChange={(event) => setTurnFilter(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Todos os turnos</option>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </div>
 
-              {/* Ícone */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#DCEAFF] text-xl">
-                🎓
-              </div>
+          <div>
+            <label htmlFor="class-day-filter" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Dia da semana
+            </label>
+            <select
+              id="class-day-filter"
+              value={dayFilter}
+              onChange={(event) => setDayFilter(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Todos os dias</option>
+              {daysOfWeek.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              {/* Informações */}
-              <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
-                  {danceClass.name}
-                </h3>
+          <div>
+            <label htmlFor="class-sort-order" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Ordenar por
+            </label>
+            <select
+              id="class-sort-order"
+              value={sortOrder}
+              onChange={(event) => setSortOrder(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="name-asc">Nome (A–Z)</option>
+              <option value="name-desc">Nome (Z–A)</option>
+              <option value="date-desc">Cadastro (mais recentes)</option>
+              <option value="date-asc">Cadastro (mais antigos)</option>
+            </select>
+          </div>
 
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {danceClass.days.map((day) => (
+          <div>
+            <label htmlFor="class-created-from" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Cadastro desde
+            </label>
+            <input
+              id="class-created-from"
+              type="date"
+              value={createdFrom}
+              max={createdTo || undefined}
+              onChange={(event) => setCreatedFrom(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="class-created-to" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Cadastro até
+            </label>
+            <input
+              id="class-created-to"
+              type="date"
+              value={createdTo}
+              min={createdFrom || undefined}
+              onChange={(event) => setCreatedTo(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+        </div>
+
+        {filteredClasses.length > 0 && (
+          <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredClasses.map((danceClass) => (
+              <article
+                key={danceClass.id}
+                className="group flex h-full flex-col rounded-2xl border border-[#DCE4F0] bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
+              >
+                <div className="mb-5 flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-700">
+                      <GraduationCap aria-hidden="true" size={23} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-[#17233D] wrap-anywhere">
+                        {danceClass.name}
+                      </h3>
+                      <span
+                        className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          danceClass.turn === 'Manhã'
+                            ? 'bg-[#FFF1C7] text-[#C65B00]'
+                            : danceClass.turn === 'Tarde'
+                              ? 'bg-[#DCEAFF] text-[#2450DC]'
+                              : 'bg-[#EDE3FF] text-[#7041B5]'
+                        }`}
+                      >
+                        Turno · {danceClass.turn}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-5 flex flex-wrap gap-2">
+                  {danceClass.days?.map((day) => (
                     <span
                       key={day}
-                      className="rounded-md bg-[#F0F4F9] px-2 py-1 text-xs text-[#526581]"
+                      className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-[#526581]"
                     >
                       {day}
                     </span>
                   ))}
                 </div>
-              </div>
 
-            </div>
+                {formatDate(danceClass.createdAt) && (
+                  <p className="mt-auto border-t border-slate-100 pt-4 text-sm text-[#71839F]">
+                    Criada em{' '}
+                    <time dateTime={danceClass.createdAt} className="font-medium text-[#40516B]">
+                      {formatDate(danceClass.createdAt)}
+                    </time>
+                  </p>
+                )}
 
-            <div className="flex shrink-0 items-center gap-3">
-
-              {/* Turno */}
-              <span
-                className={`rounded-full px-4 py-1 text-sm font-medium ${
-                  danceClass.turn === 'Manhã'
-                    ? 'bg-[#FFF1C7] text-[#C65B00]'
-                    : danceClass.turn === 'Tarde'
-                      ? 'bg-[#DCEAFF] text-[#2450DC]'
-                      : 'bg-[#EDE3FF] text-[#7041B5]'
-                }`}
-              >
-                {danceClass.turn}
-              </span>
-
-              {/* Editar turma */}
-              <button
-                type="button"
-                onClick={() => handleEdit(danceClass)}
-                className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
-              >
-                Editar
-              </button>
-
-              {/* Excluir turma */}
-              <button
-                type="button"
-                onClick={() => handleRemove(danceClass)}
-                aria-label={`Remover turma ${danceClass.name}`}
-                className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-              >
-                Excluir
-              </button>
-
-            </div>
-
+                <div className="mt-4 flex justify-end gap-2 border-t border-slate-100 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(danceClass)}
+                    className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(danceClass)}
+                    aria-label={`Remover turma ${danceClass.name}`}
+                    className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
-        ))}
+        )}
 
-        {classes.length === 0 && (
+        {filteredClasses.length === 0 && (
           <p className="px-7 py-10 text-center text-[#71839F]">
-            Nenhuma turma cadastrada.
+            {classes.length === 0
+              ? 'Nenhuma turma cadastrada.'
+              : 'Nenhuma turma corresponde aos filtros selecionados.'}
           </p>
         )}
 

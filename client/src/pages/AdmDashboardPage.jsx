@@ -248,12 +248,12 @@ export function AdmDashboardPage({
               return (
                 <article
                   key={product.id || name}
-                  className="flex items-center gap-3 rounded-xl border border-slate-300 bg-green-50 p-3"
+                  className="flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 p-3 transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:shadow-md"
                 >
                   <RecentThumbnail
                     imageUrl={imageUrl}
                     label="Sem imagem"
-                    tone="bg-green-100 text-green-900"
+                    tone="bg-slate-200 text-slate-700"
                     size="h-20 w-20"
                   />
                   <div className="min-w-0 flex-1">
@@ -288,12 +288,12 @@ export function AdmDashboardPage({
             {news.length > 0 && news.slice(0, 3).map((newsItem) => (
               <article
                 key={newsItem.id}
-                className="flex items-center gap-3 rounded-xl border border-slate-300 bg-green-50 p-3"
+                className="flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 p-3 transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:shadow-md"
               >
                 <RecentThumbnail
                   imageUrl={getImageUrl(newsItem.images?.[0])}
                   label="Notícia"
-                  tone="bg-green-100 text-green-900"
+                  tone="bg-slate-200 text-slate-700"
                 />
                 <div className="min-w-0 flex-1">
                   {publicationAreaLabels[newsItem.publicationArea] && (
@@ -326,11 +326,11 @@ export function AdmDashboardPage({
             {notices.length > 0 && notices.slice(0, 3).map((notice) => (
               <article
                 key={notice.id}
-                className="flex items-center gap-3 rounded-xl border border-slate-300 bg-green-50 p-3"
+                className="flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 p-3 transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:shadow-md"
               >
                 <RecentThumbnail
                   label="Aviso"
-                  tone="bg-green-100 text-green-900"
+                  tone="bg-slate-200 text-slate-700"
                 />
                 <div className="min-w-0 flex-1">
                   <span className={`mb-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -347,10 +347,13 @@ export function AdmDashboardPage({
                     {notice.message}
                   </p>
                 </div>
-                <div className="max-w-20 shrink-0 text-right text-xs text-slate-600">
+                <div className="shrink-0 whitespace-nowrap text-right text-xs text-slate-600">
                   <p className="font-semibold">{notice.date}</p>
-                  <p className="mt-1">
-                    {notice.sentCount ?? 0} destinatário(s)
+                  <p className="mt-1 flex items-center justify-end gap-1">
+                    <span>{notice.sentCount ?? 0}</span>
+                    <span>
+                      {notice.sentCount === 1 ? 'destinatário' : 'destinatários'}
+                    </span>
                   </p>
                 </div>
               </article>

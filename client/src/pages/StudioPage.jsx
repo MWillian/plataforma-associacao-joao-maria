@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Search, ChevronRight, Users, Clock } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 import { matchesSearch } from '../utils/search.js';
+import { ProductImage } from '../components/details/ProductImage.jsx';
 
 export function StudioPage({ news = [], classes = [], onSelectNews }) {
   // Referência para controlar a rolagem da seção do mural
@@ -237,9 +238,11 @@ export function StudioPage({ news = [], classes = [], onSelectNews }) {
               >
                 {/* Imagem / Placeholder Superior */}
                 <div className="w-full h-48 bg-slate-100 relative flex items-center justify-center overflow-hidden border-b border-slate-100">
-                  <span className="text-slate-400 text-xs font-roboto">
-                    Placeholder Imagem ({item.title})
-                  </span>
+                  <ProductImage src={item.images?.[0]} alt={item.title}>
+                    <span className="text-slate-400 text-xs font-roboto">
+                      Placeholder Imagem ({item.title})
+                    </span>
+                  </ProductImage>
                 </div>
 
                 {/* Conteúdo do Card */}

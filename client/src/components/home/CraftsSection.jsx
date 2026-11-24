@@ -4,7 +4,7 @@ export function CraftsSection({ products = [], onNavigate, onSelectProduct }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const items = products.slice(0, 3);
+  const items = products.slice(0, 5);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -96,6 +96,9 @@ export function CraftsSection({ products = [], onNavigate, onSelectProduct }) {
               }
             `}
           />
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+            Conheça as peças artesanais feitas com dedicação pelos associados da nossa comunidade.
+          </p>
         </div>
 
         {/* =====================================================
@@ -235,37 +238,6 @@ export function CraftsSection({ products = [], onNavigate, onSelectProduct }) {
                 </span>
                 )}
 
-                {/* =================================================
-                    TAG
-                ================================================== */}
-                <span
-                  className="
-                    absolute
-                    bottom-3
-                    left-3
-
-                    bg-[#1d3557]
-                    text-white
-
-                    text-xs
-                    font-medium
-
-                    px-3
-                    py-1
-
-                    rounded
-
-                    shadow-sm
-
-                    transition-all
-                    duration-300
-
-                    group-hover:-translate-y-1
-                    group-hover:shadow-md
-                  "
-                >
-                  {item.tag}
-                </span>
               </div>
 
               {/* =================================================
@@ -278,8 +250,6 @@ export function CraftsSection({ products = [], onNavigate, onSelectProduct }) {
 
                   flex
                   flex-col
-                  justify-between
-
                   flex-1
                 "
               >
@@ -300,30 +270,24 @@ export function CraftsSection({ products = [], onNavigate, onSelectProduct }) {
                   {item.title}
                 </h3>
 
+                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">
+                  {item.description || 'Entre em contato para saber mais sobre este produto.'}
+                </p>
+
                 <div
                   className="
+                    mt-5
                     pt-4
                     border-t
                     border-slate-100
                   "
                 >
-                    <span
-                      className="
-                        text-slate-400
-                        font-roboto
-                        text-sm
-                        tracking-wide
-                        block
-                        font-medium
-
-                        transition-colors
-                        duration-300
-
-                        group-hover:text-slate-500
-                      "
-                    >
-                      {item.price || 'Sob consulta'}
-                    </span>
+                  <span className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Preço
+                  </span>
+                  <span className="mt-1 block text-xl font-bold text-[#1d3557]">
+                    {item.price || 'Sob consulta'}
+                  </span>
                 </div>
               </div>
             </div>

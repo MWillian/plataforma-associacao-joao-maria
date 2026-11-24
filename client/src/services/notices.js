@@ -7,6 +7,7 @@ export function noticeFromApi(row) {
     subject: row.subject,
     type: row.type,
     message: row.message,
+    createdAt: row.createdAt,
     date: new Date(row.createdAt).toLocaleDateString('pt-BR'),
     totalRecipients: row.totalRecipients,
     sentCount: row.sentCount,

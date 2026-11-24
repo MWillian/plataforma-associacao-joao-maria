@@ -5,7 +5,7 @@ import { NewsService } from '../src/services/news.service.js';
 
 const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const MISSING_ID = uuid(999);
-const DATA_URL = 'data:image/png;base64,iVBORw0KGgo=';
+const IMAGE_URL = 'https://res.cloudinary.com/demo/image/upload/test.png';
 
 class FakeNewsRepository {
   constructor() {
@@ -85,7 +85,7 @@ const valid = (overrides = {}) => ({
   title: 'Festival de Dança 2026',
   description: 'Inscrições abertas.',
   publicationArea: 'studio',
-  images: [DATA_URL],
+  images: [IMAGE_URL],
   ...overrides,
 });
 
@@ -103,7 +103,7 @@ describe('NewsService.create', () => {
 
     assert.equal(result.title, 'Festival');
     assert.equal(result.publicationArea, 'studio');
-    assert.deepEqual(result.images, [DATA_URL]);
+    assert.deepEqual(result.images, [IMAGE_URL]);
     assert.equal(result.description, 'Inscrições abertas.');
   });
 
@@ -139,7 +139,11 @@ describe('NewsService.create', () => {
       'images',
     );
     await assertField(
-      service.create(valid({ images: Array(11).fill(DATA_URL) })),
+      service.create(valid({ images: ['data:image/png;base64,iVBORw0KGgo='] })),
+      'images',
+    );
+    await assertField(
+      service.create(valid({ images: Array(11).fill(IMAGE_URL) })),
       'images',
     );
     await assertField(
@@ -192,7 +196,7 @@ describe('NewsService.update', () => {
       valid({ images: undefined }),
     );
 
-    assert.deepEqual(result.images, [DATA_URL]);
+    assert.deepEqual(result.images, [IMAGE_URL]);
   });
 
   it('valida o identificador e os dados', async () => {

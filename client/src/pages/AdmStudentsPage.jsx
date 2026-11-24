@@ -8,6 +8,8 @@ import {
   removeStudent,
   updateStudent,
 } from '../services/students.js';
+import { formatDate, matchesDateRange } from '../utils/dateFilters.js';
+import { matchesSearch } from '../utils/search.js';
 
 function MedicalField({ name, label, value, onChange, placeholder }) {
   return (
@@ -39,6 +41,11 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('success');
   const [isSaving, setIsSaving] = useState(false);
+  const [nameSearch, setNameSearch] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState('name-asc');
+  const [createdFrom, setCreatedFrom] = useState('');
+  const [createdTo, setCreatedTo] = useState('');
 
   // Cada aviso ganha um id novo: assim a mesma mensagem volta a aparecer
   // quando repetida (o FeedbackToast esconde de vez a mensagem que já expirou).
@@ -278,6 +285,43 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     if (names.length) return names.join(', ');
     return ids.length ? 'Turma não encontrada' : 'Sem turma';
   };
+
+  const filteredStudents = students
+    .filter((student) => {
+      const danceClassIds = student.danceClassIds?.length
+        ? student.danceClassIds
+        : student.danceClassId
+          ? [student.danceClassId]
+          : [];
+      const matchesClass =
+        !classFilter ||
+        danceClassIds.some((id) => String(id) === classFilter);
+
+      return (
+        matchesSearch(nameSearch, student.name) &&
+        matchesClass &&
+        matchesDateRange(student.createdAt, createdFrom, createdTo)
+      );
+    })
+    .sort((a, b) => {
+      if (sortOrder === 'name-asc') {
+        return (a.name || '').localeCompare(b.name || '', 'pt-BR', {
+          sensitivity: 'base',
+        });
+      }
+
+      if (sortOrder === 'name-desc') {
+        return (b.name || '').localeCompare(a.name || '', 'pt-BR', {
+          sensitivity: 'base',
+        });
+      }
+
+      const aCreatedAt = Date.parse(a.createdAt) || 0;
+      const bCreatedAt = Date.parse(b.createdAt) || 0;
+      return sortOrder === 'date-asc'
+        ? aCreatedAt - bCreatedAt
+        : bCreatedAt - aCreatedAt;
+    });
 
   return (
     <>
@@ -556,82 +600,167 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
         {/* Contador */}
         <div className="border-b border-[#E7EDF5] px-7 py-6 text-lg text-[#71839F]">
-          {students.length} aluno(s) cadastrado(s)
+          Exibindo {filteredStudents.length} de {students.length} aluno(s)
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 border-b border-[#E7EDF5] bg-slate-50 p-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div>
+            <label htmlFor="student-name-search" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Buscar por nome
+            </label>
+            <input
+              id="student-name-search"
+              type="search"
+              value={nameSearch}
+              onChange={(event) => setNameSearch(event.target.value)}
+              placeholder="Digite o nome do aluno"
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="student-class-filter" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Turma
+            </label>
+            <select
+              id="student-class-filter"
+              value={classFilter}
+              onChange={(event) => setClassFilter(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Todas as turmas</option>
+              {classes.map((danceClass) => (
+                <option key={danceClass.id} value={String(danceClass.id)}>
+                  {danceClass.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="student-sort-order" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Ordenar por
+            </label>
+            <select
+              id="student-sort-order"
+              value={sortOrder}
+              onChange={(event) => setSortOrder(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="name-asc">Nome (A–Z)</option>
+              <option value="name-desc">Nome (Z–A)</option>
+              <option value="date-desc">Cadastro (mais recentes)</option>
+              <option value="date-asc">Cadastro (mais antigos)</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="student-created-from" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Cadastro desde
+            </label>
+            <input
+              id="student-created-from"
+              type="date"
+              value={createdFrom}
+              max={createdTo || undefined}
+              onChange={(event) => setCreatedFrom(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="student-created-to" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+              Cadastro até
+            </label>
+            <input
+              id="student-created-to"
+              type="date"
+              value={createdTo}
+              min={createdFrom || undefined}
+              onChange={(event) => setCreatedTo(event.target.value)}
+              className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
         </div>
 
         {/* Alunos cadastrados */}
-        {students.map((student) => (
-          <div
-            key={student.id}
-            className="flex items-center justify-between gap-4 border-b border-[#E7EDF5] px-7 py-6 last:border-b-0"
-          >
-
-            <div className="flex min-w-0 items-center gap-5">
-
-              {/* Avatar */}
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#DCEAFF] text-xl font-semibold text-[#2450DC]">
-                {student.name.charAt(0).toUpperCase()}
-              </div>
-
-              {/* Informações */}
-              <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
-                  {student.name}
-                </h3>
-
-                <p className="text-[#9AACC5]"                >
-                  {student.email || 'Sem e-mail cadastrado'}
-                  {student.phone ? ` · ${student.phone}` : ''}
-                </p>
-
-                <p className="text-[#9AACC5] wrap-anywhere">
-                  Turmas do aluno: {getDanceClassNames(student)}
-                </p>
-
-                {student.isMinor && (
-                  <p className="text-[#3978F6]">
-                    Responsável: {student.guardian}
-                  </p>
-                )}
-              </div>
-
-            </div>
-
-            <div className="flex shrink-0 items-center gap-4">
-
-              {student.isMinor && (
-                <span className="rounded-full bg-[#FFF1C7] px-4 py-1 font-medium text-[#C65B00]">
-                  Menor
-                </span>
-              )}
-
-              {/* Editar aluno */}
-              <button
-                type="button"
-                onClick={() => handleEdit(student)}
-                className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+        {filteredStudents.length > 0 && (
+          <div className="flex flex-col gap-3 p-5">
+            {filteredStudents.map((student) => (
+              <article
+                key={student.id}
+                className="group flex w-full flex-col gap-5 rounded-2xl border border-[#DCE4F0] bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-6"
               >
-                Editar
-              </button>
+                <div className="flex min-w-0 flex-1 items-start gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 text-xl font-bold text-[#2450DC] shadow-inner">
+                    {student.name.charAt(0).toUpperCase()}
+                  </div>
 
-              {/*Excluir aluno*/}
-              <button
-                type="button"
-                onClick={() => handleRemove(student)}
-                aria-label={`Remover ${student.name}`}
-                className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-              >
-                Excluir
-              </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold text-[#17233D] wrap-anywhere">
+                        {student.name}
+                      </h3>
+                      {student.isMinor && (
+                        <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                          Menor
+                        </span>
+                      )}
+                    </div>
 
-            </div>
+                    <p className="mt-1 break-words text-sm text-[#71839F]">
+                      {student.email || 'Sem e-mail cadastrado'}
+                      {student.phone ? ` · ${student.phone}` : ''}
+                    </p>
 
+                    <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-[#526581] wrap-anywhere">
+                      Turmas: {getDanceClassNames(student)}
+                    </p>
+
+                    {student.isMinor && (
+                      <p className="mt-2 text-sm text-blue-700 wrap-anywhere">
+                        Responsável: {student.guardian}
+                      </p>
+                    )}
+
+                    {formatDate(student.createdAt) && (
+                      <p className="mt-3 text-xs text-[#9AACC5]">
+                        Criado em{' '}
+                        <time dateTime={student.createdAt} className="font-medium text-[#71839F]">
+                          {formatDate(student.createdAt)}
+                        </time>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 justify-end gap-2 sm:border-l sm:border-slate-100 sm:pl-5">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(student)}
+                    className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(student)}
+                    aria-label={`Remover ${student.name}`}
+                    className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
-        ))}
+        )}
 
-        {students.length === 0 && (
+        {filteredStudents.length === 0 && (
           <p className="px-7 py-10 text-center text-[#71839F]">
-            Nenhum aluno cadastrado.
+            {students.length === 0
+              ? 'Nenhum aluno cadastrado.'
+              : 'Nenhum aluno corresponde aos filtros selecionados.'}
           </p>
         )}
 

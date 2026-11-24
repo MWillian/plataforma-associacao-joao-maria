@@ -647,28 +647,66 @@ export function AdmProductsPage({
               return (
                 <article
                   key={product.id}
-                  className="overflow-hidden rounded-xl border border-[#DCE4F0] bg-white"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg"
                 >
-                  <div className="relative flex h-36 items-center justify-center gap-2 bg-[#EDF4FD] p-3">
+                  <div className="relative h-52 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-100">
                     {images.length > 0 ? (
-                      images.slice(0, 3).map((image, index) => (
-                        <div
-                          key={index}
-                          className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg"
-                        >
-                          <ProductImage image={image} />
-                        </div>
-                      ))
+                      <div
+                        className={`grid h-full gap-1.5 p-2 ${
+                          images.length === 1
+                            ? 'grid-cols-1'
+                            : images.length === 2
+                              ? 'grid-cols-2'
+                              : 'grid-cols-3'
+                        }`}
+                      >
+                        {images.slice(0, 3).map((image, index) => (
+                          <div
+                            key={index}
+                            className="min-w-0 overflow-hidden rounded-xl border border-white/80 bg-white/80 shadow-sm"
+                          >
+                            <ProductImage image={image} />
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <span className="text-xs text-slate-400">Sem imagem</span>
+                      <div className="flex h-full items-center justify-center text-sm font-medium text-slate-400">
+                        Sem imagens cadastradas
+                      </div>
                     )}
+                    <span
+                      className={`absolute right-4 top-4 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${
+                        !isProductAvailable(product)
+                          ? 'bg-red-50 text-red-700'
+                          : 'bg-emerald-50 text-emerald-700'
+                      }`}
+                    >
+                      {!isProductAvailable(product)
+                        ? 'Indisponível'
+                        : 'Disponível'}
+                    </span>
                   </div>
 
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="min-w-0 text-sm font-bold text-[#172033] wrap-anywhere">
-                        {getProductName(product)}
-                      </h3>
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                          {product.category || 'Outros'}
+                        </span>
+                        <h3 className="mt-2 text-base font-semibold leading-snug text-[#172033] wrap-anywhere">
+                          {getProductName(product)}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <p className="mt-3 line-clamp-3 min-h-14 text-sm leading-relaxed text-[#7183A3]">
+                      {product.description || 'Sem descrição cadastrada.'}
+                    </p>
+
+                    <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                      <p className="text-lg font-bold text-blue-700">
+                        {formatPrice(product.price)}
+                      </p>
 
                       <div className="flex shrink-0 items-center gap-2">
                         <button
@@ -687,32 +725,6 @@ export function AdmProductsPage({
                           Excluir
                         </button>
                       </div>
-                    </div>
-
-                    <p className="mt-2 text-xs text-[#7183A3]">
-                      {product.category || 'Outros'}
-                    </p>
-
-                    <p className="mt-2 min-h-10 text-xs leading-relaxed text-[#7183A3]">
-                      {product.description}
-                    </p>
-
-                    <p className="mt-3 font-bold text-blue-700">
-                      {formatPrice(product.price)}
-                    </p>
-
-                    <div className="mt-3">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                          !isProductAvailable(product)
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-green-100 text-green-700'
-                        }`}
-                      >
-                        {!isProductAvailable(product)
-                          ? 'Indisponível'
-                          : 'Disponível'}
-                      </span>
                     </div>
                   </div>
                 </article>
