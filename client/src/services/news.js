@@ -9,6 +9,7 @@ export function newsFromApi(row) {
     description: row.description ?? '',
     images: row.images ?? [],
     publicationArea: row.publicationArea,
+    createdAt: row.createdAt,
     date: new Date(row.createdAt).toLocaleDateString('pt-BR'),
   };
 }

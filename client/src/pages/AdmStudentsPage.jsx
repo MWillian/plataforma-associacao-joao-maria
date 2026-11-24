@@ -684,83 +684,77 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
         </div>
 
         {/* Alunos cadastrados */}
-        {filteredStudents.map((student) => (
-          <div
-            key={student.id}
-            className="flex items-center justify-between gap-4 border-b border-[#E7EDF5] px-7 py-6 last:border-b-0"
-          >
-
-            <div className="flex min-w-0 items-center gap-5">
-
-              {/* Avatar */}
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#DCEAFF] text-xl font-semibold text-[#2450DC]">
-                {student.name.charAt(0).toUpperCase()}
-              </div>
-
-              {/* Informações */}
-              <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
-                  {student.name}
-                </h3>
-
-                <p className="text-[#9AACC5]"                >
-                  {student.email || 'Sem e-mail cadastrado'}
-                  {student.phone ? ` · ${student.phone}` : ''}
-                </p>
-
-                <p className="text-[#9AACC5] wrap-anywhere">
-                  Turmas do aluno: {getDanceClassNames(student)}
-                </p>
-
-                {student.isMinor && (
-                  <p className="text-[#3978F6]">
-                    Responsável: {student.guardian}
-                  </p>
-                )}
-
-                {formatDate(student.createdAt) && (
-                  <p className="text-sm text-[#9AACC5]">
-                    Criado em:{' '}
-                    <time dateTime={student.createdAt}>
-                      {formatDate(student.createdAt)}
-                    </time>
-                  </p>
-                )}
-              </div>
-
-            </div>
-
-            <div className="flex shrink-0 items-center gap-4">
-
-              {student.isMinor && (
-                <span className="rounded-full bg-[#FFF1C7] px-4 py-1 font-medium text-[#C65B00]">
-                  Menor
-                </span>
-              )}
-
-              {/* Editar aluno */}
-              <button
-                type="button"
-                onClick={() => handleEdit(student)}
-                className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+        {filteredStudents.length > 0 && (
+          <div className="flex flex-col gap-3 p-5">
+            {filteredStudents.map((student) => (
+              <article
+                key={student.id}
+                className="group flex w-full flex-col gap-5 rounded-2xl border border-[#DCE4F0] bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-6"
               >
-                Editar
-              </button>
+                <div className="flex min-w-0 flex-1 items-start gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 text-xl font-bold text-[#2450DC] shadow-inner">
+                    {student.name.charAt(0).toUpperCase()}
+                  </div>
 
-              {/*Excluir aluno*/}
-              <button
-                type="button"
-                onClick={() => handleRemove(student)}
-                aria-label={`Remover ${student.name}`}
-                className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-              >
-                Excluir
-              </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold text-[#17233D] wrap-anywhere">
+                        {student.name}
+                      </h3>
+                      {student.isMinor && (
+                        <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                          Menor
+                        </span>
+                      )}
+                    </div>
 
-            </div>
+                    <p className="mt-1 break-words text-sm text-[#71839F]">
+                      {student.email || 'Sem e-mail cadastrado'}
+                      {student.phone ? ` · ${student.phone}` : ''}
+                    </p>
 
+                    <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-[#526581] wrap-anywhere">
+                      Turmas: {getDanceClassNames(student)}
+                    </p>
+
+                    {student.isMinor && (
+                      <p className="mt-2 text-sm text-blue-700 wrap-anywhere">
+                        Responsável: {student.guardian}
+                      </p>
+                    )}
+
+                    {formatDate(student.createdAt) && (
+                      <p className="mt-3 text-xs text-[#9AACC5]">
+                        Criado em{' '}
+                        <time dateTime={student.createdAt} className="font-medium text-[#71839F]">
+                          {formatDate(student.createdAt)}
+                        </time>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 justify-end gap-2 sm:border-l sm:border-slate-100 sm:pl-5">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(student)}
+                    className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(student)}
+                    aria-label={`Remover ${student.name}`}
+                    className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
-        ))}
+        )}
 
         {filteredStudents.length === 0 && (
           <p className="px-7 py-10 text-center text-[#71839F]">

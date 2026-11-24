@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, GraduationCap } from 'lucide-react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { getApiErrorMessage } from '../services/apiError.js';
 import { formatDate, matchesDateRange } from '../utils/dateFilters.js';
@@ -562,85 +562,78 @@ export function AdmClassesPage({
           </div>
         </div>
 
-        {filteredClasses.map((danceClass) =>  (
-          <div
-            key={danceClass.id}
-            className="flex items-center justify-between gap-4 border-b border-[#E7EDF5] px-6 py-5 last:border-b-0"
-          >
+        {filteredClasses.length > 0 && (
+          <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredClasses.map((danceClass) => (
+              <article
+                key={danceClass.id}
+                className="group flex h-full flex-col rounded-2xl border border-[#DCE4F0] bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
+              >
+                <div className="mb-5 flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-700">
+                      <GraduationCap aria-hidden="true" size={23} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-[#17233D] wrap-anywhere">
+                        {danceClass.name}
+                      </h3>
+                      <span
+                        className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          danceClass.turn === 'Manhã'
+                            ? 'bg-[#FFF1C7] text-[#C65B00]'
+                            : danceClass.turn === 'Tarde'
+                              ? 'bg-[#DCEAFF] text-[#2450DC]'
+                              : 'bg-[#EDE3FF] text-[#7041B5]'
+                        }`}
+                      >
+                        Turno · {danceClass.turn}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-            <div className="flex min-w-0 items-center gap-4">
-
-              {/* Ícone */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#DCEAFF] text-xl">
-                🎓
-              </div>
-
-              {/* Informações */}
-              <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
-                  {danceClass.name}
-                </h3>
-
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {danceClass.days.map((day) => (
+                <div className="mb-5 flex flex-wrap gap-2">
+                  {danceClass.days?.map((day) => (
                     <span
                       key={day}
-                      className="rounded-md bg-[#F0F4F9] px-2 py-1 text-xs text-[#526581]"
+                      className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-[#526581]"
                     >
                       {day}
                     </span>
                   ))}
                 </div>
+
                 {formatDate(danceClass.createdAt) && (
-                  <p className="mt-1 text-sm text-[#9AACC5]">
-                    Criada em:{' '}
-                    <time dateTime={danceClass.createdAt}>
+                  <p className="mt-auto border-t border-slate-100 pt-4 text-sm text-[#71839F]">
+                    Criada em{' '}
+                    <time dateTime={danceClass.createdAt} className="font-medium text-[#40516B]">
                       {formatDate(danceClass.createdAt)}
                     </time>
                   </p>
                 )}
-              </div>
 
-            </div>
-
-            <div className="flex shrink-0 items-center gap-3">
-
-              {/* Turno */}
-              <span
-                className={`rounded-full px-4 py-1 text-sm font-medium ${
-                  danceClass.turn === 'Manhã'
-                    ? 'bg-[#FFF1C7] text-[#C65B00]'
-                    : danceClass.turn === 'Tarde'
-                      ? 'bg-[#DCEAFF] text-[#2450DC]'
-                      : 'bg-[#EDE3FF] text-[#7041B5]'
-                }`}
-              >
-                {danceClass.turn}
-              </span>
-
-              {/* Editar turma */}
-              <button
-                type="button"
-                onClick={() => handleEdit(danceClass)}
-                className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
-              >
-                Editar
-              </button>
-
-              {/* Excluir turma */}
-              <button
-                type="button"
-                onClick={() => handleRemove(danceClass)}
-                aria-label={`Remover turma ${danceClass.name}`}
-                className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-              >
-                Excluir
-              </button>
-
-            </div>
-
+                <div className="mt-4 flex justify-end gap-2 border-t border-slate-100 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(danceClass)}
+                    className="rounded-lg border border-blue-700 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(danceClass)}
+                    aria-label={`Remover turma ${danceClass.name}`}
+                    className="rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
-        ))}
+        )}
 
         {filteredClasses.length === 0 && (
           <p className="px-7 py-10 text-center text-[#71839F]">

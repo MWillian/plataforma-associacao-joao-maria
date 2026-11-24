@@ -1,8 +1,10 @@
 
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { FeedbackToast } from '../components/details/FeedbackToast.jsx';
 import { getApiErrorMessage } from '../services/apiError.js';
+import { matchesDateRange } from '../utils/dateFilters.js';
+import { matchesSearch } from '../utils/search.js';
 
 const getCurrentDate = () => {
   const today = new Date();
@@ -26,6 +28,10 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('success');
   const [isSaving, setIsSaving] = useState(false);
+  const [subjectSearch, setSubjectSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [createdFrom, setCreatedFrom] = useState('');
+  const [createdTo, setCreatedTo] = useState('');
 
   // Cada aviso ganha um id novo: assim a mesma mensagem volta a aparecer
   // quando repetida (o FeedbackToast esconde de vez a mensagem que já expirou).
@@ -130,6 +136,12 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
   const getNoticeClassIds = (notice) => (
     notice.classIds || (notice.classId != null ? [notice.classId] : [])
   );
+
+  const filteredNotices = notices.filter((notice) => (
+    matchesSearch(subjectSearch, notice.subject) &&
+    (!typeFilter || notice.type === typeFilter) &&
+    matchesDateRange(notice.createdAt, createdFrom, createdTo)
+  ));
 
   // Cria o aviso no backend, que envia o e-mail aos responsáveis
   // (alunos menores) ou aos próprios alunos das turmas escolhidas.
@@ -398,67 +410,142 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
         {/* Lista de notices */}
         {!showForm && <section className="space-y-3">
 
-          {notices.map((notice) => (
-            <article
-              key={notice.id}
-              className="relative max-w-3xl rounded-xl border border-[#DCE4F0] bg-white p-5 pr-12"
-            >
+          <div className="overflow-hidden rounded-xl border border-[#DCE4F0] bg-white">
+            <div className="border-b border-[#E7EDF5] px-5 py-4 text-sm text-[#71839F]">
+              Exibindo {filteredNotices.length} de {notices.length} aviso(s)
+            </div>
 
-              {/* Tipo, data e turma */}
-              <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-
-                <span
-                  className={`rounded-md px-2 py-1 font-medium ${
-                    notice.type === 'Cancelamento'
-                      ? 'bg-red-100 text-red-600'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}
-                >
-                  {notice.type}
-                </span>
-
-                <span className="text-[#91A2BF]">
-                  {notice.date}
-                </span>
-
-                <span className="max-w-full rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700 wrap-anywhere">
-                  {getNoticeClassIds(notice)
-                    .map((classId) => getClassName(classId))
-                    .join(', ')}
-                </span>
-
+            <div className="grid grid-cols-1 gap-4 border-b border-[#E7EDF5] bg-slate-50 p-5 sm:grid-cols-2">
+              <div>
+                <label htmlFor="notice-subject-search" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+                  Buscar por título
+                </label>
+                <input
+                  id="notice-subject-search"
+                  type="search"
+                  value={subjectSearch}
+                  onChange={(event) => setSubjectSearch(event.target.value)}
+                  placeholder="Digite o título do aviso"
+                  className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
               </div>
 
-              {/* Assunto */}
-              <h3 className="mb-2 font-semibold text-[#172033] wrap-anywhere">
-                {notice.subject}
-              </h3>
+              <div>
+                <label htmlFor="notice-type-filter" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+                  Tipo
+                </label>
+                <select
+                  id="notice-type-filter"
+                  value={typeFilter}
+                  onChange={(event) => setTypeFilter(event.target.value)}
+                  className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="">Todos os tipos</option>
+                  <option value="Informativo">Informativo</option>
+                  <option value="Cancelamento">Cancelamento</option>
+                </select>
+              </div>
 
-              {/* Mensagem */}
-              <p className="whitespace-pre-line text-sm leading-relaxed text-[#526581] wrap-anywhere">
-                {notice.message}
-              </p>
+              <div>
+                <label htmlFor="notice-created-from" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+                  Data desde
+                </label>
+                <input
+                  id="notice-created-from"
+                  type="date"
+                  value={createdFrom}
+                  max={createdTo || undefined}
+                  onChange={(event) => setCreatedFrom(event.target.value)}
+                  className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setNoticeToDelete(notice)}
-                aria-label={`Excluir aviso ${notice.subject}`}
-                className="absolute right-4 top-5 rounded-lg border border-red-700 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-              >
-                Excluir
-              </button>
+              <div>
+                <label htmlFor="notice-created-to" className="mb-1.5 block text-sm font-medium text-[#40516B]">
+                  Data até
+                </label>
+                <input
+                  id="notice-created-to"
+                  type="date"
+                  value={createdTo}
+                  min={createdFrom || undefined}
+                  onChange={(event) => setCreatedTo(event.target.value)}
+                  className="w-full rounded-lg border border-[#DCE4F0] bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+            </div>
+          </div>
+
+          {filteredNotices.map((notice) => (
+            <article
+              key={notice.id}
+              className="group flex w-full overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
+            >
+              <div
+                aria-hidden="true"
+                className={`w-1.5 shrink-0 ${
+                  notice.type === 'Cancelamento' ? 'bg-red-500' : 'bg-blue-600'
+                }`}
+              />
+              <div className="flex min-w-0 flex-1 flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
+                    <span
+                      className={`rounded-full px-3 py-1 font-semibold ${
+                        notice.type === 'Cancelamento'
+                          ? 'bg-red-50 text-red-700'
+                          : 'bg-blue-50 text-blue-700'
+                      }`}
+                    >
+                      {notice.type}
+                    </span>
+
+                    <span className="text-[#91A2BF]">
+                      {notice.date}
+                    </span>
+
+                    <span className="max-w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[#526581] wrap-anywhere">
+                      {getNoticeClassIds(notice)
+                        .map((classId) => getClassName(classId))
+                        .join(', ')}
+                    </span>
+                  </div>
+
+                  <h3 className="mb-2 text-lg font-semibold text-[#172033] wrap-anywhere">
+                    {notice.subject}
+                  </h3>
+
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-[#526581] wrap-anywhere">
+                    {notice.message}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setNoticeToDelete(notice)}
+                  aria-label={`Excluir aviso ${notice.subject}`}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-50 sm:mt-0"
+                >
+                  <Trash2 aria-hidden="true" size={14} />
+                  Excluir
+                </button>
+              </div>
             </article>
           ))}
 
-          {notices.length === 0 && (
+          {filteredNotices.length === 0 && (
             <div className="rounded-xl border border-[#DCE4F0] bg-white px-6 py-12 text-center">
               <p className="font-medium text-[#526581]">
-                Nenhum aviso cadastrado.
+                {notices.length === 0
+                  ? 'Nenhum aviso cadastrado.'
+                  : 'Nenhum aviso corresponde aos filtros selecionados.'}
               </p>
 
-              <p className="mt-1 text-sm text-[#91A2BF]">
-                Clique em "+ Novo Aviso" para criar o primeiro comunicado.
-              </p>
+              {notices.length === 0 && (
+                <p className="mt-1 text-sm text-[#91A2BF]">
+                  Clique em "+ Novo Aviso" para criar o primeiro comunicado.
+                </p>
+              )}
             </div>
           )}
 
