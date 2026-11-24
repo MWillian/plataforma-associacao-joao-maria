@@ -208,6 +208,8 @@ export default function App() {
   const [adminProductsLoaded, setAdminProductsLoaded] = useState(false);
   // 'idle' | 'ready' | 'error'
   const [adminDataStatus, setAdminDataStatus] = useState('idle');
+  const [adminDataErrors, setAdminDataErrors] = useState([]);
+  const [adminDataRetryCount, setAdminDataRetryCount] = useState(0);
   const [publicDataErrors, setPublicDataErrors] = useState([]);
   const [publicDataRetryCount, setPublicDataRetryCount] = useState(0);
   // Evita pedir os dados do painel mais de uma vez por sessão.
@@ -427,14 +429,17 @@ export default function App() {
           setAdminProductsLoaded(true);
         }
 
-        setAdminDataStatus(
-          [classesResult, studentsResult, noticesResult, productsResult]
-            .some((result) => result.status === 'rejected')
-            ? 'error'
-            : 'ready'
-        );
+        const errors = [
+          ...(classesResult.status === 'rejected' ? ['classes'] : []),
+          ...(studentsResult.status === 'rejected' ? ['students'] : []),
+          ...(noticesResult.status === 'rejected' ? ['notices'] : []),
+          ...(productsResult.status === 'rejected' ? ['products'] : []),
+        ];
+
+        setAdminDataErrors(errors);
+        setAdminDataStatus(errors.length > 0 ? 'error' : 'ready');
       });
-  }, [isAuthenticated, isAuthLoading, activePage]);
+  }, [adminDataRetryCount, isAuthenticated, isAuthLoading, activePage]);
 
   // Conteúdo público: notícias e catálogo de produtos.
   useEffect(() => {
@@ -702,6 +707,35 @@ export default function App() {
     isNewsLoaded
   );
 
+  const dashboardDataStatus = {
+    classes: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('classes') ? 'error' : 'ready',
+    students: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('students') ? 'error' : 'ready',
+    notices: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('notices') ? 'error' : 'ready',
+    products: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('products') ? 'error' : 'ready',
+    news: isNewsLoaded
+      ? 'ready'
+      : publicDataErrors.includes('news') ? 'error' : 'loading',
+  };
+
+  const handleRetryDashboardData = () => {
+    adminDataRequestedRef.current = false;
+    setAdminDataErrors([]);
+    setAdminDataStatus('idle');
+    setAdminDataRetryCount((count) => count + 1);
+    setIsNewsLoaded(false);
+    setIsPublicContentSettled(false);
+    setPublicDataErrors([]);
+    setPublicDataRetryCount((count) => count + 1);
+  };
+
   const loadErrorToast =
     adminDataStatus === 'error' ? (
       <FeedbackToast
@@ -728,18 +762,17 @@ export default function App() {
 
   if (activePage === 'adm-dashboard') {
     return (
-      <>
-        {loadErrorToast}
-        <AdmDashboardPage 
-      onNavigate={navigate}
-      onLogout={handleLogout}
-      classes={classes}
-      students={students}
-      news={news}
-      notices={notices}
-      products={products}
+      <AdmDashboardPage
+        onNavigate={navigate}
+        onLogout={handleLogout}
+        onRetry={handleRetryDashboardData}
+        dataStatus={dashboardDataStatus}
+        classes={classes}
+        students={students}
+        news={news}
+        notices={notices}
+        products={products}
       />
-      </>
     );
   } 
 

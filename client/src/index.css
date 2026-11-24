@@ -31,9 +31,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-reveal-up,
+  .page-reveal-up {
+    animation: page-fade-in 350ms ease-out both;
+  }
+
   .page-reveal-fade {
-    animation: none;
+    animation-duration: 350ms;
+    animation-timing-function: ease-out;
   }
 }
 
@@ -281,12 +285,8 @@
 /* ACESSIBILIDADE */
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  html {
     scroll-behavior: auto !important;
-    animation: none !important;
-    transition: none !important;
   }
 
   .about-title,
@@ -295,16 +295,16 @@
   .about-subtitle,
   .about-text,
   .about-stats {
-    opacity: 1;
-    transform: none;
+    transition-property: opacity !important;
+    transition-duration: 350ms !important;
+    transition-delay: 0ms !important;
+    transform: none !important;
   }
 
-  #quem-somos .opacity-0,
-  #estudio .opacity-0,
-  #artesanato .opacity-0,
-  #agricultura .opacity-0,
-  #fundadores .opacity-0 {
-    opacity: 1 !important;
+  main [class*="transition-"][class*="opacity-"] {
+    transition-property: opacity !important;
+    transition-duration: 350ms !important;
+    transition-delay: 0ms !important;
     transform: none !important;
   }
 }
