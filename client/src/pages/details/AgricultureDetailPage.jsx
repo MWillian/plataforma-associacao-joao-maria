@@ -126,7 +126,7 @@ export function AgricultureDetailPage({ product, products = [], isLoading = fals
 
             {/* Título do produto */}
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0b1b3d] tracking-tight leading-snug">
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0b1b3d] tracking-tight leading-snug wrap-anywhere">
                 {currentProduct.title}
               </h1>
             </div>
@@ -146,7 +146,7 @@ export function AgricultureDetailPage({ product, products = [], isLoading = fals
             {/* Botão do WhatsApp */}
             <div className="pt-2 space-y-3">
               <a
-                href="https://wa.me/5582996486572"
+                href={`https://wa.me/5582996486572?text=${encodeURIComponent(`Olá! Tenho interesse no produto ${currentProduct.title}.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-3.5 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all cursor-pointer"

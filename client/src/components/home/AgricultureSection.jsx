@@ -277,6 +277,7 @@ export function AgricultureSection({ products = [], onNavigate }) {
                     duration-300
 
                     group-hover:text-[#3570FC]
+                    wrap-anywhere
                   "
                 >
                   {item.title}

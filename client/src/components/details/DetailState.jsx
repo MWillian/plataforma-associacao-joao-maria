@@ -1,5 +1,6 @@
 // Estado exibido nas páginas de detalhe quando o item ainda está carregando
 // ou não existe mais (link antigo, item excluído ou indisponível).
+// Também serve como página de "não encontrada" para endereços desconhecidos.
 export function DetailState({ isLoading, notFoundTitle, notFoundText, backLabel, onBack, onGoHome }) {
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-[60vh] flex items-center justify-center px-4 py-16">
@@ -17,13 +18,15 @@ export function DetailState({ isLoading, notFoundTitle, notFoundText, backLabel,
               {notFoundText}
             </p>
             <div className="flex flex-wrap justify-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onBack}
-                className="rounded-full bg-[#0b1b3d] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#142D59]"
-              >
-                {backLabel}
-              </button>
+              {onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="rounded-full bg-[#0b1b3d] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#142D59]"
+                >
+                  {backLabel}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onGoHome}

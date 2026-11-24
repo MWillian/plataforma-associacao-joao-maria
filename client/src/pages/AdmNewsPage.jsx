@@ -467,7 +467,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
                 </div>
 
                 {/* Conteúdo */}
-                <h3 className="mb-2 font-semibold text-[#172033]">
+                <h3 className="mb-2 font-semibold text-[#172033] wrap-anywhere">
                   {newsItem.title}
                 </h3>
 

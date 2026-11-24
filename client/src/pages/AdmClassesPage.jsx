@@ -445,7 +445,7 @@ export function AdmClassesPage({
 
               {/* Informações */}
               <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D]">
+                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
                   {danceClass.name}
                 </h3>
 

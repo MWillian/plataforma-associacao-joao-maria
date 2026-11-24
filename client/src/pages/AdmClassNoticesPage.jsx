@@ -80,6 +80,16 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
       return;
     }
 
+    if (!form.subject.trim()) {
+      setError('Informe o assunto do aviso.');
+      return;
+    }
+
+    if (!form.message.trim()) {
+      setError('Escreva a mensagem do aviso.');
+      return;
+    }
+
     const newNotice = {
       id: Date.now(),
       classIds: selectedClasses.map((danceClass) => danceClass.id),
@@ -255,7 +265,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
                 {/* Turma destinatária */}
-                <fieldset className="md:col-span-1">
+                <fieldset className="min-w-0 md:col-span-1">
                   <label
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
@@ -266,7 +276,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
                     aria-label="Turmas destinatárias"
                   >
                     {classes.map((danceClass) => (
-                      <label key={danceClass.id} className="flex items-center gap-2 text-sm text-[#40516B]">
+                      <label key={danceClass.id} className="flex items-start gap-2 text-sm text-[#40516B]">
                         <input
                           type="checkbox"
                           name="danceClassIds"
@@ -274,9 +284,9 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
                           checked={form.danceClassIds.includes(String(danceClass.id))}
                           onChange={handleChange}
                           disabled={classes.length === 0}
-                          className="h-4 w-4 accent-blue-600"
+                          className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600"
                         />
-                        <span>{danceClass.name}</span>
+                        <span className="min-w-0 wrap-anywhere">{danceClass.name}</span>
                       </label>
                     ))}
                     {classes.length === 0 && (
@@ -343,7 +353,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
                   htmlFor="message"
                   className="mb-2 block text-sm font-medium text-[#40516B]"
                 >
-                  Mensagem
+                  Mensagem <span className="text-blue-600">*</span>
                 </label>
 
                 <textarea
@@ -411,7 +421,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
                   {notice.date}
                 </span>
 
-                <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700">
+                <span className="max-w-full rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700 wrap-anywhere">
                   {getNoticeClassIds(notice)
                     .map((classId) => getClassName(classId))
                     .join(', ')}
@@ -420,12 +430,12 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
               </div>
 
               {/* Assunto */}
-              <h3 className="mb-2 font-semibold text-[#172033]">
+              <h3 className="mb-2 font-semibold text-[#172033] wrap-anywhere">
                 {notice.subject}
               </h3>
 
               {/* Mensagem */}
-              <p className="text-sm leading-relaxed text-[#526581]">
+              <p className="whitespace-pre-line text-sm leading-relaxed text-[#526581] wrap-anywhere">
                 {notice.message}
               </p>
 

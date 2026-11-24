@@ -666,7 +666,7 @@ export function AdmProductsPage({
 
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-bold text-[#172033]">
+                      <h3 className="min-w-0 text-sm font-bold text-[#172033] wrap-anywhere">
                         {getProductName(product)}
                       </h3>
 

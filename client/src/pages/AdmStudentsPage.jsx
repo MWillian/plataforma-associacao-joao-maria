@@ -414,7 +414,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                         type="button"
                         aria-pressed={selected}
                         onClick={() => handleClassToggle(String(danceClass.id))}
-                        className={`rounded-lg border px-3 py-2 text-sm font-medium ${
+                        className={`max-w-full rounded-lg border px-3 py-2 text-left text-sm font-medium wrap-anywhere ${
                           selected
                             ? 'border-blue-600 bg-blue-600 text-white'
                             : 'border-[#DCE4F0] bg-white text-[#526581]'
@@ -575,7 +575,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
               {/* Informações */}
               <div className="min-w-0">
-                <h3 className="font-semibold text-[#17233D]">
+                <h3 className="font-semibold text-[#17233D] wrap-anywhere">
                   {student.name}
                 </h3>
 
@@ -584,7 +584,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                   {student.phone ? ` · ${student.phone}` : ''}
                 </p>
 
-                <p className="text-[#9AACC5]">
+                <p className="text-[#9AACC5] wrap-anywhere">
                   Turmas do aluno: {getDanceClassNames(student)}
                 </p>
 
@@ -825,7 +825,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                           type="button"
                           aria-pressed={selected}
                           onClick={() => handleClassToggle(String(danceClass.id), true)}
-                          className={`rounded-lg border px-3 py-2 text-sm ${
+                          className={`max-w-full rounded-lg border px-3 py-2 text-left text-sm wrap-anywhere ${
                             selected
                               ? 'border-blue-600 bg-blue-600 text-white'
                               : 'border-[#DCE4F0] bg-white text-[#526581]'

@@ -126,16 +126,18 @@ export function CraftDetailPage({ product, products = [], isLoading = false, onB
 
             {/* Título e Preço */}
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0b1b3d] tracking-tight leading-snug">
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0b1b3d] tracking-tight leading-snug wrap-anywhere">
                 {currentProduct.title}
               </h1>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-extrabold text-amber-800">
                   {currentProduct.price}
                 </span>
-                <span className="text-slate-500 font-roboto text-xs sm:text-sm">
-                  {currentProduct.unit || '/ unidade'}
-                </span>
+                {currentProduct.price !== 'Sob consulta' && (
+                  <span className="text-slate-500 font-roboto text-xs sm:text-sm">
+                    {currentProduct.unit || '/ unidade'}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -154,7 +156,7 @@ export function CraftDetailPage({ product, products = [], isLoading = false, onB
             {/* Botão do WhatsApp */}
             <div className="pt-2 space-y-3">
               <a
-                href="https://wa.me/5582996486572"
+                href={`https://wa.me/5582996486572?text=${encodeURIComponent(`Olá! Tenho interesse no produto ${currentProduct.title}.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-[#1b7a33] hover:bg-[#156128] text-white py-3.5 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all cursor-pointer"

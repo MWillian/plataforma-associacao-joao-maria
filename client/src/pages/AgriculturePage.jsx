@@ -228,7 +228,7 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-[#142D59] leading-tight group-hover:text-[#3570FC] transition-colors">
+                    <h3 className="text-xl font-bold text-[#142D59] leading-tight group-hover:text-[#3570FC] transition-colors wrap-anywhere">
                       {item.title}
                     </h3>
                     <p className="text-slate-600 font-roboto text-sm leading-relaxed line-clamp-2">
@@ -341,7 +341,7 @@ export function AgriculturePage({ news = [], products = [], onSelectProduct, onS
                     <span className="inline-block bg-[#0b1b3d] text-white text-xs font-medium px-3 py-1 rounded shadow-sm">
                       {item.tag}
                     </span>
-                    <h3 className="text-xl font-bold text-[#142D59] leading-tight group-hover:text-[#3570FC] transition-colors">
+                    <h3 className="text-xl font-bold text-[#142D59] leading-tight group-hover:text-[#3570FC] transition-colors wrap-anywhere">
                       {item.title}
                     </h3>
                   </div>

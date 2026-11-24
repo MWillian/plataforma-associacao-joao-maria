@@ -22,6 +22,15 @@ export function NewsDetailPage({ news, isLoading = false, onBack, onGoHome, back
   }
 
   const currentNews = news;
+  // Linha em branco separa parágrafos; quebra simples vira quebra de linha.
+  const newsText = Array.isArray(currentNews.content)
+    ? currentNews.content.join('\n\n')
+    : currentNews.description || currentNews.content || '';
+  const newsParagraphs = String(newsText)
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
   // A API envia as imagens como lista de URLs; aceita também objetos { url }.
   const newsImages = (currentNews.images || [])
     .map((image) => (typeof image === 'string' ? image : image?.url))
@@ -114,13 +123,9 @@ export function NewsDetailPage({ news, isLoading = false, onBack, onGoHome, back
 
         {/* Corpo do Texto da Notícia */}
         <article className="prose prose-slate max-w-none font-roboto text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 sm:space-y-6 pt-2 sm:pt-4 page-reveal-up" style={{ animationDelay: '220ms' }}>
-          {Array.isArray(currentNews.content) ? (
-            currentNews.content.map((paragraph, index) => (
-              <p key={index} className="m-0 break-words leading-relaxed [overflow-wrap:anywhere]">{paragraph}</p>
-            ))
-          ) : (
-            <p className="m-0 break-words leading-relaxed [overflow-wrap:anywhere]">{currentNews.description || currentNews.content}</p>
-          )}
+          {newsParagraphs.map((paragraph, index) => (
+            <p key={index} className="m-0 whitespace-pre-line break-words leading-relaxed [overflow-wrap:anywhere]">{paragraph}</p>
+          ))}
         </article>
 
         <hr className="border-slate-200 my-6 sm:my-8" />

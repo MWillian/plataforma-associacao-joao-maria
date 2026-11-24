@@ -53,6 +53,7 @@ import {
 } from './services/auth.js';
 import { productToPublic } from './services/productMapper.js';
 import { SESSION_EXPIRED_EVENT } from './services/api.js';
+import { DetailState } from './components/details/DetailState.jsx';
 
 const routes = {
   '/': 'home',
@@ -74,7 +75,8 @@ const DETAIL_STORAGE_KEYS = {
 };
 
 function getLocationState() {
-  const { pathname } = window.location;
+  // Ignora a barra final ("/artesanato/" equivale a "/artesanato").
+  const pathname = window.location.pathname.replace(/(.)\/+$/, '$1');
   const craftMatch = pathname.match(/^\/artesanato\/produtos\/([^/]+)$/);
   const agricultureMatch = pathname.match(/^\/agricultura\/produtos\/([^/]+)$/);
   const newsMatch = pathname.match(/^\/(studio|artesanato|agricultura)\/noticias\/([^/]+)$/);
@@ -106,8 +108,9 @@ function getLocationState() {
     };
   }
 
+  // Endereço desconhecido mostra "Página não encontrada" em vez da home.
   return {
-    activePage: routes[pathname] || 'home',
+    activePage: routes[pathname] || 'not-found',
   };
 }
 
@@ -155,6 +158,7 @@ const pageTitles = {
   'craft-detail': 'Detalhes do artesanato',
   'agriculture-detail': 'Detalhes da agricultura',
   'news-detail': 'Notícia',
+  'not-found': 'Página não encontrada',
   'adm-login': 'Acesso administrativo',
   'adm-dashboard': 'Painel administrativo',
   'adm-students': 'Alunos',
@@ -221,6 +225,12 @@ export default function App() {
     restoreSession()
       .then(() => {
         setIsAuthenticated(true);
+
+        // Quem já está logado e abre /admin/login vai direto para o painel.
+        if (window.location.pathname === '/admin/login') {
+          window.history.replaceState({}, '', '/admin/painel');
+          setActivePage('adm-dashboard');
+        }
       })
       .catch(() => {
         clearAccessToken();
@@ -316,6 +326,11 @@ export default function App() {
 
     if (route && window.location.pathname !== route) {
       window.history.pushState({}, '', route);
+    }
+
+    // Nova página abre no topo (antes mantinha a rolagem da página anterior).
+    if (targetPage !== activePage) {
+      window.scrollTo({ top: 0 });
     }
 
     setActivePage(targetPage);
@@ -873,6 +888,14 @@ export default function App() {
             onBack={() => navigate('agriculture')}
             onGoHome={() => navigate('home')}
             onSelectProduct={handleSelectAgricultureProduct}
+          />
+        )}
+
+        {activePage === 'not-found' && (
+          <DetailState
+            notFoundTitle="Página não encontrada"
+            notFoundText="O endereço acessado não existe ou foi alterado."
+            onGoHome={() => navigate('home')}
           />
         )}
 
