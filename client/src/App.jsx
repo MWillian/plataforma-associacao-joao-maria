@@ -52,6 +52,7 @@ import {
   restoreSession,
 } from './services/auth.js';
 import { productToPublic } from './services/productMapper.js';
+import { SESSION_EXPIRED_EVENT } from './services/api.js';
 
 const routes = {
   '/': 'home',
@@ -129,6 +130,19 @@ function readStoredDetail(key, id) {
   return value;
 }
 
+// Página de detalhe: depois que a lista pública carrega, o item é buscado
+// nela pelo id da URL. Assim, um item excluído ou indisponível não é exibido
+// a partir da cópia guardada no sessionStorage. Antes de carregar, usa a cópia.
+function resolveDetail(list, storedItem, idFromUrl, isListLoaded) {
+  if (!isListLoaded) {
+    return storedItem;
+  }
+
+  const id = idFromUrl ?? storedItem?.id;
+
+  return list.find((item) => String(item.id) === String(id)) ?? null;
+}
+
 function isAdminPage(page) {
   return page.startsWith('adm-');
 }
@@ -181,6 +195,10 @@ export default function App() {
   // até o painel ser carregado.
   const [products, setProducts] = useState([]);
   const [publicProducts, setPublicProducts] = useState([]);
+  const [isPublicProductsLoaded, setIsPublicProductsLoaded] = useState(false);
+  const [isNewsLoaded, setIsNewsLoaded] = useState(false);
+  // true quando as chamadas públicas terminaram (com sucesso ou erro).
+  const [isPublicContentSettled, setIsPublicContentSettled] = useState(false);
   const [latestCraftProducts, setLatestCraftProducts] = useState([]);
   const [latestAgricultureProducts, setLatestAgricultureProducts] = useState([]);
   const [adminProductsLoaded, setAdminProductsLoaded] = useState(false);
@@ -284,9 +302,11 @@ export default function App() {
     setActivePage('news-detail');
   }; 
 
-  const navigate = (page) => {
+  // `authenticated` permite navegar logo após o login, antes de o React
+  // aplicar o novo valor de isAuthenticated (o estado ainda seria o antigo).
+  const navigate = (page, { authenticated = isAuthenticated } = {}) => {
     const targetPage =
-      isAdminPage(page) && page !== 'adm-login' && !isAuthenticated
+      isAdminPage(page) && page !== 'adm-login' && !authenticated
         ? 'adm-login'
         : page;
 
@@ -314,9 +334,30 @@ export default function App() {
 
   const handleLogin = (user) => {
     setIsAuthenticated(true);
-    navigate('adm-dashboard');
+    navigate('adm-dashboard', { authenticated: true });
     return user;
   };
+
+  // Disparado pelo interceptador do axios quando a renovação da sessão falha.
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      clearAccessToken();
+      setIsAuthenticated(false);
+      adminDataRequestedRef.current = false;
+      setAdminDataStatus('idle');
+
+      if (isAdminPage(getLocationState().activePage)) {
+        window.history.replaceState({}, '', '/admin/login');
+        setActivePage('adm-login');
+      }
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -393,12 +434,16 @@ export default function App() {
       .then(([newsResult, productsResult, classesResult, craftsResult, agricultureResult]) => {
         if (cancelled) return;
 
+        setIsPublicContentSettled(true);
+
         if (newsResult.status === 'fulfilled') {
           setNews(newsResult.value);
+          setIsNewsLoaded(true);
         }
 
         if (productsResult.status === 'fulfilled') {
           setPublicProducts(productsResult.value);
+          setIsPublicProductsLoaded(true);
         }
 
         if (classesResult.status === 'fulfilled') {
@@ -617,6 +662,27 @@ export default function App() {
     .filter((product) => product.category === 'Agricultura Familiar')
     .map(productToPublic);
 
+  const locationState = getLocationState();
+  const isCatalogLoaded = adminProductsLoaded || isPublicProductsLoaded;
+  const detailCraftProduct = resolveDetail(
+    craftCatalog,
+    selectedProduct,
+    locationState.productId,
+    isCatalogLoaded
+  );
+  const detailAgricultureProduct = resolveDetail(
+    agricultureCatalog,
+    selectedProduct,
+    locationState.productId,
+    isCatalogLoaded
+  );
+  const detailNews = resolveDetail(
+    news,
+    selectedNews,
+    locationState.newsId,
+    isNewsLoaded
+  );
+
   const loadErrorToast =
     adminDataStatus === 'error' ? (
       <FeedbackToast
@@ -790,7 +856,8 @@ export default function App() {
 
         {activePage === 'craft-detail' && (
           <CraftDetailPage
-            product={selectedProduct}
+            product={detailCraftProduct}
+            isLoading={!isPublicContentSettled && !detailCraftProduct}
             products={craftCatalog}
             onBack={() => navigate('crafts')}
             onGoHome={() => navigate('home')}
@@ -800,7 +867,9 @@ export default function App() {
 
         {activePage === 'agriculture-detail' && (
           <AgricultureDetailPage
-            product={selectedProduct}
+            product={detailAgricultureProduct}
+            products={agricultureCatalog}
+            isLoading={!isPublicContentSettled && !detailAgricultureProduct}
             onBack={() => navigate('agriculture')}
             onGoHome={() => navigate('home')}
             onSelectProduct={handleSelectAgricultureProduct}
@@ -809,7 +878,8 @@ export default function App() {
 
         {activePage === 'news-detail' && (
           <NewsDetailPage
-            news={selectedNews}
+            news={detailNews}
+            isLoading={!isPublicContentSettled && !detailNews}
             onBack={() => navigate(newsSourcePage)}
             onGoHome={() => navigate('home')}
             backLabel={

@@ -1,29 +1,31 @@
 import { useEffect } from 'react';
 import { Calendar, ArrowLeft } from 'lucide-react';
+import { DetailState } from '../../components/details/DetailState.jsx';
 
-export function NewsDetailPage({ news, onBack, onGoHome, backLabel }) {
+export function NewsDetailPage({ news, isLoading = false, onBack, onGoHome, backLabel }) {
   // Rola automaticamente para o topo ao carregar a página
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [news]);
 
-  // Notícia padrão de fallback
-  const defaultNews = {
-    id: 1,
-    tag: 'Evento',
-    title: '1º Festival de Dança da Economia Solidária: Um Conto de Natal',
-    date: '15 de Dezembro, 2026',
-    author: 'Estúdio Adágio & Associação João Maria',
-    category: 'Eventos',
-    content: [
-      'É com muita alegria que a Associação Comunitária do Bairro João Maria e o Adágio Estúdio de Dança convidam toda a comunidade de Coruripe-AL para assistir ao nosso 1º Festival de Dança da Economia Solidária.',
-      'O evento contará com apresentações temáticas natalinas desenvolvidas ao longo do ano com as crianças e jovens atendidos pelos nossos projetos sociais de ballet, jazz e sapateado.',
-      'Além das belíssimas apresentações de dança, teremos uma feira especial com exposição de peças de artesanato local e degustação de produtos frescos da agricultura familiar. Venha prestigiar nossos talentos e fortalecer nossa economia comunitária!'
-    ],
-    imagePlaceholder: 'Banner do Evento Natalino (Um Conto de Natal)'
-  };
+  if (!news) {
+    return (
+      <DetailState
+        isLoading={isLoading}
+        notFoundTitle="Notícia não encontrada"
+        notFoundText="Esta notícia não está mais disponível no mural."
+        backLabel={backLabel ? `Voltar para ${backLabel.toLowerCase()}` : 'Voltar ao mural'}
+        onBack={onBack}
+        onGoHome={onGoHome}
+      />
+    );
+  }
 
-  const currentNews = news || defaultNews;
+  const currentNews = news;
+  // A API envia as imagens como lista de URLs; aceita também objetos { url }.
+  const newsImages = (currentNews.images || [])
+    .map((image) => (typeof image === 'string' ? image : image?.url))
+    .filter(Boolean);
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8 page-reveal-fade">
@@ -83,10 +85,32 @@ export function NewsDetailPage({ news, onBack, onGoHome, backLabel }) {
 
         {/* Imagem Principal da Notícia (Proporções Otimizadas para Mobile) */}
         <div className="w-full h-52 sm:h-80 md:h-[450px] bg-slate-100 rounded-2xl sm:rounded-3xl border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm relative page-reveal-fade" style={{ animationDelay: '120ms' }}>
-          <span className="text-slate-400 font-roboto text-xs sm:text-base text-center px-4">
-            {currentNews.imagePlaceholder || `Imagem Ilustrativa: ${currentNews.title}`}
-          </span>
+          {newsImages.length > 0 ? (
+            <img
+              src={newsImages[0]}
+              alt={currentNews.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-slate-400 font-roboto text-xs sm:text-base text-center px-4">
+              {`Imagem Ilustrativa: ${currentNews.title}`}
+            </span>
+          )}
         </div>
+
+        {/* Demais fotos da notícia */}
+        {newsImages.length > 1 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            {newsImages.slice(1).map((url, index) => (
+              <img
+                key={url}
+                src={url}
+                alt={`${currentNews.title} (foto ${index + 2})`}
+                className="h-32 sm:h-44 w-full rounded-xl border border-slate-200 object-cover"
+              />
+            ))}
+          </div>
+        )}
 
         {/* Corpo do Texto da Notícia */}
         <article className="prose prose-slate max-w-none font-roboto text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 sm:space-y-6 pt-2 sm:pt-4 page-reveal-up" style={{ animationDelay: '220ms' }}>

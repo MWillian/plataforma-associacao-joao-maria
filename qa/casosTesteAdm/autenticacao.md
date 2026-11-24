@@ -10,20 +10,21 @@
 
 **Resumo:** 5 casos executados — 3 aprovados, 2 reprovados, 0 não aplicáveis.
 
-| ID | Cenário | Passos | Resultado esperado | Prioridade | Resultado obtido | Status |
-|---|---|---|---|---|---|---|
-| AUT-001 | Login válido | Informar credenciais válidas e acessar | Usuário acessa o sistema | Alta | Credenciais válidas retornam 200 e o token é salvo, mas a tela permanece no formulário de login. O acesso só acontece no 2º clique em "Entrar no painel" (reproduzido 3 vezes). Ver BUG-ADM-001. | ❌ Reprovado |
-| AUT-002 | E-mail inválido | Informar e-mail em formato inválido | Sistema apresenta validação | Média | O navegador bloqueia o envio ("Inclua um @ no endereço de e-mail") e nenhuma requisição é feita. | ✅ Aprovado |
-| AUT-003 | Senha incorreta | Informar senha incorreta | Sistema impede o acesso | Alta | O acesso é impedido (API retorna 401 "E-mail ou senha inválidos."), mas a tela mostra "Sessão expirada. Faça login novamente.". Ver BUG-ADM-002. | ❌ Reprovado |
-| AUT-004 | Campos vazios | Tentar acessar sem preencher os campos | Sistema sinaliza os campos obrigatórios | Alta | Campos obrigatórios sinalizados ("Preencha este campo."); nenhuma requisição é feita. | ✅ Aprovado |
-| AUT-005 | Logout | Acessar o sistema e encerrar a sessão | Usuário é desconectado | Alta | "Sair" remove o token e volta para `/admin/login`. Rota protegida acessada depois do logout redireciona para o login. | ✅ Aprovado |
+| ID | Cenário | Passos | Resultado esperado | Prioridade | Resultado obtido | Status | Resultado obtido | Status |
+|---|---|---|---|---|---|---|---|---|
+| AUT-001 | Login válido | Informar credenciais válidas e acessar | Usuário acessa o sistema | Alta | Credenciais válidas retornam 200 e o token é salvo, mas a tela permanece no formulário de login. O acesso só acontece no 2º clique em "Entrar no painel" (reproduzido 3 vezes). Ver BUG-ADM-001. | ❌ Reprovado | Credenciais válidas retornam 200 e o token é salvo, mas a tela permanece no formulário de login. O acesso só acontece no 2º clique em "Entrar no painel" (reproduzido 3 vezes). Ver BUG-ADM-001. | ❌ Reprovado |
+| AUT-002 | E-mail inválido | Informar e-mail em formato inválido | Sistema apresenta validação | Média | O navegador bloqueia o envio ("Inclua um @ no endereço de e-mail") e nenhuma requisição é feita. | ✅ Aprovado | O navegador bloqueia o envio ("Inclua um @ no endereço de e-mail") e nenhuma requisição é feita. | ✅ Aprovado |
+| AUT-003 | Senha incorreta | Informar senha incorreta | Sistema impede o acesso | Alta | O acesso é impedido (API retorna 401 "E-mail ou senha inválidos."), mas a tela mostra "Sessão expirada. Faça login novamente.". Ver BUG-ADM-002. | ❌ Reprovado | O acesso é impedido (API retorna 401 "E-mail ou senha inválidos."), mas a tela mostra "Sessão expirada. Faça login novamente.". Ver BUG-ADM-002. | ❌ Reprovado |
+| AUT-004 | Campos vazios | Tentar acessar sem preencher os campos | Sistema sinaliza os campos obrigatórios | Alta | Campos obrigatórios sinalizados ("Preencha este campo."); nenhuma requisição é feita. | ✅ Aprovado | Campos obrigatórios sinalizados ("Preencha este campo."); nenhuma requisição é feita. | ✅ Aprovado |
+| AUT-005 | Logout | Acessar o sistema e encerrar a sessão | Usuário é desconectado | Alta | "Sair" remove o token e volta para `/admin/login`. Rota protegida acessada depois do logout redireciona para o login. | ✅ Aprovado | "Sair" remove o token e volta para `/admin/login`. Rota protegida acessada depois do logout redireciona para o login. | ✅ Aprovado |
 
 ## Defeitos encontrados
 
 | ID do defeito | Caso relacionado | Motivo da falha | Severidade | Status |
 |---|---|---|---|---|
-| BUG-ADM-001 | AUT-001 | Login exige dois cliques. Em `client/src/App.jsx`, `handleLogin` chama `setIsAuthenticated(true)` e logo em seguida `navigate('adm-dashboard')`; o `navigate` ainda lê o valor antigo de `isAuthenticated` (`false`) e redireciona de volta para `adm-login`. | Alta | Aberto |
-| BUG-ADM-002 | AUT-003 | Mensagem errada para senha incorreta. O interceptador de `client/src/services/api.js` tenta `/auth/refresh` em qualquer resposta 401, inclusive na do próprio `/auth/login`; o erro do refresh ("Sessão expirada") substitui a mensagem correta da API. | Média | Aberto |
+| BUG-ADM-001 | AUT-001 | Login exige dois cliques. Em `client/src/App.jsx`, `handleLogin` chama `setIsAuthenticated(true)` e logo em seguida `navigate('adm-dashboard')`; o `navigate` ainda lê o valor antigo de `isAuthenticated` (`false`) e redireciona de volta para `adm-login`. | Alta | Corrigido (aguarda reteste) |
+| BUG-ADM-002 | AUT-003 | Mensagem errada para senha incorreta. O interceptador de `client/src/services/api.js` tenta `/auth/refresh` em qualquer resposta 401, inclusive na do próprio `/auth/login`; o erro do refresh ("Sessão expirada") substitui a mensagem correta da API. | Média | Corrigido (aguarda reteste) |
+| BUG-ADM-010 | Exploratório | Quando o token de acesso vence (15 min), várias chamadas recebem 401 ao mesmo tempo e cada uma tenta renovar a sessão. Como o backend troca o refresh token a cada uso, só a 1ª renovação funciona: as outras falham, o painel mostra "Sessão expirada" / "Alguns dados não puderam ser carregados" e não leva ao login. Confirmado com 4 renovações simultâneas: 1 aceita, 3 recusadas. | Alta | Corrigido (aguarda reteste) |
 
 ## Testes exploratórios
 

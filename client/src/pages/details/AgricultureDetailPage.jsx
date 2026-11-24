@@ -1,74 +1,43 @@
 import { useState, useEffect } from 'react';
 import { Sprout } from 'lucide-react';
 import { ProductImage } from '../../components/details/ProductImage.jsx';
+import { DetailState } from '../../components/details/DetailState.jsx';
 
-export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProduct }) {
+export function AgricultureDetailPage({ product, products = [], isLoading = false, onBack, onGoHome, onSelectProduct }) {
   // Rola suavemente para o topo ao carregar a página ou trocar o produto
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [product]);
 
-  // Produto padrão de fallback (Tomates)
-  const defaultProduct = {
-    id: 1,
-    title: 'Tomates',
-    badge: 'AGRICULTURA FAMILIAR',
-    description:
-      'Tomates frescos cultivados com técnicas agroecológicas de forma totalmente sustentável pelos pequenos produtores da nossa associação em Coruripe-AL. Livres de agrotóxicos agressivos e colhidos no ponto ideal para garantir sabor e nutrientes.',
-    images: [
-      'Tomates Imagem Principal',
-      'Foto no Pé 1',
-      'Colheita 2',
-      'Cesta de Produtos 3',
-    ],
-  };
-
-  const currentProduct = product || defaultProduct;
   const [imageSelection, setImageSelection] = useState({
-    productId: currentProduct.id,
+    productId: product?.id,
     index: 0,
   });
+
+  if (!product) {
+    return (
+      <DetailState
+        isLoading={isLoading}
+        notFoundTitle="Produto não encontrado"
+        notFoundText="Este produto não está mais disponível no catálogo da agricultura familiar."
+        backLabel="Ver produtos da agricultura"
+        onBack={onBack}
+        onGoHome={onGoHome}
+      />
+    );
+  }
+
+  const currentProduct = product;
   const selectedImageIndex =
     String(imageSelection.productId) === String(currentProduct.id)
       ? imageSelection.index
       : 0;
   const productImages = (currentProduct.images || []).slice(0, 3);
 
-  // Produtos agrícolas semelhantes no rodapé da página
-  const similarAgricultureItems = [
-    {
-      id: 201,
-      title: 'Cebola',
-      badge: 'AGRICULTURA FAMILIAR',
-      description: 'Cultivadas de forma sustentável pelas famílias da associação.',
-      category: 'Produtos',
-      images: ['Cebola Principal', 'Foto 1', 'Foto 2', 'Foto 3']
-    },
-    {
-      id: 202,
-      title: 'Macaxeira',
-      badge: 'AGRICULTURA FAMILIAR',
-      description: 'Macaxeira fresca de alta qualidade, colhida diretamente da roça.',
-      category: 'Produtos',
-      images: ['Macaxeira Principal', 'Foto 1', 'Foto 2', 'Foto 3']
-    },
-    {
-      id: 203,
-      title: 'Batata doce',
-      badge: 'AGRICULTURA FAMILIAR',
-      description: 'Rica em nutrientes e cultivada com carinho pelas nossas famílias.',
-      category: 'Produtos',
-      images: ['Batata Doce Principal', 'Foto 1', 'Foto 2', 'Foto 3']
-    },
-    {
-      id: 204,
-      title: 'Pimentão',
-      badge: 'AGRICULTURA FAMILIAR',
-      description: 'Pimentões coloridos e frescos, colhidos no momento certo.',
-      category: 'Produtos',
-      images: ['Pimentão Principal', 'Foto 1', 'Foto 2', 'Foto 3']
-    }
-  ];
+  // Outros cultivos: itens reais do catálogo, exceto o produto atual.
+  const similarAgricultureItems = products
+    .filter((item) => String(item.id) !== String(currentProduct.id))
+    .slice(0, 4);
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8 page-reveal-fade">
@@ -210,7 +179,13 @@ export function AgricultureDetailPage({ product, onBack, onGoHome, onSelectProdu
         </div>
 
         {/* Seção de Produtos Semelhantes */}
-        <div className="mt-16 sm:mt-24 pt-12 sm:pt-16 border-t border-slate-200 space-y-6 sm:space-y-8">
+        <div
+          className={
+            similarAgricultureItems.length === 0
+              ? 'hidden'
+              : 'mt-16 sm:mt-24 pt-12 sm:pt-16 border-t border-slate-200 space-y-6 sm:space-y-8'
+          }
+        >
           <div>
             <h2 className="text-xl sm:text-3xl font-extrabold text-[#0b1b3d] tracking-tight">
               Outros Cultivos da Associação

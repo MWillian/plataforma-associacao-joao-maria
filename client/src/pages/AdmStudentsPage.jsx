@@ -40,7 +40,12 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
   const [feedbackType, setFeedbackType] = useState('success');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Cada aviso ganha um id novo: assim a mesma mensagem volta a aparecer
+  // quando repetida (o FeedbackToast esconde de vez a mensagem que já expirou).
+  const [feedbackId, setFeedbackId] = useState(0);
+
   const showFeedback = (message, type = 'success') => {
+    setFeedbackId((currentId) => currentId + 1);
     setFeedbackType(type);
     setFeedback(message);
   };
@@ -276,7 +281,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
 
   return (
     <>
-      <FeedbackToast message={feedback} type={feedbackType} />
+      <FeedbackToast key={feedbackId} message={feedback} type={feedbackType} />
       <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 md:px-12">
 
       {/* Cabeçalho */}
@@ -575,7 +580,8 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                 </h3>
 
                 <p className="text-[#9AACC5]"                >
-                  {student.email || 'Sem e-mail cadastrado'} · {student.phone}
+                  {student.email || 'Sem e-mail cadastrado'}
+                  {student.phone ? ` · ${student.phone}` : ''}
                 </p>
 
                 <p className="text-[#9AACC5]">
@@ -786,7 +792,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     htmlFor="edit-student-phone"
                     className="mb-2 block text-sm font-medium text-[#40516B]"
                   >
-                    Telefone *
+                    Telefone <span className="text-sm font-normal text-[#71839F]">(opcional)</span>
                   </label>
 
                   <input
@@ -795,7 +801,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
                     name="phone"
                     value={editForm.phone}
                     onChange={handleEditChange}
-                    required
+                    placeholder="(11) 99999-9999"
                     className="w-full rounded-xl border border-[#DCE4F0] px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
                 </div>

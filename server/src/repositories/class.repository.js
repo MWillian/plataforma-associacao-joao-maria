@@ -42,6 +42,16 @@ export class ClassRepository {
     }
   }
 
+  // Turma ativa com o mesmo nome, sem diferenciar maiúsculas/minúsculas.
+  async findActiveByName(name) {
+    return prisma.class.findFirst({
+      where: {
+        active: true,
+        name: { equals: name, mode: 'insensitive' },
+      },
+    });
+  }
+
   async findById(id) {
     return prisma.class.findUnique({
       where: { id },
