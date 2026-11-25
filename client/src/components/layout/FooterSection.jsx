@@ -21,6 +21,8 @@ export function FooterSection({ onNavigateToSection }) {
             </p>
             <a
               href="/admin/login"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex rounded-lg bg-white px-4 py-2 text-xs font-semibold text-[#0b1b3d] transition hover:bg-blue-100"
             >
               Acesso administrativo
