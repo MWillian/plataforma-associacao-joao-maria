@@ -978,6 +978,7 @@ export function AdmProductsPage({
               </strong>
               ?
               Essa ação não poderá ser desfeita.
+              {' '}As imagens armazenadas pela associação também serão removidas.
             </p>
 
             <div className="mt-7 flex justify-end gap-3">

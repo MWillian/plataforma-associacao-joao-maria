@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { v2 as cloudinary } from 'cloudinary';
 import { AppError } from '../utils/app-error.js';
+import { getCloudinaryPublicIdFromUrl } from '../utils/images.js';
 
 const MAX_IMAGE_SIZE = 6 * 1024 * 1024;
 const ALLOWED_FOLDERS = new Set(['products', 'news']);
@@ -204,11 +205,7 @@ export class MediaService {
     }
 
     if (result?.result === 'not found') {
-      throw new AppError(
-        404,
-        'IMAGE_NOT_FOUND',
-        'A imagem não foi encontrada no armazenamento.',
-      );
+      return;
     }
 
     if (result?.result !== 'ok') {
@@ -218,5 +215,63 @@ export class MediaService {
         'O armazenamento não confirmou a remoção da imagem.',
       );
     }
+  }
+}
+
+export async function deleteCloudinaryImages(
+  mediaService,
+  images,
+  folder,
+  fallbackUrls = [],
+) {
+  const publicIds = new Set();
+
+  for (const image of images ?? []) {
+    const publicId =
+      image?.publicId ??
+      getCloudinaryPublicIdFromUrl(image?.url, folder);
+
+    if (publicId) {
+      if (
+        typeof publicId !== 'string' ||
+        !publicId.startsWith(`associacao/${folder}/`)
+      ) {
+        throw new AppError(
+          400,
+          'INVALID_IMAGE_ID',
+          'O identificador da imagem não corresponde à pasta esperada.',
+        );
+      }
+
+      publicIds.add(publicId);
+    }
+  }
+
+  for (const url of fallbackUrls) {
+    const publicId = getCloudinaryPublicIdFromUrl(url, folder);
+
+    if (publicId) {
+      if (!publicId.startsWith(`associacao/${folder}/`)) {
+        throw new AppError(
+          400,
+          'INVALID_IMAGE_ID',
+          'O identificador da imagem não corresponde à pasta esperada.',
+        );
+      }
+
+      publicIds.add(publicId);
+    }
+  }
+
+  if (publicIds.size > 0 && !mediaService?.deleteImage) {
+    throw new AppError(
+      503,
+      'IMAGE_STORAGE_UNAVAILABLE',
+      'O armazenamento de imagens não está disponível para excluir os arquivos.',
+    );
+  }
+
+  for (const publicId of publicIds) {
+    await mediaService.deleteImage(publicId);
   }
 }

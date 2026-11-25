@@ -1,5 +1,10 @@
 import { AppError } from '../utils/app-error.js';
-import { throwValidation, validateImages } from '../utils/images.js';
+import {
+  getCloudinaryPublicIdFromUrl,
+  throwValidation,
+  validateImages,
+} from '../utils/images.js';
+import { deleteCloudinaryImages } from './media.service.js';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -45,7 +50,7 @@ function validateNewsData(data) {
 
   const images = validateImages(
     data.images,
-    { max: MAX_NEWS_IMAGES },
+    { max: MAX_NEWS_IMAGES, folder: 'news' },
     fields,
   );
 
@@ -91,8 +96,9 @@ function toNewsResponse(row) {
 }
 
 export class NewsService {
-  constructor(newsRepository) {
+  constructor(newsRepository, mediaService) {
     this.newsRepository = newsRepository;
+    this.mediaService = mediaService;
   }
 
   async list() {
@@ -110,7 +116,7 @@ export class NewsService {
   }
 
   // PUT: substitui título, descrição e área. As imagens só mudam se
-  // `images` for enviado. Notícia despublicada não pode ser editada.
+  // `images` for enviado.
   async update(id, data = {}) {
     assertValidId(id);
 
@@ -119,6 +125,25 @@ export class NewsService {
 
     if (!existing || !existing.published) {
       throw newsNotFound();
+    }
+
+    if (validated.images) {
+      const nextPublicIds = new Set(
+        validated.images.map((image) => image.publicId).filter(Boolean),
+      );
+      const removedImages = (existing.images ?? []).filter((image) => {
+        const publicId =
+          image.publicId ??
+          getCloudinaryPublicIdFromUrl(image.url, 'news');
+
+        return !publicId || !nextPublicIds.has(publicId);
+      });
+
+      await deleteCloudinaryImages(
+        this.mediaService,
+        removedImages,
+        'news',
+      );
     }
 
     const updated = await this.newsRepository.update(id, validated);
@@ -130,8 +155,7 @@ export class NewsService {
     return toNewsResponse(updated);
   }
 
-  // "Excluir" notícia = despublicar (soft delete).
-  async unpublish(id) {
+  async remove(id) {
     assertValidId(id);
 
     const existing = await this.newsRepository.findById(id);
@@ -140,16 +164,17 @@ export class NewsService {
       throw newsNotFound();
     }
 
-    if (!existing.published) {
-      return toNewsResponse(existing);
-    }
+    await deleteCloudinaryImages(
+      this.mediaService,
+      existing.images,
+      'news',
+    );
+    const removed = await this.newsRepository.remove(id);
 
-    const unpublished = await this.newsRepository.unpublish(id);
-
-    if (!unpublished) {
+    if (!removed) {
       throw newsNotFound();
     }
 
-    return toNewsResponse(unpublished);
+    return toNewsResponse(removed);
   }
 }

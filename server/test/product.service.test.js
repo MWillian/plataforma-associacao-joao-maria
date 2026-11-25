@@ -5,6 +5,10 @@ import { ProductService } from '../src/services/product.service.js';
 
 const PRODUCT_ID =
   'f7efb2aa-84cd-4b3c-919c-e20ab5c4f9d6';
+const IMAGE_PUBLIC_ID =
+  'associacao/products/123e4567-e89b-42d3-a456-426614174000';
+const MANAGED_IMAGE_URL =
+  'https://res.cloudinary.com/demo/image/upload/v123/associacao/products/123e4567-e89b-42d3-a456-426614174000.png';
 
 function createRepository(overrides = {}) {
   return {
@@ -833,8 +837,8 @@ describe('ProductService — preço, imagens e categorias do front', () => {
     });
 
     assert.deepEqual(captured.data.images, [
-      IMAGE_URL,
-      'https://example.com/b.jpg',
+      { url: IMAGE_URL },
+      { url: 'https://example.com/b.jpg' },
     ]);
     assert.equal(captured.data.imageUrl, IMAGE_URL);
   });
@@ -953,6 +957,49 @@ describe('ProductService.remove', () => {
     assert.equal(removedId, PRODUCT_ID);
   });
 
+  it('remove imagens gerenciadas antes de excluir o produto, sem duplicar o legado', async () => {
+    const deletedPublicIds = [];
+    const service = new ProductService(
+      createRepository({
+        findById: async () => ({
+          id: PRODUCT_ID,
+          imageUrl: MANAGED_IMAGE_URL,
+          images: [{ url: MANAGED_IMAGE_URL, publicId: IMAGE_PUBLIC_ID }],
+        }),
+      }),
+      {
+        deleteImage: async (publicId) => deletedPublicIds.push(publicId),
+      },
+    );
+
+    await service.remove(PRODUCT_ID);
+
+    assert.deepEqual(deletedPublicIds, [IMAGE_PUBLIC_ID]);
+  });
+
+  it('mantém o produto se a remoção da imagem falhar', async () => {
+    let removeCalled = false;
+    const service = new ProductService(
+      createRepository({
+        findById: async () => ({
+          id: PRODUCT_ID,
+          images: [{ url: MANAGED_IMAGE_URL, publicId: IMAGE_PUBLIC_ID }],
+        }),
+        remove: async () => {
+          removeCalled = true;
+        },
+      }),
+      {
+        deleteImage: async () => {
+          throw new Error('Cloudinary indisponível');
+        },
+      },
+    );
+
+    await assert.rejects(service.remove(PRODUCT_ID), /Cloudinary indisponível/);
+    assert.equal(removeCalled, false);
+  });
+
   it('rejeita identificador inválido sem chamar o repository', async () => {
     let called = false;
     const service = new ProductService(
@@ -981,5 +1028,38 @@ describe('ProductService.remove', () => {
       statusCode: 404,
       code: 'PRODUCT_NOT_FOUND',
     });
+  });
+});
+
+describe('ProductService.update image cleanup', () => {
+  it('remove imagens antigas substituídas antes de salvar as novas', async () => {
+    const deletedPublicIds = [];
+    let updateData;
+    const service = new ProductService(
+      createRepository({
+        findById: async () => ({
+          id: PRODUCT_ID,
+          active: true,
+          imageUrl: MANAGED_IMAGE_URL,
+          images: [{ url: MANAGED_IMAGE_URL, publicId: IMAGE_PUBLIC_ID }],
+        }),
+        update: async (id, data) => {
+          updateData = data;
+          return { id, ...data };
+        },
+      }),
+      {
+        deleteImage: async (publicId) => deletedPublicIds.push(publicId),
+      },
+    );
+
+    await service.update(PRODUCT_ID, {
+      title: 'Bolsa nova',
+      category: 'artesanato',
+      images: [],
+    });
+
+    assert.deepEqual(deletedPublicIds, [IMAGE_PUBLIC_ID]);
+    assert.deepEqual(updateData.images, []);
   });
 });

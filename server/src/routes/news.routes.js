@@ -16,9 +16,9 @@ newsRouter.get('/', productListRateLimit, newsController.list);
 
 newsRouter.post('/', requireAuth, requireAdmin, newsController.create);
 newsRouter.put('/:id', requireAuth, requireAdmin, newsController.update);
-newsRouter.patch(
-  '/:id/unpublish',
+newsRouter.delete(
+  '/:id',
   requireAuth,
   requireAdmin,
-  newsController.unpublish,
+  newsController.remove,
 );

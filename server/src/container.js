@@ -21,8 +21,10 @@ import { ProductService } from './services/product.service.js';
 import { StudentService } from './services/student.service.js';
 
 const productRepository = new ProductRepository();
+const mediaService = new MediaService();
 const productService = new ProductService(
   productRepository,
+  mediaService,
 );
 const productController = new ProductController(
   productService,
@@ -37,10 +39,10 @@ const studentService = new StudentService(studentRepository);
 const studentController = new StudentController(studentService);
 
 const newsController = new NewsController(
-  new NewsService(new NewsRepository()),
+  new NewsService(new NewsRepository(), mediaService),
 );
 
-const mediaController = new MediaController(new MediaService());
+const mediaController = new MediaController(mediaService);
 
 const noticeController = new NoticeController(
   new NoticeService(new NoticeRepository(), {

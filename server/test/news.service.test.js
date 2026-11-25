@@ -6,6 +6,10 @@ import { NewsService } from '../src/services/news.service.js';
 const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const MISSING_ID = uuid(999);
 const IMAGE_URL = 'https://res.cloudinary.com/demo/image/upload/test.png';
+const IMAGE_PUBLIC_ID =
+  'associacao/news/123e4567-e89b-42d3-a456-426614174000';
+const MANAGED_IMAGE_URL =
+  'https://res.cloudinary.com/demo/image/upload/v123/associacao/news/123e4567-e89b-42d3-a456-426614174000.png';
 
 class FakeNewsRepository {
   constructor() {
@@ -14,7 +18,10 @@ class FakeNewsRepository {
   }
 
   withImages(row) {
-    return { ...row };
+    return {
+      ...row,
+      images: (row.images ?? []).map((image) => ({ ...image })),
+    };
   }
 
   async listPublished() {
@@ -35,7 +42,10 @@ class FakeNewsRepository {
       published: true,
       createdAt: new Date('2026-11-21T12:00:00Z'),
       updatedAt: new Date('2026-11-21T12:00:00Z'),
-      images: images.map((url) => ({ url })),
+      images: images.map(({ url, publicId }) => ({
+        url,
+        ...(publicId && { publicId }),
+      })),
       ...data,
     };
 
@@ -54,20 +64,23 @@ class FakeNewsRepository {
     Object.assign(row, data);
 
     if (images) {
-      row.images = images.map((url) => ({ url }));
+      row.images = images.map(({ url, publicId }) => ({
+        url,
+        ...(publicId && { publicId }),
+      }));
     }
 
     return this.withImages(row);
   }
 
-  async unpublish(id) {
+  async remove(id) {
     const row = this.rows.get(id);
 
     if (!row) {
       return null;
     }
 
-    row.published = false;
+    this.rows.delete(id);
 
     return this.withImages(row);
   }
@@ -75,10 +88,14 @@ class FakeNewsRepository {
 
 let repo;
 let service;
+let deletedPublicIds;
 
 beforeEach(() => {
   repo = new FakeNewsRepository();
-  service = new NewsService(repo);
+  deletedPublicIds = [];
+  service = new NewsService(repo, {
+    deleteImage: async (publicId) => deletedPublicIds.push(publicId),
+  });
 });
 
 const valid = (overrides = {}) => ({
@@ -143,6 +160,14 @@ describe('NewsService.create', () => {
       'images',
     );
     await assertField(
+      service.create(
+        valid({
+          images: [{ url: IMAGE_URL, publicId: IMAGE_PUBLIC_ID }],
+        }),
+      ),
+      'images',
+    );
+    await assertField(
       service.create(valid({ images: Array(11).fill(IMAGE_URL) })),
       'images',
     );
@@ -163,7 +188,7 @@ describe('NewsService.list', () => {
   it('lista só as publicadas, da mais recente para a mais antiga', async () => {
     const first = await service.create(valid({ title: 'Primeira' }));
     await service.create(valid({ title: 'Segunda' }));
-    await service.unpublish(first.id);
+    await service.remove(first.id);
     await service.create(valid({ title: 'Terceira' }));
 
     const result = await service.list();
@@ -177,7 +202,11 @@ describe('NewsService.list', () => {
 
 describe('NewsService.update', () => {
   it('atualiza e troca as imagens quando enviadas', async () => {
-    const created = await service.create(valid());
+    const created = await service.create(
+      valid({
+        images: [{ url: MANAGED_IMAGE_URL, publicId: IMAGE_PUBLIC_ID }],
+      }),
+    );
 
     const result = await service.update(
       created.id,
@@ -186,6 +215,7 @@ describe('NewsService.update', () => {
 
     assert.equal(result.title, 'Novo título');
     assert.deepEqual(result.images, []);
+    assert.deepEqual(deletedPublicIds, [IMAGE_PUBLIC_ID]);
   });
 
   it('mantém as imagens quando o campo não é enviado', async () => {
@@ -215,7 +245,7 @@ describe('NewsService.update', () => {
     );
 
     const created = await service.create(valid());
-    await service.unpublish(created.id);
+    await service.remove(created.id);
 
     await assert.rejects(
       service.update(created.id, valid()),
@@ -224,39 +254,57 @@ describe('NewsService.update', () => {
   });
 });
 
-describe('NewsService.unpublish', () => {
-  it('despublica sem apagar o registro', async () => {
-    const created = await service.create(valid());
+describe('NewsService.remove', () => {
+  it('exclui permanentemente a notícia e remove sua imagem gerenciada', async () => {
+    const created = await service.create(
+      valid({
+        images: [{ url: MANAGED_IMAGE_URL, publicId: IMAGE_PUBLIC_ID }],
+      }),
+    );
 
-    await service.unpublish(created.id);
+    await service.remove(created.id);
 
-    assert.equal(repo.rows.has(created.id), true);
-    assert.deepEqual(await service.list(), []);
+    assert.equal(repo.rows.has(created.id), false);
+    assert.deepEqual(deletedPublicIds, [IMAGE_PUBLIC_ID]);
   });
 
-  it('é idempotente', async () => {
-    const created = await service.create(valid());
+  it('deriva o publicId de URLs Cloudinary antigas sem metadado persistido', async () => {
+    const created = await service.create(valid({ images: [MANAGED_IMAGE_URL] }));
+    delete repo.rows.get(created.id).images[0].publicId;
 
-    await service.unpublish(created.id);
-    const result = await service.unpublish(created.id);
+    await service.remove(created.id);
 
-    assert.equal(result.id, created.id);
+    assert.deepEqual(deletedPublicIds, [IMAGE_PUBLIC_ID]);
+  });
+
+  it('não exclui o registro se a remoção no Cloudinary falhar', async () => {
+    const created = await service.create(
+      valid({
+        images: [{ url: MANAGED_IMAGE_URL, publicId: IMAGE_PUBLIC_ID }],
+      }),
+    );
+    service.mediaService.deleteImage = async () => {
+      throw new Error('Cloudinary indisponível');
+    };
+
+    await assert.rejects(service.remove(created.id), /Cloudinary indisponível/);
+    assert.equal(repo.rows.has(created.id), true);
   });
 
   it('retorna 400 para id inválido e 404 para inexistente', async () => {
-    await assert.rejects(service.unpublish('abc'), (e) => e.statusCode === 400);
+    await assert.rejects(service.remove('abc'), (e) => e.statusCode === 400);
     await assert.rejects(
-      service.unpublish(MISSING_ID),
+      service.remove(MISSING_ID),
       (e) => e.statusCode === 404 && e.code === 'NEWS_NOT_FOUND',
     );
   });
 
   it('retorna 404 se a notícia sumir durante a operação', async () => {
     const created = await service.create(valid());
-    repo.unpublish = async () => null;
+    repo.remove = async () => null;
 
     await assert.rejects(
-      service.unpublish(created.id),
+      service.remove(created.id),
       (e) => e.statusCode === 404,
     );
   });

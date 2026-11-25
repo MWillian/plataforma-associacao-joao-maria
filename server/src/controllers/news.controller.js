@@ -4,7 +4,7 @@ export class NewsController {
     this.list = this.list.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
-    this.unpublish = this.unpublish.bind(this);
+    this.remove = this.remove.bind(this);
   }
 
   async list(_req, res, next) {
@@ -38,11 +38,11 @@ export class NewsController {
     }
   }
 
-  async unpublish(req, res, next) {
+  async remove(req, res, next) {
     try {
-      const news = await this.newsService.unpublish(req.params.id);
+      await this.newsService.remove(req.params.id);
 
-      return res.status(200).json(news);
+      return res.status(204).send();
     } catch (error) {
       return next(error);
     }

@@ -209,6 +209,7 @@ model ProductImage {
   id        String   @id @default(uuid())
   productId String   @map("product_id")
   url       String
+  publicId  String?  @map("public_id")
   sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -236,6 +237,7 @@ model NewsImage {
   id        String   @id @default(uuid())
   newsId    String   @map("news_id")
   url       String
+  publicId  String?  @map("public_id")
   sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
 

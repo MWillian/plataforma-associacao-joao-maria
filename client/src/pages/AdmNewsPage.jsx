@@ -119,7 +119,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
     setNewsToDelete(danceClass);
   };
 
-  // Confirma a exclusão da notícia (no backend ela é despublicada)
+  // Confirma a exclusão permanente da notícia.
   const confirmRemove = async () => {
     if (!newsToDelete || isSaving) return;
 
@@ -628,6 +628,7 @@ export function AdmNewsPage({ news = [], onCreate, onUpdate, onRemove, onBack}) 
               </strong>
               ?
               Essa ação não poderá ser desfeita.
+              {' '}As imagens armazenadas pela associação também serão removidas.
             </p>
 
             <div className="mt-7 flex justify-end gap-3">

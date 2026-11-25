@@ -4,9 +4,13 @@ const NEWS_INCLUDE = {
   images: { orderBy: { sortOrder: 'asc' } },
 };
 
-function toImagesCreate(urls) {
+function toImagesCreate(images) {
   return {
-    create: urls.map((url, index) => ({ url, sortOrder: index })),
+    create: images.map(({ url, publicId }, index) => ({
+      url,
+      publicId,
+      sortOrder: index,
+    })),
   };
 }
 
@@ -63,11 +67,10 @@ export class NewsRepository {
     }
   }
 
-  async unpublish(id) {
+  async remove(id) {
     try {
-      return await prisma.news.update({
+      return await prisma.news.delete({
         where: { id },
-        data: { published: false },
         include: NEWS_INCLUDE,
       });
     } catch (error) {
