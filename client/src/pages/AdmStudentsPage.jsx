@@ -596,7 +596,8 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
       )}
 
       {/* Lista de alunos */}
-      <section className="overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white">
+      {!showForm && (
+        <section className="overflow-hidden rounded-2xl border border-[#DCE4F0] bg-white">
 
         {/* Contador */}
         <div className="border-b border-[#E7EDF5] px-7 py-6 text-lg text-[#71839F]">
@@ -764,7 +765,8 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
           </p>
         )}
 
-      </section>
+        </section>
+      )}
 
       {/* Diálogo de confirmação de exclusão */}
       {studentToDelete && (
