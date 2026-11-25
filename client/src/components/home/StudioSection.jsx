@@ -1,33 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-
 export function StudioSection({ onNavigate }) {
-  const sectionRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-
-    if (!section) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      {
-        threshold: 0.18,
-        rootMargin: '0px 0px -60px 0px',
-      }
-    );
-
-    observer.observe(section);
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <section
       id="estudio"
-      ref={sectionRef}
       className="
         bg-[#0b1b3d]
         text-white
@@ -41,119 +15,38 @@ export function StudioSection({ onNavigate }) {
       <div className="max-w-7xl mx-auto">
 
         {/* TÍTULO */}
-        <div
-          className={`
-            text-center
-            mb-12 md:mb-16
-
-            transition-all
-            duration-1000
-            ease-[cubic-bezier(0.22,1,0.36,1)]
-
-            ${
-              isVisible
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 -translate-y-12'
-            }
-          `}
-        >
+        <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold tracking-wide">
             Estúdio Adágio
           </h2>
 
           <div
-            className={`
+            className="
               mx-auto
               mt-4
               h-[3px]
               bg-blue-400
               rounded-full
-              transition-all duration-1000 delay-200
-
-              ${
-                isVisible
-                  ? 'w-16 opacity-100'
-                  : 'w-0 opacity-0'
-              }
-            `}
+              w-16
+            "
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
           {/* TEXTO */}
-          <div
-            className={`
-              space-y-6
-              text-center lg:text-left
-
-              transition-all
-              duration-1000
-              ease-[cubic-bezier(0.22,1,0.36,1)]
-
-              ${
-                isVisible
-                  ? 'opacity-100 translate-x-0'
-                  : 'opacity-0 -translate-x-20'
-              }
-            `}
-          >
-            <h3
-              className={`
-                text-2xl sm:text-3xl md:text-4xl
-                font-bold
-                leading-tight
-
-                transition-all duration-700 delay-200
-
-                ${
-                  isVisible
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                }
-              `}
-            >
+          <div className="space-y-6 text-center lg:text-left">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
               Dançar, transformar, inspirar.
             </h3>
 
-            <p
-              className={`
-                text-blue-100
-                font-roboto
-                font-light
-                leading-relaxed
-                text-base
-                max-w-xl
-                mx-auto lg:mx-0
-
-                transition-all duration-700 delay-300
-
-                ${
-                  isVisible
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                }
-              `}
-            >
+            <p className="text-blue-100 font-roboto font-light leading-relaxed text-base max-w-xl mx-auto lg:mx-0">
               Um espaço dedicado à arte, à cultura e ao desenvolvimento de
               talentos, promovendo oportunidades, inclusão e transformação
               por meio da dança e da expressão artística.
             </p>
 
-            <div
-              className={`
-                pt-4
-                flex justify-center lg:justify-start
-
-                transition-all duration-700 delay-500
-
-                ${
-                  isVisible
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                }
-              `}
-            >
+            <div className="pt-4 flex justify-center lg:justify-start">
               <button
                 type="button"
                 onClick={() => onNavigate?.('studio')}
@@ -204,27 +97,14 @@ export function StudioSection({ onNavigate }) {
           <div className="space-y-6">
 
             {/* IMAGEM 1 */}
-            <div
-              className={`
-                transition-all
-                duration-1000
-                ease-[cubic-bezier(0.22,1,0.36,1)]
-                delay-200
-
-                ${
-                  isVisible
-                    ? 'opacity-100 translate-x-0 scale-100'
-                    : 'opacity-0 translate-x-24 scale-95'
-                }
-              `}
-            >
+            <div>
               <div
                 className="
                   group
                   relative
 
                   w-full
-                  h-56 sm:h-64 md:h-72
+                  h-72 sm:h-80 md:h-96
 
                   bg-blue-900/40
                   rounded-3xl
@@ -257,46 +137,23 @@ export function StudioSection({ onNavigate }) {
                   "
                 />
 
-                <span
-                  className="
-                    relative z-10
-                    text-blue-300
-                    text-xs sm:text-sm
-                    font-roboto
-
-                    transition-all duration-500
-
-                    group-hover:scale-105
-                    group-hover:text-blue-200
-                  "
-                >
-                  Placeholder Imagem Superior
-                </span>
+                <img
+                  src="/foto-ballet-1.jpg"
+                  alt="Alunas do Estúdio Adágio durante uma apresentação de ballet"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
               </div>
             </div>
 
             {/* IMAGEM 2 */}
-            <div
-              className={`
-                transition-all
-                duration-1000
-                ease-[cubic-bezier(0.22,1,0.36,1)]
-                delay-400
-
-                ${
-                  isVisible
-                    ? 'opacity-100 translate-x-0 scale-100'
-                    : 'opacity-0 translate-x-24 scale-95'
-                }
-              `}
-            >
+            <div>
               <div
                 className="
                   group
                   relative
 
                   w-full
-                  h-56 sm:h-64 md:h-72
+                  h-72 sm:h-80 md:h-96
 
                   bg-blue-900/40
                   rounded-3xl
@@ -329,21 +186,11 @@ export function StudioSection({ onNavigate }) {
                   "
                 />
 
-                <span
-                  className="
-                    relative z-10
-                    text-blue-300
-                    text-xs sm:text-sm
-                    font-roboto
-
-                    transition-all duration-500
-
-                    group-hover:scale-105
-                    group-hover:text-blue-200
-                  "
-                >
-                  Placeholder Imagem Inferior
-                </span>
+                <img
+                  src="/foto-ballet-2.png"
+                  alt="Turma infantil do Estúdio Adágio em aula de ballet"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
               </div>
             </div>
 

@@ -104,34 +104,6 @@ export function Navbar({ activePage, setActivePage }) {
           ${scrolled ? 'py-2 bg-[#0b1b3d]/95 backdrop-blur-md' : 'py-3 sm:py-4'}
         `}
       >
-        {/* LOGO */}
-        <div className="flex items-center">
-          <button
-            type="button"
-            onClick={() => handleNavClick('home')}
-            className="bg-transparent border-none cursor-pointer p-0"
-          >
-            <div
-              className={`
-                bg-white/10
-                rounded-lg
-                border border-white/20
-                flex items-center justify-center
-                text-[10px] text-blue-200
-                text-center p-1
-                transition-all duration-500
-                ${scrolled ? 'w-[85px] h-[55px] scale-90' : 'w-[103px] h-[65px]'}
-              `}
-            >
-              <img
-                src="/logo-joao-maria.png"
-                alt="Associação Comunitária João Maria"
-                className="h-full w-full object-contain"
-              />
-            </div>
-          </button>
-        </div>
-
         {/* NAVEGAÇÃO DESKTOP */}
         <nav className="hidden md:flex items-center gap-5 lg:gap-8 text-xs lg:text-sm font-medium tracking-wide">
           <button

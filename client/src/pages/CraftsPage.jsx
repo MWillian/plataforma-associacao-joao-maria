@@ -106,11 +106,13 @@ export function CraftsPage({
         style={{ minHeight: '464px' }}
         className="w-full bg-[#0b1b3d] relative flex items-center overflow-hidden px-6 md:px-16 py-16"
       >
-        <div className="absolute inset-0 bg-blue-950/75 z-0 flex items-center justify-center">
-          <div className="w-full h-full bg-gradient-to-r from-[#0b1b3d]/90 via-[#0b1b3d]/60 to-transparent flex items-center justify-center text-blue-300/30 font-roboto text-sm">
-            [Background Image: Artesanato e Crochê]
-          </div>
-        </div>
+        <img
+          src="/foto-capa-artesanato.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0b1b3d]/90 via-[#0b1b3d]/70 to-[#0b1b3d]/35" />
 
         <div className="relative z-10 max-w-7xl mx-auto w-full space-y-4">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">

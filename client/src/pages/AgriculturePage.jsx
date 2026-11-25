@@ -106,14 +106,15 @@ export function AgriculturePage({
         style={{ minHeight: '464px' }}
         className="w-full bg-[#0b1b3d] relative flex items-center overflow-hidden px-6 md:px-16 py-16"
       >
-        <div className="absolute inset-0 bg-emerald-950/80 z-0 flex items-center justify-center">
-          <div className="w-full h-full bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-transparent flex items-center justify-center text-emerald-300/30 font-roboto text-sm">
-            [Background Image: Campo/Agricultura Familiar]
-          </div>
-        </div>
+        <img
+          src="/foto-capa-agricultura-familiar.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/70 to-emerald-950/35" />
 
         <div className="relative z-10 max-w-7xl mx-auto w-full space-y-4">
-          <div className="w-4 h-4 bg-emerald-500 rounded-sm mb-2" />
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
             Agricultura Familiar
           </h1>

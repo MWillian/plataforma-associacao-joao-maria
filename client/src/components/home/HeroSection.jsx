@@ -16,7 +16,7 @@ export function HeroSection() {
         className="
           max-w-7xl mx-auto
           px-4 sm:px-6 lg:px-8
-          min-h-[clamp(560px,72vh,760px)]
+          min-h-[clamp(480px,60vh,680px)]
           flex items-center
         "
       >
@@ -26,7 +26,7 @@ export function HeroSection() {
             grid grid-cols-1 md:grid-cols-2
             gap-8 lg:gap-14 xl:gap-20
             items-center
-            py-[clamp(3rem,7vh,5rem)]
+            py-[clamp(2rem,4vh,3rem)]
           "
         >
           <div
@@ -49,32 +49,20 @@ export function HeroSection() {
           </div>
 
           <div
-            className={`
-              relative w-full
-              flex justify-center md:justify-end
-              transition-all duration-1000
-              ease-[cubic-bezier(0.22,1,0.36,1)]
-              ${loaded ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-10 scale-95'}
-            `}
+            className="relative h-[clamp(320px,42vh,500px)] w-full max-w-[640px] overflow-hidden"
           >
             <div
-              className="
-                w-full max-w-[580px]
-                h-[clamp(260px,34vh,420px)]
-                bg-blue-900/40
-                rounded-[clamp(1.5rem,2vw,2rem)]
-                border border-blue-800
-                flex items-center justify-center
-                overflow-hidden
-                shadow-2xl
-                transition-all duration-500
-                hover:scale-[1.02]
-                hover:shadow-blue-900/30
-              "
+              className={`h-full w-full transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] delay-200 ${
+                loaded
+                  ? 'opacity-100 translate-x-0 scale-100'
+                  : 'opacity-0 translate-x-24 scale-95'
+              }`}
             >
-              <span className="text-blue-300 text-[clamp(0.75rem,1vw,0.95rem)] font-roboto px-4 text-center">
-                Placeholder da Imagem (Estúdio Adágio)
-              </span>
+              <img
+                src="/logo-joao-maria.png"
+                alt="Logo da Associação Comunitária João Maria"
+                className="h-full w-full object-contain transition-transform duration-700 hover:scale-105"
+              />
             </div>
           </div>
         </div>
