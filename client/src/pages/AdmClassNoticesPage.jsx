@@ -616,6 +616,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
               Tem certeza de que deseja excluir o aviso{' '}
               <strong className="text-[#172033]">{noticeToDelete.subject}</strong>?
               Essa ação não poderá ser desfeita.
+              {' '}Os destinatários e o histórico de envio também serão apagados.
             </p>
             <div className="mt-7 flex justify-end gap-3">
               <button

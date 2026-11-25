@@ -33,8 +33,6 @@ export async function updateStudent(id, form) {
   return data;
 }
 
-// "Excluir" aluno = inativar no backend.
 export async function removeStudent(id) {
-  const { data } = await api.patch(`/students/${id}/inactivate`);
-  return data;
+  await api.delete(`/students/${id}`);
 }

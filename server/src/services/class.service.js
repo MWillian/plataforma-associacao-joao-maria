@@ -193,29 +193,15 @@ export class ClassService {
     return danceClass;
   }
 
-  // "Excluir" turma = inativar (soft delete): matrículas e avisos
-  // vinculados são preservados como histórico. Como no front, os alunos
-  // da turma também saem das listagens (ver ClassRepository.inactivate).
-  async inactivate(id) {
+  async remove(id) {
     assertValidClassId(id);
 
-    const danceClass = await this.classRepository.findById(id);
+    const removed = await this.classRepository.remove(id);
 
-    if (!danceClass) {
+    if (!removed) {
       throw classNotFound();
     }
 
-    if (!danceClass.active) {
-      return danceClass;
-    }
-
-    const inactiveClass =
-      await this.classRepository.inactivate(id);
-
-    if (!inactiveClass) {
-      throw classNotFound();
-    }
-
-    return inactiveClass;
+    return removed;
   }
 }

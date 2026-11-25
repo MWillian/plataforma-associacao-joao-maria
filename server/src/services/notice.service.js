@@ -221,7 +221,6 @@ export class NoticeService {
     return rows.map(toNoticeResponse);
   }
 
-  // "Excluir" aviso = arquivar: some da lista, mas o histórico de envio fica.
   async remove(id) {
     if (!UUID_PATTERN.test(id ?? '')) {
       throw new AppError(
@@ -231,18 +230,12 @@ export class NoticeService {
       );
     }
 
-    const notice = await this.noticeRepository.findById(id);
+    const removed = await this.noticeRepository.remove(id);
 
-    if (!notice || notice.archivedAt) {
+    if (!removed) {
       throw new AppError(404, 'NOTICE_NOT_FOUND', 'Aviso não encontrado.');
     }
 
-    const archived = await this.noticeRepository.archive(id);
-
-    if (!archived) {
-      throw new AppError(404, 'NOTICE_NOT_FOUND', 'Aviso não encontrado.');
-    }
-
-    return toNoticeResponse(archived);
+    return toNoticeResponse(removed);
   }
 }

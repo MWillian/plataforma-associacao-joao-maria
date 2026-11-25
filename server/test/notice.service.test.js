@@ -66,14 +66,14 @@ class FakeNoticeRepository {
     return this.notices.get(id) ?? null;
   }
 
-  async archive(id) {
+  async remove(id) {
     const notice = this.notices.get(id);
 
     if (!notice) {
       return null;
     }
 
-    notice.archivedAt = new Date();
+    this.notices.delete(id);
 
     return notice;
   }
@@ -360,16 +360,16 @@ describe('NoticeService.list e remove', () => {
     );
   });
 
-  it('"excluir" arquiva: some da lista e o registro é preservado', async () => {
+  it('exclui o aviso e seu histórico do repositório', async () => {
     const created = await service.create(1, valid());
 
     await service.remove(created.id);
 
     assert.deepEqual(await service.list(), []);
-    assert.equal(repo.notices.has(created.id), true);
+    assert.equal(repo.notices.has(created.id), false);
   });
 
-  it('valida o identificador e retorna 404 para inexistente ou já arquivado', async () => {
+  it('valida o identificador e retorna 404 para inexistente ou já excluído', async () => {
     await assert.rejects(service.remove('abc'), (e) => e.statusCode === 400);
     await assert.rejects(
       service.remove(MISSING_CLASS),
@@ -383,5 +383,14 @@ describe('NoticeService.list e remove', () => {
       service.remove(created.id),
       (e) => e.statusCode === 404,
     );
+  });
+
+  it('também remove um aviso já arquivado', async () => {
+    const archived = await service.create(1, valid());
+    repo.notices.get(archived.id).archivedAt = new Date();
+
+    await service.remove(archived.id);
+
+    assert.equal(repo.notices.has(archived.id), false);
   });
 });

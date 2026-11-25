@@ -516,7 +516,7 @@ export default function App() {
         (danceClass) => String(danceClass.id) !== String(id)
       )
     );
-    // Os alunos continuam ativos, mas ficam sem matrícula na turma inativada.
+    // Os alunos continuam ativos, mas ficam sem matrícula na turma excluída.
     setStudents((previousStudents) =>
       previousStudents
         .map((student) => {

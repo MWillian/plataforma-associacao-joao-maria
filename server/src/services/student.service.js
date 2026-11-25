@@ -411,33 +411,16 @@ export class StudentService {
     });
   }
 
-  // "Excluir" aluno = inativar (soft delete): o aluno sai das listagens e
-  // a matrícula ativa é cancelada (libera a vaga), mas o histórico
-  // (matrículas, avisos, responsável) é preservado.
-  async inactivate(id) {
+  async remove(id) {
     assertValidStudentId(id);
 
-    return this.runInTransaction(async (repo) => {
-      const existing = await repo.findById(id);
+    const removed = await this.studentRepository.removeStudent(id);
 
-      if (!existing) {
-        throw studentNotFound();
-      }
+    if (!removed) {
+      throw studentNotFound();
+    }
 
-      if (!existing.active) {
-        return toStudentResponse(existing);
-      }
-
-      const inactive = await repo.inactivateStudent(id);
-
-      if (!inactive) {
-        throw studentNotFound();
-      }
-
-      await repo.cancelActiveEnrollments(id);
-
-      return toStudentResponse(await repo.findById(id));
-    });
+    return removed.id;
   }
 
   async runInTransaction(callback) {

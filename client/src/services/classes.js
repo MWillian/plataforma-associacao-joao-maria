@@ -25,8 +25,6 @@ export async function updateClass(id, { name, turn, days, capacity }) {
   return data;
 }
 
-// "Excluir" turma = inativar no backend (os alunos dela também saem da lista).
 export async function removeClass(id) {
-  const { data } = await api.patch(`/classes/${id}/inactivate`);
-  return data;
+  await api.delete(`/classes/${id}`);
 }
