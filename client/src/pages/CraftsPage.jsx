@@ -1,17 +1,24 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Search, ChevronRight } from 'lucide-react';
 import { useUrlQueryState } from '../hooks/useUrlQueryState.js';
 import { matchesSearch } from '../utils/search.js';
 import { ProductImage } from '../components/details/ProductImage.jsx';
 
-export function CraftsPage({ news = [], products = [], onSelectProduct, onSelectNews }) {
+export function CraftsPage({
+  news = [],
+  products = [],
+  isPublicContentSettled = true,
+  publicDataErrors = [],
+  onSelectProduct,
+  onSelectNews,
+}) {
   // Referências para controlar a rolagem exata das seções
   const productsSectionRef = useRef(null);
   const newsSectionRef = useRef(null);
 
   // Estados para o Catálogo de Produtos
   const [productSearch, setProductSearch] = useUrlQueryState('craftProductSearch', '');
-  const [productPage, setProductPage] = useUrlQueryState('craftProductPage', 1, {
+  const [productPage, setProductPage, replaceProductPage] = useUrlQueryState('craftProductPage', 1, {
     parse: (value) => Math.max(1, Number(value) || 1),
     serialize: String,
     history: 'push',
@@ -19,7 +26,7 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
 
   // Estados para o Mural de Notícias e Eventos
   const [newsSearch, setNewsSearch] = useUrlQueryState('craftNewsSearch', '');
-  const [newsPage, setNewsPage] = useUrlQueryState('craftNewsPage', 1, {
+  const [newsPage, setNewsPage, replaceNewsPage] = useUrlQueryState('craftNewsPage', 1, {
     parse: (value) => Math.max(1, Number(value) || 1),
     serialize: String,
     history: 'push',
@@ -50,9 +57,10 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
 
   const productsPerPage = 6;
   const totalProductPages = Math.ceil(filteredProducts.length / productsPerPage) || 1;
+  const displayedProductPage = Math.min(productPage, totalProductPages);
   const currentProducts = filteredProducts.slice(
-    (productPage - 1) * productsPerPage,
-    productPage * productsPerPage
+    (displayedProductPage - 1) * productsPerPage,
+    displayedProductPage * productsPerPage
   );
 
   // Filtro de Notícias/Eventos
@@ -61,13 +69,35 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
     return matchesQuery && item.publicationArea === 'crafts';
   });
 
+  const remainingNews = filteredNews.slice(1);
   const newsPerPage = 3;
-  const totalNewsPages = Math.ceil(filteredNews.length / newsPerPage) || 1;
-  const currentNews = filteredNews.slice(
-    (newsPage - 1) * newsPerPage,
-    newsPage * newsPerPage
+  const totalNewsPages = Math.ceil(remainingNews.length / newsPerPage) || 1;
+  const displayedNewsPage = Math.min(newsPage, totalNewsPages);
+  const currentNews = remainingNews.slice(
+    (displayedNewsPage - 1) * newsPerPage,
+    displayedNewsPage * newsPerPage
   );
   const latestNews = filteredNews[0];
+
+  useEffect(() => {
+    if (!isPublicContentSettled) return;
+
+    if (productPage > totalProductPages) {
+      replaceProductPage(totalProductPages);
+    }
+
+    if (newsPage > totalNewsPages) {
+      replaceNewsPage(totalNewsPages);
+    }
+  }, [
+    isPublicContentSettled,
+    newsPage,
+    productPage,
+    replaceNewsPage,
+    replaceProductPage,
+    totalNewsPages,
+    totalProductPages,
+  ]);
 
   return (
     <div className="bg-white text-slate-800 font-poppins min-h-screen page-reveal-fade">
@@ -76,11 +106,13 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
         style={{ minHeight: '464px' }}
         className="w-full bg-[#0b1b3d] relative flex items-center overflow-hidden px-6 md:px-16 py-16"
       >
-        <div className="absolute inset-0 bg-blue-950/75 z-0 flex items-center justify-center">
-          <div className="w-full h-full bg-gradient-to-r from-[#0b1b3d]/90 via-[#0b1b3d]/60 to-transparent flex items-center justify-center text-blue-300/30 font-roboto text-sm">
-            [Background Image: Artesanato e Crochê]
-          </div>
-        </div>
+        <img
+          src="/foto-capa-artesanato.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0b1b3d]/90 via-[#0b1b3d]/70 to-[#0b1b3d]/35" />
 
         <div className="relative z-10 max-w-7xl mx-auto w-full space-y-4">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
@@ -247,7 +279,11 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
           </div>
         ) : (
           <div className="text-center py-16 text-slate-500 font-roboto">
-            Nenhum produto encontrado para a sua busca.
+            {!isPublicContentSettled
+              ? 'Carregando produtos...'
+              : publicDataErrors.includes('products')
+                ? 'Não foi possível carregar os produtos. Use o aviso de erro para tentar novamente.'
+                : 'Nenhum produto encontrado para a sua busca.'}
           </div>
         )}
 
@@ -260,7 +296,7 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
                   key={page}
                   onClick={() => handleProductPageChange(page)}
                   className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${
-                    productPage === page
+                    displayedProductPage === page
                       ? 'bg-[#0b1b3d] text-white'
                       : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                   }`}
@@ -271,8 +307,8 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
             </div>
 
             <button
-              onClick={() => handleProductPageChange(Math.min(productPage + 1, totalProductPages))}
-              disabled={productPage === totalProductPages}
+              onClick={() => handleProductPageChange(Math.min(displayedProductPage + 1, totalProductPages))}
+              disabled={displayedProductPage === totalProductPages}
               className="flex items-center gap-2 text-[#0b1b3d] font-semibold text-sm hover:text-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               Próxima <ChevronRight size={16} />
@@ -363,7 +399,13 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
           </div>
         ) : (
           <div className="text-center py-16 text-slate-500 font-roboto">
-            Nenhuma publicação encontrada no mural.
+            {!isPublicContentSettled
+              ? 'Carregando notícias...'
+              : publicDataErrors.includes('news')
+                ? 'Não foi possível carregar as notícias. Use o aviso de erro para tentar novamente.'
+                : latestNews
+                  ? 'A notícia encontrada está em destaque acima.'
+                  : 'Nenhuma publicação encontrada no mural.'}
           </div>
         )}
 
@@ -376,7 +418,7 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
                   key={page}
                   onClick={() => handleNewsPageChange(page)}
                   className={`w-10 h-10 rounded-xl font-semibold text-sm transition-colors cursor-pointer shadow-sm ${
-                    newsPage === page
+                    displayedNewsPage === page
                       ? 'bg-[#0b1b3d] text-white' 
                       : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                   }`}
@@ -387,8 +429,8 @@ export function CraftsPage({ news = [], products = [], onSelectProduct, onSelect
             </div>
 
             <button
-              onClick={() => handleNewsPageChange(Math.min(newsPage + 1, totalNewsPages))}
-              disabled={newsPage === totalNewsPages}
+              onClick={() => handleNewsPageChange(Math.min(displayedNewsPage + 1, totalNewsPages))}
+              disabled={displayedNewsPage === totalNewsPages}
               className="flex items-center gap-2 text-[#0b1b3d] font-semibold text-sm hover:text-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               Próxima <ChevronRight size={16} />

@@ -31,9 +31,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-reveal-up,
+  .page-reveal-up {
+    animation: page-fade-in 350ms ease-out both;
+  }
+
   .page-reveal-fade {
-    animation: none;
+    animation-duration: 350ms;
+    animation-timing-function: ease-out;
   }
 }
 
@@ -281,13 +285,26 @@
 /* ACESSIBILIDADE */
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
   .about-title,
   .about-image-wrapper,
   .about-content,
   .about-subtitle,
   .about-text,
   .about-stats {
-    transition: none;
-    transform: none;
+    transition-property: opacity !important;
+    transition-duration: 350ms !important;
+    transition-delay: 0ms !important;
+    transform: none !important;
+  }
+
+  main [class*="transition-"][class*="opacity-"] {
+    transition-property: opacity !important;
+    transition-duration: 350ms !important;
+    transition-delay: 0ms !important;
+    transform: none !important;
   }
 }

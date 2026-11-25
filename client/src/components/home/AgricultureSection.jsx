@@ -1,40 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-
 export function AgricultureSection({ products = [], onNavigate, onSelectProduct }) {
-  const sectionRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
   const items = products.slice(0, 5);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-
-    if (!section) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      {
-        threshold: 0.15,
-        rootMargin: '0px 0px -50px 0px',
-      }
-    );
-
-    observer.observe(section);
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <section
       id="agricultura"
-      ref={sectionRef}
       className="
         bg-[#0b1b3d]
         text-white
-        py-16
-        md:py-20
+        py-10
+        md:py-12
         px-4
         sm:px-6
         font-poppins
@@ -47,23 +21,7 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
         {/* =====================================================
             TÍTULO
         ====================================================== */}
-        <div
-          className={`
-            text-center
-            mb-12
-            md:mb-16
-
-            transition-all
-            duration-1000
-            ease-[cubic-bezier(0.22,1,0.36,1)]
-
-            ${
-              isVisible
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 -translate-y-12'
-            }
-          `}
-        >
+        <div className="text-center mb-12 md:mb-16">
           <h2
             className="
               text-3xl
@@ -76,25 +34,7 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
           </h2>
 
           {/* Linha decorativa */}
-          <div
-            className={`
-              mx-auto
-              mt-4
-              h-[3px]
-              bg-blue-400
-              rounded-full
-
-              transition-all
-              duration-1000
-              delay-200
-
-              ${
-                isVisible
-                  ? 'w-16 opacity-100'
-                  : 'w-0 opacity-0'
-              }
-            `}
-          />
+          <div className="mx-auto mt-4 h-[3px] w-16 rounded-full bg-blue-400" />
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-blue-100/85 sm:text-base">
             Alimentos cultivados pelas famílias da associação, valorizando a produção local e a economia comunitária.
           </p>
@@ -112,27 +52,11 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
             md:gap-8
           "
         >
-          {items.map((item, index) => (
-            <div
+          {items.map((item) => (
+            <article
               key={item.id}
-              role="link"
-              tabIndex={0}
-              aria-label={`Ver detalhes: ${item.title}`}
-              onClick={() => onSelectProduct?.(item)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onSelectProduct?.(item);
-                }
-              }}
-              style={{
-                transitionDelay: `${200 + index * 150}ms`,
-              }}
-              className={`
-                cursor-pointer
-                focus:outline-none
-                focus-visible:ring-4
-                focus-visible:ring-[#3570FC]/40
+            className="
+                relative
                 w-full
                 max-w-[360px]
                 min-h-[430px]
@@ -157,18 +81,11 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
                 group
 
                 transition-all
-                duration-1000
-                ease-[cubic-bezier(0.22,1,0.36,1)]
-
-                ${
-                  isVisible
-                    ? 'opacity-100 translate-y-0 scale-100'
-                    : 'opacity-0 translate-y-16 scale-95'
-                }
+                duration-300
 
                 hover:-translate-y-3
                 hover:shadow-2xl
-              `}
+              "
             >
               {/* =================================================
                   IMAGEM
@@ -281,33 +198,21 @@ export function AgricultureSection({ products = [], onNavigate, onSelectProduct 
                     {item.price || 'Sob consulta'}
                   </span>
                 </div>
-              </div>
-            </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onSelectProduct?.(item)}
+                  aria-label={`Ver detalhes de ${item.title}`}
+                  className="absolute inset-0 z-10 cursor-pointer rounded-2xl bg-transparent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#3570FC]/50"
+                />
+            </article>
           ))}
         </div>
 
         {/* =====================================================
             BOTÃO MAIS PRODUTOS
         ====================================================== */}
-        <div
-          className={`
-            flex
-            justify-center
-
-            mt-12
-            md:mt-16
-
-            transition-all
-            duration-800
-            delay-700
-
-            ${
-              isVisible
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-            }
-          `}
-        >
+        <div className="flex justify-center mt-12 md:mt-16">
           <button
             type="button"
             onClick={() => onNavigate?.('agriculture')}

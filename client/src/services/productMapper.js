@@ -68,6 +68,7 @@ export function productFromApi(product, fallback = {}) {
       ? imageUrls.map((url) => ({ url }))
       : fallback.images || [],
     available: product.active ?? fallback.available ?? true,
+    createdAt: product.createdAt ?? fallback.createdAt,
   };
 }
 

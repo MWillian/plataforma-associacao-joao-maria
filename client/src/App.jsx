@@ -208,7 +208,10 @@ export default function App() {
   const [adminProductsLoaded, setAdminProductsLoaded] = useState(false);
   // 'idle' | 'ready' | 'error'
   const [adminDataStatus, setAdminDataStatus] = useState('idle');
-  const [publicDataError, setPublicDataError] = useState(false);
+  const [adminDataErrors, setAdminDataErrors] = useState([]);
+  const [adminDataRetryCount, setAdminDataRetryCount] = useState(0);
+  const [publicDataErrors, setPublicDataErrors] = useState([]);
+  const [publicDataRetryCount, setPublicDataRetryCount] = useState(0);
   // Evita pedir os dados do painel mais de uma vez por sessão.
   const adminDataRequestedRef = useRef(false);
 
@@ -426,14 +429,17 @@ export default function App() {
           setAdminProductsLoaded(true);
         }
 
-        setAdminDataStatus(
-          [classesResult, studentsResult, noticesResult, productsResult]
-            .some((result) => result.status === 'rejected')
-            ? 'error'
-            : 'ready'
-        );
+        const errors = [
+          ...(classesResult.status === 'rejected' ? ['classes'] : []),
+          ...(studentsResult.status === 'rejected' ? ['students'] : []),
+          ...(noticesResult.status === 'rejected' ? ['notices'] : []),
+          ...(productsResult.status === 'rejected' ? ['products'] : []),
+        ];
+
+        setAdminDataErrors(errors);
+        setAdminDataStatus(errors.length > 0 ? 'error' : 'ready');
       });
-  }, [isAuthenticated, isAuthLoading, activePage]);
+  }, [adminDataRetryCount, isAuthenticated, isAuthLoading, activePage]);
 
   // Conteúdo público: notícias e catálogo de produtos.
   useEffect(() => {
@@ -475,16 +481,19 @@ export default function App() {
           );
         }
 
-        setPublicDataError(
-          [newsResult, productsResult, classesResult, craftsResult, agricultureResult]
-            .some((result) => result.status === 'rejected')
-        );
+        setPublicDataErrors([
+          ...(newsResult.status === 'rejected' ? ['news'] : []),
+          ...(productsResult.status === 'rejected' ? ['products'] : []),
+          ...(classesResult.status === 'rejected' ? ['classes'] : []),
+          ...(craftsResult.status === 'rejected' ? ['craftHighlights'] : []),
+          ...(agricultureResult.status === 'rejected' ? ['agricultureHighlights'] : []),
+        ]);
       });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [publicDataRetryCount]);
 
   // As três funções abaixo falham (lançam erro) se o backend recusar; a
   // página que chamou mostra a mensagem ao usuário.
@@ -698,6 +707,35 @@ export default function App() {
     isNewsLoaded
   );
 
+  const dashboardDataStatus = {
+    classes: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('classes') ? 'error' : 'ready',
+    students: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('students') ? 'error' : 'ready',
+    notices: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('notices') ? 'error' : 'ready',
+    products: adminDataStatus === 'idle'
+      ? 'loading'
+      : adminDataErrors.includes('products') ? 'error' : 'ready',
+    news: isNewsLoaded
+      ? 'ready'
+      : publicDataErrors.includes('news') ? 'error' : 'loading',
+  };
+
+  const handleRetryDashboardData = () => {
+    adminDataRequestedRef.current = false;
+    setAdminDataErrors([]);
+    setAdminDataStatus('idle');
+    setAdminDataRetryCount((count) => count + 1);
+    setIsNewsLoaded(false);
+    setIsPublicContentSettled(false);
+    setPublicDataErrors([]);
+    setPublicDataRetryCount((count) => count + 1);
+  };
+
   const loadErrorToast =
     adminDataStatus === 'error' ? (
       <FeedbackToast
@@ -724,18 +762,17 @@ export default function App() {
 
   if (activePage === 'adm-dashboard') {
     return (
-      <>
-        {loadErrorToast}
-        <AdmDashboardPage 
-      onNavigate={navigate}
-      onLogout={handleLogout}
-      classes={classes}
-      students={students}
-      news={news}
-      notices={notices}
-      products={products}
+      <AdmDashboardPage
+        onNavigate={navigate}
+        onLogout={handleLogout}
+        onRetry={handleRetryDashboardData}
+        dataStatus={dashboardDataStatus}
+        classes={classes}
+        students={students}
+        news={news}
+        notices={notices}
+        products={products}
       />
-      </>
     );
   } 
 
@@ -815,11 +852,43 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#1C2126] flex flex-col justify-between">
-      {publicDataError && (
-        <FeedbackToast
-          type="error"
-          message="Alguns conteúdos não puderam ser carregados. Recarregue a página."
-        />
+      {publicDataErrors.length > 0 && (
+        <div
+          role="alert"
+          className="fixed bottom-4 right-4 z-[60] flex max-w-lg flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-lg sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p>
+            Não foi possível carregar:{' '}
+            {publicDataErrors
+              .map((source) => ({
+                news: 'notícias',
+                products: 'produtos',
+                classes: 'turmas',
+                craftHighlights: 'destaques de artesanato',
+                agricultureHighlights: 'destaques da agricultura',
+              })[source])
+              .join(', ')}.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsPublicContentSettled(false);
+              setPublicDataErrors([]);
+              setPublicDataRetryCount((count) => count + 1);
+            }}
+            className="shrink-0 rounded-md bg-red-700 px-3 py-2 font-semibold text-white transition hover:bg-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+      {!isPublicContentSettled && publicDataRetryCount > 0 && (
+        <div
+          role="status"
+          className="fixed bottom-4 right-4 z-[60] rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 shadow-lg"
+        >
+          Atualizando conteúdo público...
+        </div>
       )}
       <div>
         <Navbar
@@ -849,6 +918,8 @@ export default function App() {
           <CraftsPage
             news={news}
             products={craftCatalog}
+            isPublicContentSettled={isPublicContentSettled}
+            publicDataErrors={publicDataErrors}
             onSelectProduct={handleSelectCraftProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'crafts')}
           />
@@ -858,6 +929,8 @@ export default function App() {
           <AgriculturePage
             news={news}
             products={agricultureCatalog}
+            isPublicContentSettled={isPublicContentSettled}
+            publicDataErrors={publicDataErrors}
             onSelectProduct={handleSelectAgricultureProduct}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'agriculture')}
           />
@@ -867,6 +940,8 @@ export default function App() {
           <StudioPage
             news={news}
             classes={classes}
+            isPublicContentSettled={isPublicContentSettled}
+            publicDataErrors={publicDataErrors}
             onSelectNews={(newsItem) => handleSelectNews(newsItem, 'studio')}
           />
         )}

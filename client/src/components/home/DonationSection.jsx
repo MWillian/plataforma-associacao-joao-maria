@@ -23,18 +23,26 @@ export function DonationSection() {
                                 href={`https://wa.me/5582996486572?text=${message}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center bg-white text-[#0b1b3d] px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-gray-100 transition-colors shadow-md cursor-pointer tracking-wider"
+                                className="group relative inline-flex items-center justify-center overflow-hidden bg-white text-[#0b1b3d] px-8 py-3.5 rounded-full font-semibold text-sm shadow-md cursor-pointer tracking-wider transition-all duration-300 hover:bg-gray-100 hover:-translate-y-1 hover:shadow-xl active:translate-y-0"
                             >
-                                Transformar vidas
+                                <span className="relative z-10">
+                                    Transformar vidas
+                                </span>
+                                <span className="absolute inset-0 rounded-full bg-blue-100 translate-x-[-110%] transition-transform duration-500 group-hover:translate-x-0" />
                             </a>
                         </div>
                     </div>
 
-                    {/* Coluna da Direita: Placeholder da Foto das Crianças */}
-                    <div className="w-full h-72 sm:h-80 md:h-96 bg-blue-900/40 rounded-3xl border border-blue-800 flex items-center justify-center shadow-xl overflow-hidden relative p-6 text-center">
-                        <span className="text-blue-300 text-sm sm:text-base font-roboto">
-                            Inserir uma foto das crianças da associação
-                        </span>
+                    {/* Imagem de apoio à campanha de doação */}
+                    <div className="relative w-full h-72 sm:h-80 md:h-96">
+                        <div className="group relative h-full w-full overflow-hidden rounded-3xl border border-blue-800 bg-blue-900/40 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-500 hover:shadow-2xl">
+                            <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+                            <img
+                                src="/foto-doacao.jpeg"
+                                alt="Integrante da associação apresentando um produto artesanal da comunidade"
+                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

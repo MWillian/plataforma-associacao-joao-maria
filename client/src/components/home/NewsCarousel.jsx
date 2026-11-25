@@ -13,9 +13,33 @@ function getImageSource(image) {
 export function NewsCarousel({ news = [], onSelectNews }) {
   const latestNews = news.slice(0, 6);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isPausedByUser, setIsPausedByUser] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 
   useEffect(() => {
-    if (latestNews.length < 2) return undefined;
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotionPreference = (event) => {
+      setPrefersReducedMotion(event.matches);
+    };
+
+    motionPreference.addEventListener('change', updateMotionPreference);
+    return () => motionPreference.removeEventListener('change', updateMotionPreference);
+  }, []);
+
+  useEffect(() => {
+    if (
+      latestNews.length < 2 ||
+      isHovered ||
+      isFocused ||
+      isPausedByUser ||
+      prefersReducedMotion
+    ) {
+      return undefined;
+    }
 
     const interval = window.setInterval(() => {
       setActiveIndex((currentIndex) => (
@@ -24,7 +48,13 @@ export function NewsCarousel({ news = [], onSelectNews }) {
     }, 6000);
 
     return () => window.clearInterval(interval);
-  }, [latestNews.length]);
+  }, [
+    isFocused,
+    isHovered,
+    isPausedByUser,
+    latestNews.length,
+    prefersReducedMotion,
+  ]);
 
   if (latestNews.length === 0) {
     return null;
@@ -46,7 +76,17 @@ export function NewsCarousel({ news = [], onSelectNews }) {
   };
 
   return (
-    <section className="bg-white px-6 py-14 font-poppins sm:px-8 md:py-18">
+    <section
+      className="bg-white px-6 py-14 font-poppins sm:px-8 md:py-18"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocusCapture={() => setIsFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsFocused(false);
+        }
+      }}
+    >
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <span className="text-xs font-bold uppercase tracking-widest text-[#3570FC]">
@@ -99,7 +139,7 @@ export function NewsCarousel({ news = [], onSelectNews }) {
 
             {latestNews.length > 1 && (
               <div className="flex items-center justify-between gap-4">
-                <div className="flex gap-2" aria-label="Navegação das notícias">
+                <div className="flex gap-2" role="group" aria-label="Selecionar notícia">
                   {latestNews.map((item, index) => (
                     <button
                       key={item.id}
@@ -117,13 +157,23 @@ export function NewsCarousel({ news = [], onSelectNews }) {
                 </div>
 
                 <div className="flex gap-2">
+                  {!prefersReducedMotion && (
+                    <button
+                      type="button"
+                      onClick={() => setIsPausedByUser((paused) => !paused)}
+                      aria-pressed={isPausedByUser}
+                      className="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-600 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3570FC]"
+                    >
+                      {isPausedByUser ? 'Retomar' : 'Pausar'}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setActiveIndex(
                       (currentIndex - 1 + latestNews.length) % latestNews.length
                     )}
                     aria-label="Notícia anterior"
-                    className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:bg-white"
+                    className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3570FC]"
                   >
                     ←
                   </button>
@@ -133,7 +183,7 @@ export function NewsCarousel({ news = [], onSelectNews }) {
                       (currentIndex + 1) % latestNews.length
                     )}
                     aria-label="Próxima notícia"
-                    className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:bg-white"
+                    className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3570FC]"
                   >
                     →
                   </button>
