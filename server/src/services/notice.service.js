@@ -109,10 +109,14 @@ function toNoticeResponse(row) {
 }
 
 export class NoticeService {
-  constructor(noticeRepository, { sendEmail, isEmailConfigured }) {
+  constructor(
+    noticeRepository,
+    { sendEmail, isEmailConfigured, logger = console },
+  ) {
     this.noticeRepository = noticeRepository;
     this.sendEmail = sendEmail;
     this.isEmailConfigured = isEmailConfigured;
+    this.logger = logger;
   }
 
   // Cria o aviso e envia o e-mail para os responsáveis/alunos das turmas.
@@ -155,6 +159,11 @@ export class NoticeService {
 
   async deliver(notice, { subject, message }) {
     if (!this.isEmailConfigured()) {
+      this.logger.error(
+        'Envio de aviso ignorado: integração de e-mail não configurada.',
+        { noticeId: notice.id },
+      );
+
       return notice.recipients.map((recipient) => ({
         recipientId: recipient.id,
         status: 'FAILED',
@@ -174,17 +183,32 @@ export class NoticeService {
       );
 
       settled.forEach((outcome, index) => {
-        results.push(
-          outcome.status === 'fulfilled'
-            ? { recipientId: batch[index].id, status: 'SENT' }
-            : {
-                recipientId: batch[index].id,
-                status: 'FAILED',
-                failureReason: String(
-                  outcome.reason?.message ?? outcome.reason,
-                ).slice(0, 500),
-              },
-        );
+        if (outcome.status === 'fulfilled') {
+          results.push({
+            recipientId: batch[index].id,
+            status: 'SENT',
+          });
+          return;
+        }
+
+        const failureReason = String(
+          outcome.reason?.message ?? outcome.reason,
+        ).slice(0, 500);
+
+        this.logger.error('Falha ao enviar aviso por e-mail via Resend.', {
+          noticeId: notice.id,
+          recipientId: batch[index].id,
+          reason: failureReason.replace(
+            /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+            '[e-mail ocultado]',
+          ),
+        });
+
+        results.push({
+          recipientId: batch[index].id,
+          status: 'FAILED',
+          failureReason,
+        });
       });
     }
 

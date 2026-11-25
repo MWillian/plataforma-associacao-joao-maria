@@ -84,14 +84,17 @@ let sent;
 let service;
 let configured;
 let failFor;
+let loggedErrors;
 
 beforeEach(() => {
   repo = new FakeNoticeRepository();
   sent = [];
   configured = true;
   failFor = new Set();
+  loggedErrors = [];
   service = new NoticeService(repo, {
     isEmailConfigured: () => configured,
+    logger: { error: (...args) => loggedErrors.push(args) },
     sendEmail: async ({ email, subject, message }) => {
       if (failFor.has(email)) {
         throw new Error(`falha ao enviar para ${email}`);
@@ -257,6 +260,10 @@ describe('NoticeService.create — envio', () => {
     const failed = repo.deliveries[0].find((r) => r.status === 'FAILED');
 
     assert.match(failed.failureReason, /falha ao enviar/);
+    assert.equal(loggedErrors.length, 1);
+    assert.equal(loggedErrors[0][0], 'Falha ao enviar aviso por e-mail via Resend.');
+    assert.equal(loggedErrors[0][1].recipientId, failed.recipientId);
+    assert.match(loggedErrors[0][1].reason, /falha ao enviar/);
   });
 
   it('marca todos como falha quando o e-mail não está configurado', async () => {
@@ -271,6 +278,7 @@ describe('NoticeService.create — envio', () => {
       repo.deliveries[0][0].failureReason,
       /não configurado/,
     );
+    assert.equal(loggedErrors[0][0], 'Envio de aviso ignorado: integração de e-mail não configurada.');
   });
 
   it('limita o envio a cinco pessoas por vez e continua após falhas entre lotes', async () => {
@@ -282,6 +290,7 @@ describe('NoticeService.create — envio', () => {
 
     service = new NoticeService(repo, {
       isEmailConfigured: () => true,
+      logger: { error: (...args) => loggedErrors.push(args) },
       sendEmail: async ({ email }) => {
         activeSends += 1;
         maxConcurrentSends = Math.max(maxConcurrentSends, activeSends);

@@ -164,7 +164,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
         );
       } else if (created.sentCount === 0) {
         showFeedback(
-          'Aviso registrado, mas nenhum e-mail foi enviado. Verifique a configuração de e-mail do servidor.',
+          'Aviso registrado, mas nenhum e-mail foi enviado. Consulte os logs do servidor para identificar a causa.',
           'error'
         );
       } else {

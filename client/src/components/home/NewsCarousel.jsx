@@ -16,27 +16,13 @@ export function NewsCarousel({ news = [], onSelectNews }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isPausedByUser, setIsPausedByUser] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-
-  useEffect(() => {
-    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const updateMotionPreference = (event) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
-    motionPreference.addEventListener('change', updateMotionPreference);
-    return () => motionPreference.removeEventListener('change', updateMotionPreference);
-  }, []);
 
   useEffect(() => {
     if (
       latestNews.length < 2 ||
       isHovered ||
       isFocused ||
-      isPausedByUser ||
-      prefersReducedMotion
+      isPausedByUser
     ) {
       return undefined;
     }
@@ -53,7 +39,6 @@ export function NewsCarousel({ news = [], onSelectNews }) {
     isHovered,
     isPausedByUser,
     latestNews.length,
-    prefersReducedMotion,
   ]);
 
   if (latestNews.length === 0) {
@@ -157,16 +142,14 @@ export function NewsCarousel({ news = [], onSelectNews }) {
                 </div>
 
                 <div className="flex gap-2">
-                  {!prefersReducedMotion && (
-                    <button
-                      type="button"
-                      onClick={() => setIsPausedByUser((paused) => !paused)}
-                      aria-pressed={isPausedByUser}
-                      className="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-600 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3570FC]"
-                    >
-                      {isPausedByUser ? 'Retomar' : 'Pausar'}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsPausedByUser((paused) => !paused)}
+                    aria-pressed={isPausedByUser}
+                    className="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-600 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3570FC]"
+                  >
+                    {isPausedByUser ? 'Retomar' : 'Pausar'}
+                  </button>
                   <button
                     type="button"
                     onClick={() => setActiveIndex(

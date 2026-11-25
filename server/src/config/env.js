@@ -109,4 +109,7 @@ export const env = {
 
   resendFrom:
     process.env.RESEND_FROM?.trim() || '',
+
+  resendReplyTo:
+    process.env.RESEND_REPLY_TO?.trim() || '',
 };
