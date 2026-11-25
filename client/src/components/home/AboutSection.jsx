@@ -1,3 +1,5 @@
+import { MapPin } from 'lucide-react';
+
 export function AboutSection() {
   return (
     <section
@@ -61,6 +63,30 @@ export function AboutSection() {
               construindo coletivamente uma comunidade mais participativa,
               acolhedora e unida.
             </p>
+
+            <div className="flex items-start gap-4 rounded-2xl border border-[#dce6f6] bg-[#f7f9fc] p-5 text-left shadow-sm">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e8efff] text-[#3570FC]">
+                <MapPin aria-hidden="true" size={22} />
+              </span>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#3570FC]">
+                  Nosso endereço
+                </p>
+                <address className="mt-1 not-italic font-semibold leading-relaxed text-[#142D59]">
+                  Rua João Peroba, Nº 05
+                  <br />
+                  Coruripe - AL
+                </address>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Rua+Jo%C3%A3o+Peroba%2C+N%C2%BA+05%2C+Coruripe%2C+AL"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex text-sm font-semibold text-[#3570FC] underline-offset-4 transition hover:underline"
+                >
+                  Ver no mapa
+                </a>
+              </div>
+            </div>
 
             {/* ESTATÍSTICAS */}
             <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-6 border-t border-slate-100">
