@@ -21,7 +21,7 @@ async function toPayload(news) {
     const uploadedImage = await uploadImageToCloudinary(image, 'news');
 
     if (uploadedImage?.url) {
-      images.push(uploadedImage.url);
+      images.push(uploadedImage);
     }
   }
 
@@ -49,7 +49,6 @@ export async function updateNews(id, news) {
   return newsFromApi(data);
 }
 
-// "Excluir" notícia = despublicar no backend.
 export async function removeNews(id) {
-  await api.patch(`/news/${id}/unpublish`);
+  await api.delete(`/news/${id}`);
 }

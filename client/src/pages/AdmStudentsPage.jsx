@@ -161,7 +161,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
     setStudentToDelete(student);
   };
 
-  // Confirma a exclusão do aluno (no backend ele é inativado)
+  // Confirma a exclusão permanente do aluno.
   const confirmRemove = async () => {
     if (!studentToDelete || isSaving) return;
 
@@ -799,6 +799,7 @@ export function AdmStudentsPage({ onBack, classes, students, setStudents,}) {
               </strong>
               ?
               Essa ação não poderá ser desfeita.
+              {' '}As matrículas e os vínculos com responsáveis serão removidos; os responsáveis e o histórico dos avisos serão mantidos.
             </p>
 
             <div className="mt-7 flex justify-end gap-3">

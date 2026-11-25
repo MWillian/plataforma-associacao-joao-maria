@@ -79,11 +79,10 @@ export class NoticeRepository {
     });
   }
 
-  async archive(id) {
+  async remove(id) {
     try {
-      return await prisma.notice.update({
+      return await prisma.notice.delete({
         where: { id },
-        data: { archivedAt: new Date() },
         include: NOTICE_INCLUDE,
       });
     } catch (error) {

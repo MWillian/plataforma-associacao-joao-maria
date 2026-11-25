@@ -7,7 +7,7 @@ export class StudentController {
     this.unenroll = this.unenroll.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
-    this.inactivate = this.inactivate.bind(this);
+    this.remove = this.remove.bind(this);
   }
 
   async list(_req, res, next) {
@@ -83,13 +83,11 @@ export class StudentController {
     }
   }
 
-  async inactivate(req, res, next) {
+  async remove(req, res, next) {
     try {
-      const student = await this.studentService.inactivate(
-        req.params.id,
-      );
+      await this.studentService.remove(req.params.id);
 
-      return res.status(200).json(student);
+      return res.status(204).send();
     } catch (error) {
       return next(error);
     }

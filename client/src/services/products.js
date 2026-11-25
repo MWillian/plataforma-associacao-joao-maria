@@ -7,18 +7,18 @@ const CATEGORY_TO_API = {
   'Agricultura Familiar': 'agricultura',
 };
 
-async function imagesToUrls(images = []) {
-  const urls = [];
+async function imagesToAssets(images = []) {
+  const assets = [];
 
   for (const image of images) {
     const uploadedImage = await uploadImageToCloudinary(image, 'products');
 
     if (uploadedImage?.url) {
-      urls.push(uploadedImage.url);
+      assets.push(uploadedImage);
     }
   }
 
-  return urls;
+  return assets;
 }
 
 async function toPayload(form) {
@@ -27,7 +27,7 @@ async function toPayload(form) {
     description: form.description,
     category: CATEGORY_TO_API[form.category] ?? form.category,
     price: Number(form.price),
-    images: await imagesToUrls(form.images),
+    images: await imagesToAssets(form.images),
   };
 }
 

@@ -66,14 +66,14 @@ class FakeNoticeRepository {
     return this.notices.get(id) ?? null;
   }
 
-  async archive(id) {
+  async remove(id) {
     const notice = this.notices.get(id);
 
     if (!notice) {
       return null;
     }
 
-    notice.archivedAt = new Date();
+    this.notices.delete(id);
 
     return notice;
   }
@@ -84,14 +84,17 @@ let sent;
 let service;
 let configured;
 let failFor;
+let loggedErrors;
 
 beforeEach(() => {
   repo = new FakeNoticeRepository();
   sent = [];
   configured = true;
   failFor = new Set();
+  loggedErrors = [];
   service = new NoticeService(repo, {
     isEmailConfigured: () => configured,
+    logger: { error: (...args) => loggedErrors.push(args) },
     sendEmail: async ({ email, subject, message }) => {
       if (failFor.has(email)) {
         throw new Error(`falha ao enviar para ${email}`);
@@ -257,6 +260,10 @@ describe('NoticeService.create — envio', () => {
     const failed = repo.deliveries[0].find((r) => r.status === 'FAILED');
 
     assert.match(failed.failureReason, /falha ao enviar/);
+    assert.equal(loggedErrors.length, 1);
+    assert.equal(loggedErrors[0][0], 'Falha ao enviar aviso por e-mail via Resend.');
+    assert.equal(loggedErrors[0][1].recipientId, failed.recipientId);
+    assert.match(loggedErrors[0][1].reason, /falha ao enviar/);
   });
 
   it('marca todos como falha quando o e-mail não está configurado', async () => {
@@ -271,6 +278,7 @@ describe('NoticeService.create — envio', () => {
       repo.deliveries[0][0].failureReason,
       /não configurado/,
     );
+    assert.equal(loggedErrors[0][0], 'Envio de aviso ignorado: integração de e-mail não configurada.');
   });
 
   it('limita o envio a cinco pessoas por vez e continua após falhas entre lotes', async () => {
@@ -282,6 +290,7 @@ describe('NoticeService.create — envio', () => {
 
     service = new NoticeService(repo, {
       isEmailConfigured: () => true,
+      logger: { error: (...args) => loggedErrors.push(args) },
       sendEmail: async ({ email }) => {
         activeSends += 1;
         maxConcurrentSends = Math.max(maxConcurrentSends, activeSends);
@@ -351,16 +360,16 @@ describe('NoticeService.list e remove', () => {
     );
   });
 
-  it('"excluir" arquiva: some da lista e o registro é preservado', async () => {
+  it('exclui o aviso e seu histórico do repositório', async () => {
     const created = await service.create(1, valid());
 
     await service.remove(created.id);
 
     assert.deepEqual(await service.list(), []);
-    assert.equal(repo.notices.has(created.id), true);
+    assert.equal(repo.notices.has(created.id), false);
   });
 
-  it('valida o identificador e retorna 404 para inexistente ou já arquivado', async () => {
+  it('valida o identificador e retorna 404 para inexistente ou já excluído', async () => {
     await assert.rejects(service.remove('abc'), (e) => e.statusCode === 400);
     await assert.rejects(
       service.remove(MISSING_CLASS),
@@ -374,5 +383,14 @@ describe('NoticeService.list e remove', () => {
       service.remove(created.id),
       (e) => e.statusCode === 404,
     );
+  });
+
+  it('também remove um aviso já arquivado', async () => {
+    const archived = await service.create(1, valid());
+    repo.notices.get(archived.id).archivedAt = new Date();
+
+    await service.remove(archived.id);
+
+    assert.equal(repo.notices.has(archived.id), false);
   });
 });

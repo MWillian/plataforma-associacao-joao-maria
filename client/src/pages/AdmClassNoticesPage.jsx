@@ -164,7 +164,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
         );
       } else if (created.sentCount === 0) {
         showFeedback(
-          'Aviso registrado, mas nenhum e-mail foi enviado. Verifique a configuração de e-mail do servidor.',
+          'Aviso registrado, mas nenhum e-mail foi enviado. Consulte os logs do servidor para identificar a causa.',
           'error'
         );
       } else {
@@ -616,6 +616,7 @@ export function AdmClassNoticesPage({ classes = [], notices = [], onCreate, onRe
               Tem certeza de que deseja excluir o aviso{' '}
               <strong className="text-[#172033]">{noticeToDelete.subject}</strong>?
               Essa ação não poderá ser desfeita.
+              {' '}Os destinatários e o histórico de envio também serão apagados.
             </p>
             <div className="mt-7 flex justify-end gap-3">
               <button

@@ -20,7 +20,7 @@ classRouter.use(requireAuth, requireAdmin);
 classRouter.get('/', classController.list);
 classRouter.post('/', classController.create);
 classRouter.put('/:id', classController.update);
-classRouter.patch('/:id/inactivate', classController.inactivate);
+classRouter.delete('/:id', classController.remove);
 
 // Alunos de uma turma
 classRouter.get('/:classId/students', studentController.listByClass);

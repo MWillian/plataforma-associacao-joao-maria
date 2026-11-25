@@ -79,7 +79,7 @@ async function getLogoContent() {
   return logoContentPromise;
 }
 
-export function createEmailService({ apiKey, from, client } = {}) {
+export function createEmailService({ apiKey, from, replyTo, client } = {}) {
   const resend = client ?? (apiKey ? new Resend(apiKey) : null);
 
   function isEmailConfigured() {
@@ -100,6 +100,7 @@ export function createEmailService({ apiKey, from, client } = {}) {
       subject,
       html: renderNoticeEmail({ subject, message }),
       text: `${subject}\n\n${message}\n\nAssociação Comunitária João Maria · Coruripe, AL`,
+      ...(replyTo ? { replyTo } : {}),
       attachments: [
         {
           filename: 'logo-joao-maria.png',
@@ -131,6 +132,7 @@ export function createEmailService({ apiKey, from, client } = {}) {
 const emailService = createEmailService({
   apiKey: env.resendApiKey,
   from: env.resendFrom,
+  replyTo: env.resendReplyTo,
 });
 
 export const isEmailConfigured = emailService.isEmailConfigured;

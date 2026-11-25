@@ -155,16 +155,13 @@ describe('MediaService', () => {
     );
   });
 
-  it('informa quando o Cloudinary não encontrou a imagem para remover', async () => {
+  it('trata uma imagem já removida como sucesso idempotente', async () => {
     const service = new MediaService(
       createCloudinary({
         deleteResult: { result: 'not found' },
       }),
     );
 
-    await assert.rejects(
-      () => service.deleteImage(VALID_PUBLIC_ID),
-      { statusCode: 404, code: 'IMAGE_NOT_FOUND' },
-    );
+    await service.deleteImage(VALID_PUBLIC_ID);
   });
 });

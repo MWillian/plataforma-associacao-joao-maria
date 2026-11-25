@@ -4,7 +4,7 @@ export class ClassController {
     this.list = this.list.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
-    this.inactivate = this.inactivate.bind(this);
+    this.remove = this.remove.bind(this);
   }
 
   async list(_req, res, next) {
@@ -42,13 +42,11 @@ export class ClassController {
     }
   }
 
-  async inactivate(req, res, next) {
+  async remove(req, res, next) {
     try {
-      const danceClass = await this.classService.inactivate(
-        req.params.id,
-      );
+      await this.classService.remove(req.params.id);
 
-      return res.status(200).json(danceClass);
+      return res.status(204).send();
     } catch (error) {
       return next(error);
     }

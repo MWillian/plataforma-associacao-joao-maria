@@ -109,8 +109,16 @@ export class StudentRepository {
     }
   }
 
-  inactivateStudent(id) {
-    return this.updateStudent(id, { active: false });
+  async removeStudent(id) {
+    try {
+      return await this.client.student.delete({ where: { id } });
+    } catch (error) {
+      if (error?.code === 'P2025') {
+        return null;
+      }
+
+      throw error;
+    }
   }
 
   // Substitui o responsável do aluno (null = sem responsável).

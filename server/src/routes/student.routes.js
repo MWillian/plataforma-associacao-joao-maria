@@ -29,9 +29,9 @@ studentRouter.put(
   studentController.update,
 );
 
-studentRouter.patch(
-  '/:id/inactivate',
+studentRouter.delete(
+  '/:id',
   requireAuth,
   requireAdmin,
-  studentController.inactivate,
+  studentController.remove,
 );

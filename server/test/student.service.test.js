@@ -20,6 +20,7 @@ class FakeStudentRepository {
     this.guardians = new Map();
     this.links = [];
     this.enrollments = [];
+    this.noticeRecipients = [];
     this.classes = new Map([
       [CLASS_A, { id: CLASS_A, name: 'A', active: true, capacity: null }],
       [CLASS_B, { id: CLASS_B, name: 'B', active: true, capacity: null }],
@@ -32,7 +33,6 @@ class FakeStudentRepository {
         { id: CLASS_SMALL, name: 'S', active: true, capacity: 1 },
       ],
     ]);
-    this.inactivateRace = false;
   }
 
   nextId() {
@@ -154,12 +154,25 @@ class FakeStudentRepository {
     return student;
   }
 
-  async inactivateStudent(id) {
-    if (this.inactivateRace) {
+  async removeStudent(id) {
+    const student = this.students.get(id);
+
+    if (!student) {
       return null;
     }
 
-    return this.updateStudent(id, { active: false });
+    this.students.delete(id);
+    this.links = this.links.filter((link) => link.studentId !== id);
+    this.enrollments = this.enrollments.filter(
+      (enrollment) => enrollment.studentId !== id,
+    );
+    this.noticeRecipients.forEach((recipient) => {
+      if (recipient.studentId === id) {
+        recipient.studentId = null;
+      }
+    });
+
+    return student;
   }
 
   async setGuardian(studentId, guardianId) {
@@ -718,8 +731,8 @@ describe('StudentService.update', () => {
     );
   });
 
-  it('retorna 404 para aluno inativo (excluído)', async () => {
-    await service.inactivate(created.id);
+  it('retorna 404 para aluno excluído', async () => {
+    await service.remove(created.id);
 
     await assert.rejects(
       service.update(created.id, minorData()),
@@ -740,80 +753,73 @@ describe('StudentService.update', () => {
   });
 });
 
-describe('StudentService.inactivate', () => {
+describe('StudentService.remove', () => {
   let created;
 
   beforeEach(async () => {
     created = await service.create(minorData());
   });
 
-  it('inativa o aluno e cancela a matrícula ativa', async () => {
-    const result = await service.inactivate(created.id);
+  it('remove estudante, matrícula e vínculo, mas preserva responsável e histórico do aviso', async () => {
+    const guardianId = repo.links[0].guardianId;
+    repo.noticeRecipients.push({
+      studentId: created.id,
+      guardianId,
+      email: 'maria@email.com',
+      name: 'Maria Ferreira',
+      status: 'SENT',
+    });
 
-    assert.equal(result.active, false);
-    assert.equal(result.danceClassId, null);
-    assert.equal(result.guardian, 'Maria Ferreira (Mãe)');
-    assert.equal(await repo.countActiveEnrollments(CLASS_A), 0);
-  });
+    await service.remove(created.id);
 
-  it('preserva o registro, o responsável e o histórico de matrícula', async () => {
-    await service.inactivate(created.id);
-
-    assert.equal(repo.students.has(created.id), true);
-    assert.equal(repo.links.length, 1);
-    assert.equal(repo.enrollments.length, 1);
-    assert.equal(repo.enrollments[0].status, 'CANCELED');
-  });
-
-  it('libera a vaga da turma', async () => {
-    const small = await service.create(
-      validData({ danceClassId: CLASS_SMALL }),
+    assert.equal(repo.students.has(created.id), false);
+    assert.equal(repo.links.some((link) => link.studentId === created.id), false);
+    assert.equal(
+      repo.enrollments.some((enrollment) => enrollment.studentId === created.id),
+      false,
     );
-
-    await service.inactivate(small.id);
-
-    const another = await service.create(
-      validData({ danceClassId: CLASS_SMALL }),
-    );
-
-    assert.equal(another.danceClassId, CLASS_SMALL);
-  });
-
-  it('é idempotente para aluno já inativo', async () => {
-    await service.inactivate(created.id);
-    const result = await service.inactivate(created.id);
-
-    assert.equal(result.active, false);
+    assert.equal(repo.guardians.has(guardianId), true);
+    assert.deepEqual(repo.noticeRecipients[0], {
+      studentId: null,
+      guardianId,
+      email: 'maria@email.com',
+      name: 'Maria Ferreira',
+      status: 'SENT',
+    });
   });
 
   for (const invalidId of [undefined, '', '123', 'não-é-uuid']) {
     it(`rejeita identificador inválido: ${String(invalidId)}`, async () => {
+      let called = false;
+      repo.removeStudent = async () => {
+        called = true;
+      };
+
       await assert.rejects(
-        service.inactivate(invalidId),
+        service.remove(invalidId),
         (error) => {
           assert.equal(error.statusCode, 400);
           return true;
         },
       );
+      assert.equal(called, false);
     });
   }
 
-  it('retorna 404 quando o aluno não existe', async () => {
+  it('retorna 404 quando o aluno não existe ou some durante a exclusão', async () => {
     await assert.rejects(
-      service.inactivate(MISSING_ID),
+      service.remove(MISSING_ID),
       (error) => {
         assert.equal(error.statusCode, 404);
         assert.equal(error.code, 'STUDENT_NOT_FOUND');
         return true;
       },
     );
-  });
-
-  it('retorna 404 se o aluno desaparecer durante a operação', async () => {
-    repo.inactivateRace = true;
+    repo.removeStudent = async () => null;
+    const student = await service.create(validData());
 
     await assert.rejects(
-      service.inactivate(created.id),
+      service.remove(student.id),
       (error) => {
         assert.equal(error.statusCode, 404);
         return true;
@@ -836,10 +842,10 @@ describe('StudentService.list', () => {
     assert.equal(result[1].name, 'Carolina Mendes');
   });
 
-  it('não lista alunos inativos', async () => {
+  it('não lista alunos removidos', async () => {
     const first = await service.create(validData());
     await service.create(validData({ name: 'Carolina Mendes' }));
-    await service.inactivate(first.id);
+    await service.remove(first.id);
 
     const result = await service.list();
 
@@ -861,7 +867,7 @@ describe('StudentService.listByClass', () => {
     const removed = await service.create(
       validData({ name: 'Excluído', danceClassId: CLASS_A }),
     );
-    await service.inactivate(removed.id);
+    await service.remove(removed.id);
 
     const result = await service.listByClass(CLASS_A);
 
@@ -973,7 +979,7 @@ describe('StudentService.enroll', () => {
 
   it('retorna 404 para aluno inexistente ou inativo', async () => {
     const student = await service.create(validData());
-    await service.inactivate(student.id);
+    repo.students.get(student.id).active = false;
 
     for (const studentId of [MISSING_ID, student.id]) {
       await assert.rejects(

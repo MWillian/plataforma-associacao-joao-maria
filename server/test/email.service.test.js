@@ -31,6 +31,7 @@ describe('EmailService Resend', () => {
     const service = createEmailService({
       apiKey: 're_test_key',
       from: 'Associação <avisos@example.com>',
+      replyTo: 'contato@example.com',
       client: {
         emails: {
           send: async (payload) => {
@@ -48,6 +49,7 @@ describe('EmailService Resend', () => {
     });
 
     assert.equal(request.from, 'Associação <avisos@example.com>');
+    assert.equal(request.replyTo, 'contato@example.com');
     assert.equal(request.to, 'responsavel@example.com');
     assert.equal(request.subject, 'Aviso da turma');
     assert.match(request.html, /<title>Aviso da turma<\/title>/);

@@ -11,7 +11,7 @@ function createRepository(overrides = {}) {
     update: async (id, data) => ({ id, active: true, ...data }),
     findById: async (id) => ({ id, active: true }),
     listActive: async () => [],
-    inactivate: async (id) => ({ id, active: false }),
+    remove: async (id) => ({ id }),
     ...overrides,
   };
 }
@@ -370,22 +370,21 @@ describe('ClassService.update', () => {
   });
 });
 
-describe('ClassService.inactivate', () => {
-  it('inativa uma turma ativa', async () => {
-    let inactivatedId;
+describe('ClassService.remove', () => {
+  it('exclui uma turma', async () => {
+    let removedId;
     const service = new ClassService(
       createRepository({
-        inactivate: async (id) => {
-          inactivatedId = id;
-          return { id, active: false };
+        remove: async (id) => {
+          removedId = id;
+          return { id };
         },
       }),
     );
 
-    const result = await service.inactivate(CLASS_ID);
+    await service.remove(CLASS_ID);
 
-    assert.equal(inactivatedId, CLASS_ID);
-    assert.equal(result.active, false);
+    assert.equal(removedId, CLASS_ID);
   });
 
   for (const invalidId of [undefined, '', '123', 'não-é-uuid']) {
@@ -393,14 +392,14 @@ describe('ClassService.inactivate', () => {
       let called = false;
       const service = new ClassService(
         createRepository({
-          findById: async () => {
+          remove: async () => {
             called = true;
           },
         }),
       );
 
       await assert.rejects(
-        service.inactivate(invalidId),
+        service.remove(invalidId),
         (error) => {
           assert.equal(error.statusCode, 400);
           assert.equal(error.code, 'VALIDATION_ERROR');
@@ -413,11 +412,11 @@ describe('ClassService.inactivate', () => {
 
   it('retorna 404 quando a turma não existe', async () => {
     const service = new ClassService(
-      createRepository({ findById: async () => null }),
+      createRepository({ remove: async () => null }),
     );
 
     await assert.rejects(
-      service.inactivate(CLASS_ID),
+      service.remove(CLASS_ID),
       (error) => {
         assert.equal(error.statusCode, 404);
         assert.equal(error.code, 'CLASS_NOT_FOUND');
@@ -426,30 +425,13 @@ describe('ClassService.inactivate', () => {
     );
   });
 
-  it('não atualiza novamente uma turma já inativa', async () => {
-    let inactivateCalled = false;
+  it('retorna 404 se a turma desaparecer durante a exclusão', async () => {
     const service = new ClassService(
-      createRepository({
-        findById: async (id) => ({ id, active: false }),
-        inactivate: async () => {
-          inactivateCalled = true;
-        },
-      }),
-    );
-
-    const result = await service.inactivate(CLASS_ID);
-
-    assert.equal(result.active, false);
-    assert.equal(inactivateCalled, false);
-  });
-
-  it('retorna 404 se a turma desaparecer durante a operação', async () => {
-    const service = new ClassService(
-      createRepository({ inactivate: async () => null }),
+      createRepository({ remove: async () => null }),
     );
 
     await assert.rejects(
-      service.inactivate(CLASS_ID),
+      service.remove(CLASS_ID),
       (error) => {
         assert.equal(error.statusCode, 404);
         assert.equal(error.code, 'CLASS_NOT_FOUND');

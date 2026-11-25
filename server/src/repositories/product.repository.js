@@ -4,9 +4,13 @@ const PRODUCT_INCLUDE = {
   images: { orderBy: { sortOrder: 'asc' } },
 };
 
-function toImagesCreate(urls) {
+function toImagesCreate(images) {
   return {
-    create: urls.map((url, index) => ({ url, sortOrder: index })),
+    create: images.map(({ url, publicId }, index) => ({
+      url,
+      publicId,
+      sortOrder: index,
+    })),
   };
 }
 
@@ -137,7 +141,7 @@ export class ProductRepository {
     }
   }
 
-  // `images` (lista de URLs) só é alterado quando enviado: substitui as atuais.
+  // `images` só é alterado quando enviado: substitui as atuais.
   async update(id, { images, ...data }) {
     try {
       return await prisma.$transaction(async (tx) => {

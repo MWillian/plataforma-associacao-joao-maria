@@ -139,8 +139,7 @@ export function AdmClassesPage({
     setDanceClassToDelete(danceClass);
   };
 
-  // Confirma a exclusão da turma (no backend ela é inativada, junto com
-  // os alunos matriculados nela)
+  // Confirma a exclusão permanente da turma.
   const confirmRemove = async () => {
     if (!danceClassToDelete || isSaving) return;
 
@@ -676,6 +675,7 @@ export function AdmClassesPage({
               </strong>
               ?
               Essa ação não poderá ser desfeita.
+              {' '}As matrículas e o vínculo dos avisos com a turma serão removidos; estudantes e avisos serão mantidos.
             </p>
 
             <div className="mt-7 flex justify-end gap-3">

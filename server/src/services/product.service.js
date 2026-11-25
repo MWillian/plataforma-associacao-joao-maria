@@ -1,5 +1,9 @@
 import { AppError } from '../utils/app-error.js';
-import { validateImages } from '../utils/images.js';
+import {
+  getCloudinaryPublicIdFromUrl,
+  validateImages,
+} from '../utils/images.js';
+import { deleteCloudinaryImages } from './media.service.js';
 
 const PRODUCT_CATEGORIES = [
   'agricultura',
@@ -61,9 +65,9 @@ function validatePrice(value) {
 
 function validateProductImages(images) {
   const fields = {};
-  const urls = validateImages(
+  const validatedImages = validateImages(
     images,
-    { max: MAX_PRODUCT_IMAGES },
+    { max: MAX_PRODUCT_IMAGES, folder: 'products' },
     fields,
   );
 
@@ -76,7 +80,7 @@ function validateProductImages(images) {
     );
   }
 
-  return urls;
+  return validatedImages;
 }
 
 function validateLegacyImageUrl(imageUrl) {
@@ -97,16 +101,30 @@ function validateLegacyImageUrl(imageUrl) {
 
 // Preço (Decimal) sai como número no JSON.
 function toProductResponse(product) {
-  if (!product || product.price === null || product.price === undefined) {
+  if (!product) {
     return product;
   }
 
-  return { ...product, price: Number(product.price) };
+  const response = {
+    ...product,
+    ...(product.images && {
+      images: product.images.map((image) => {
+        const publicImage = { ...image };
+        delete publicImage.publicId;
+        return publicImage;
+      }),
+    }),
+  };
+
+  return product.price === null || product.price === undefined
+    ? response
+    : { ...response, price: Number(product.price) };
 }
 
 export class ProductService {
-  constructor(productRepository) {
+  constructor(productRepository, mediaService) {
     this.productRepository = productRepository;
+    this.mediaService = mediaService;
   }
 
   async listHighlights({ category } = {}) {
@@ -291,7 +309,7 @@ export class ProductService {
     }
 
     const normalizedPrice = validatePrice(price);
-    const imageUrls = validateProductImages(images);
+    const imageAssets = validateProductImages(images);
     const fallbackImageUrl = validateLegacyImageUrl(imageUrl);
 
     if (active !== undefined && typeof active !== 'boolean') {
@@ -326,9 +344,9 @@ export class ProductService {
           category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
           price: normalizedPrice,
           imageUrl:
-            imageUrls?.[0] ??
+            imageAssets?.[0]?.url ??
             fallbackImageUrl,
-          ...(imageUrls && { images: imageUrls }),
+          ...(imageAssets && { images: imageAssets }),
           active: active ?? true,
         }),
       );
@@ -393,6 +411,23 @@ export class ProductService {
         'O identificador do produto é inválido.',
       );
     }
+
+    const product = await this.productRepository.findById(id);
+
+    if (!product) {
+      throw new AppError(
+        404,
+        'PRODUCT_NOT_FOUND',
+        'Produto não encontrado.',
+      );
+    }
+
+    await deleteCloudinaryImages(
+      this.mediaService,
+      product.images,
+      'products',
+      [product.imageUrl],
+    );
 
     const removed = await this.productRepository.remove(id);
 
@@ -515,7 +550,7 @@ export class ProductService {
     }
 
     const normalizedPrice = validatePrice(price);
-    const imageUrls = validateProductImages(images);
+    const imageAssets = validateProductImages(images);
     const fallbackImageUrl = validateLegacyImageUrl(imageUrl);
 
     const productWithSameTitle =
@@ -534,6 +569,49 @@ export class ProductService {
       );
     }
 
+    const nextImageUrl =
+      imageAssets?.[0]?.url ?? fallbackImageUrl;
+    const nextPublicIds = new Set(
+      (imageAssets ?? product.images ?? [])
+        .map(
+          (image) =>
+            image.publicId ??
+            getCloudinaryPublicIdFromUrl(image.url, 'products'),
+        )
+        .filter(Boolean),
+    );
+    const removedImages =
+      imageAssets === undefined
+        ? []
+        : (product.images ?? []).filter((image) => {
+            const publicId =
+              image.publicId ??
+              getCloudinaryPublicIdFromUrl(image.url, 'products');
+
+            return !publicId || !nextPublicIds.has(publicId);
+          });
+    const oldFallbackPublicId = getCloudinaryPublicIdFromUrl(
+      product.imageUrl,
+      'products',
+    );
+    const nextFallbackPublicId = getCloudinaryPublicIdFromUrl(
+      nextImageUrl,
+      'products',
+    );
+    const fallbackUrlsToDelete =
+      oldFallbackPublicId &&
+      oldFallbackPublicId !== nextFallbackPublicId &&
+      !nextPublicIds.has(oldFallbackPublicId)
+        ? [product.imageUrl]
+        : [];
+
+    await deleteCloudinaryImages(
+      this.mediaService,
+      removedImages,
+      'products',
+      fallbackUrlsToDelete,
+    );
+
     try {
       const updatedProduct =
         await this.productRepository.update(id, {
@@ -544,10 +622,8 @@ export class ProductService {
               : null,
           category: PRODUCT_CATEGORY_TO_DB[normalizedCategory],
           price: normalizedPrice,
-          imageUrl:
-            imageUrls?.[0] ??
-            fallbackImageUrl,
-          ...(imageUrls && { images: imageUrls }),
+          imageUrl: nextImageUrl,
+          ...(imageAssets && { images: imageAssets }),
         });
 
       if (!updatedProduct) {

@@ -32,7 +32,10 @@ export async function uploadImageToCloudinary(image, folder) {
   }
 
   if (/^https?:\/\//i.test(source)) {
-    return { url: source };
+    return {
+      url: source,
+      ...(image?.publicId && { publicId: image.publicId }),
+    };
   }
 
   const blob = dataUrlToBlob(source);
