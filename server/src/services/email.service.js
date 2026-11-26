@@ -1,11 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { Resend } from 'resend';
 import { env } from '../config/env.js';
+import { fileURLToPath } from 'node:url';
 
 const LOGO_CONTENT_ID = 'associacao-joao-maria-logo';
-const LOGO_FILE_URL = new URL(
-  '../../../server/assets/logo-joao-maria.png',
-  import.meta.url,
+const LOGO_FILE_URL = fileURLToPath(
+  new URL('../assets/logo-joao-maria.png', import.meta.url)
 );
 
 let logoContentPromise;
