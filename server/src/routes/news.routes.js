@@ -6,13 +6,13 @@ import {
   requireAuth,
 } from '../middlewares/auth.middleware.js';
 import {
-  productListRateLimit,
+  newsListRateLimit,
 } from '../middlewares/rate-limit.middleware.js';
 
 export const newsRouter = Router();
 
 // Público: alimenta Home, murais e detalhe das notícias.
-newsRouter.get('/', productListRateLimit, newsController.list);
+newsRouter.get('/', newsListRateLimit, newsController.list);
 
 newsRouter.post('/', requireAuth, requireAdmin, newsController.create);
 newsRouter.put('/:id', requireAuth, requireAdmin, newsController.update);
