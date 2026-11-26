@@ -52,6 +52,24 @@ function numberEnv(name, fallback) {
   return value;
 }
 
+function trustProxyHopsEnv() {
+  const rawValue = process.env.TRUST_PROXY_HOPS;
+
+  if (rawValue === undefined || rawValue.trim() === '') {
+    return 0;
+  }
+
+  const value = Number(rawValue);
+
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(
+      'TRUST_PROXY_HOPS deve ser um inteiro maior ou igual a zero.',
+    );
+  }
+
+  return value;
+}
+
 function sameSiteEnv(value) {
   const normalizedValue = String(value ?? 'lax')
     .trim()
@@ -79,6 +97,7 @@ export const env = {
   nodeEnv,
 
   port: numberEnv('PORT', 3001),
+  trustProxyHops: trustProxyHopsEnv(),
 
   frontendUrl:
     process.env.FRONTEND_URL?.trim() ||

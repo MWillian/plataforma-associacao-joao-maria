@@ -7,10 +7,10 @@
     "dev": "nodemon src/server.js",
     "test": "node --test",
     "start": "node src/server.js",
-    "postinstall": "prisma skills sync || exit 0",
     "contract:emit": "prisma contract emit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "node prisma/seed.js"
   },
   "keywords": [],

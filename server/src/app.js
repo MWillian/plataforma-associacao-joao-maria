@@ -19,6 +19,11 @@ import { studentRouter } from './routes/student.routes.js';
 export const app = express();
 
 app.disable('x-powered-by');
+
+if (env.trustProxyHops > 0) {
+  app.set('trust proxy', env.trustProxyHops);
+}
+
 app.use(cookieParser());
 app.use(
   cors({

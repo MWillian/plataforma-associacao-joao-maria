@@ -1,0 +1,95 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: joao_maria_db_prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER obrigatorio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB obrigatorio}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  migrate:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: migrator
+    container_name: joao_maria_migrate_prod
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL obrigatorio}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - tools
+    networks:
+      - app_net
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: runner
+    container_name: joao_maria_api_prod
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL obrigatorio}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET obrigatorio}
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL obrigatorio}
+      TRUST_PROXY_HOPS: 1
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-lax}
+      RESEND_API_KEY: ${RESEND_API_KEY:?RESEND_API_KEY obrigatorio}
+      RESEND_FROM: ${RESEND_FROM:?RESEND_FROM obrigatorio}
+      CLOUDINARY_URL: ${CLOUDINARY_URL:?CLOUDINARY_URL obrigatorio}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: joao_maria_web_prod
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: joao_maria_caddy_prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - api
+    restart: unless-stopped
+    networks:
+      - app_net
+
+volumes:
+  pgdata_prod:
+  caddy_data:
+  caddy_config:
+
+networks:
+  app_net:

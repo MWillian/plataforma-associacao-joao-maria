@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import express from 'express';
 import { test } from 'node:test';
-import { productListRateLimit } from '../src/middlewares/rate-limit.middleware.js';
+import {
+  loginRateLimit,
+  productListRateLimit,
+} from '../src/middlewares/rate-limit.middleware.js';
 
 test('pula o limite em desenvolvimento e mantém o limite em produção', async () => {
   const previousNodeEnv = process.env.NODE_ENV;
@@ -34,6 +37,60 @@ test('pula o limite em desenvolvimento e mantém o limite em produção', async 
     }
 
     const limitedResponse = await fetch(url);
+    assert.equal(limitedResponse.status, 429);
+  } finally {
+    if (previousNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = previousNodeEnv;
+    }
+
+    await new Promise((resolve, reject) => {
+      server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve();
+      });
+    });
+  }
+});
+
+test('limita falhas de login sem contar autenticações bem-sucedidas', async () => {
+  const previousNodeEnv = process.env.NODE_ENV;
+  const app = express();
+
+  app.post('/login/:result', loginRateLimit, (req, res) => {
+    res.sendStatus(req.params.result === 'success' ? 200 : 401);
+  });
+
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+
+  try {
+    const { port } = server.address();
+    const baseUrl = `http://127.0.0.1:${port}/login`;
+    process.env.NODE_ENV = 'production';
+
+    for (let request = 0; request < 12; request += 1) {
+      const response = await fetch(`${baseUrl}/success`, {
+        method: 'POST',
+      });
+      assert.equal(response.status, 200);
+    }
+
+    for (let request = 0; request < 10; request += 1) {
+      const response = await fetch(`${baseUrl}/failure`, {
+        method: 'POST',
+      });
+      assert.equal(response.status, 401);
+    }
+
+    const limitedResponse = await fetch(`${baseUrl}/failure`, {
+      method: 'POST',
+    });
     assert.equal(limitedResponse.status, 429);
   } finally {
     if (previousNodeEnv === undefined) {
