@@ -39,6 +39,8 @@ services:
       dockerfile: Dockerfile
       target: runner
     container_name: joao_maria_api_prod
+    volumes:
+      - ./client/public/logo-joao-maria.png:/client/public/logo-joao-maria.png:ro
     environment:
       NODE_ENV: production
       PORT: 3001
