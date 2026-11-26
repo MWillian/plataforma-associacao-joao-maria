@@ -4,7 +4,7 @@ import { env } from '../config/env.js';
 
 const LOGO_CONTENT_ID = 'associacao-joao-maria-logo';
 const LOGO_FILE_URL = new URL(
-  '../../../client/public/logo-joao-maria.png',
+  '../../../server/assets/logo-joao-maria.png',
   import.meta.url,
 );
 
